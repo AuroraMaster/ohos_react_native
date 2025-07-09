@@ -26,6 +26,32 @@ class NativeAnimatedTurboModule
  public:
   using Context = rnoh::ArkTSTurboModule::Context;
 
+  using EndCallback = AnimatedNodesManager::EndCallback;
+
+  enum class BatchExecutionOpCodes {
+    OP_CODE_CREATE_ANIMATED_NODE = 1,
+    OP_CODE_UPDATE_ANIMATED_NODE_CONFIG = 2,
+    OP_CODE_GET_VALUE = 3,
+    OP_START_LISTENING_TO_ANIMATED_NODE_VALUE = 4,
+    OP_STOP_LISTENING_TO_ANIMATED_NODE_VALUE = 5,
+    OP_CODE_CONNECT_ANIMATED_NODES = 6,
+    OP_CODE_DISCONNECT_ANIMATED_NODES = 7,
+    OP_CODE_START_ANIMATING_NODE = 8,
+    OP_CODE_STOP_ANIMATION = 9,
+    OP_CODE_SET_ANIMATED_NODE_VALUE = 10,
+    OP_CODE_SET_ANIMATED_NODE_OFFSET = 11,
+    OP_CODE_FLATTEN_ANIMATED_NODE_OFFSET = 12,
+    OP_CODE_EXTRACT_ANIMATED_NODE_OFFSET = 13,
+    OP_CODE_CONNECT_ANIMATED_NODE_TO_VIEW = 14,
+    OP_CODE_DISCONNECT_ANIMATED_NODE_FROM_VIEW = 15,
+    OP_CODE_RESTORE_DEFAULT_VALUES = 16,
+    OP_CODE_DROP_ANIMATED_NODE = 17,
+    OP_CODE_ADD_ANIMATED_EVENT_TO_VIEW = 18,
+    OP_CODE_REMOVE_ANIMATED_EVENT_FROM_VIEW = 19,
+    OP_CODE_ADD_LISTENER = 20, // ios only
+    OP_CODE_REMOVE_LISTENERS = 21 // ios only
+  };
+
   NativeAnimatedTurboModule(
       const ArkTSTurboModule::Context ctx,
       const std::string name);
@@ -63,7 +89,7 @@ class NativeAnimatedTurboModule
       facebook::react::Tag animationId,
       facebook::react::Tag nodeTag,
       folly::dynamic const& config,
-      std::function<void(bool)>&& endCallback);
+      EndCallback&& endCallback);
 
   void stopAnimation(facebook::react::Tag animationId);
 
@@ -111,6 +137,11 @@ class NativeAnimatedTurboModule
       facebook::react::Tag animationId,
       bool completed);
 
+  void emitAnimationGetValueEvent(
+      facebook::jsi::Runtime& rt,
+      facebook::react::Tag animationId,
+      double value);
+
   // EventEmitRequestHandler
   void handleEvent(EventEmitRequestHandler::Context const& ctx) override;
 
@@ -119,11 +150,17 @@ class NativeAnimatedTurboModule
       std::string const& eventName,
       folly::dynamic payload);
 
- private:
+  std::weak_ptr<facebook::react::CallbackWrapper> createCallbackWrapper(
+      facebook::jsi::Function&& callback,
+      facebook::jsi::Runtime& runtime);
+
+  EndCallback wrapEndCallbackWithJSInvoker(EndCallback&& callback);
+
   std::unique_lock<std::mutex> acquireLock() {
     return std::unique_lock(m_nodesManagerLock);
   }
 
+ private:
   void setDisplaySoloistFrameRate(int32_t frameRate);
 
   void stopDisplaySoloist();
