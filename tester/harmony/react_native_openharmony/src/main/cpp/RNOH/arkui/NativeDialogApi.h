@@ -14,11 +14,10 @@ namespace rnoh {
 class NativeDialogApi {
  public:
   static ArkUI_NativeDialogAPI_1* getInstance();
+  static ArkUI_NativeDialogAPI_2* getInstance2();
 
  private:
   NativeDialogApi() {}
-
-  static ArkUI_NativeDialogAPI_1* api;
 };
 
 } // namespace rnoh

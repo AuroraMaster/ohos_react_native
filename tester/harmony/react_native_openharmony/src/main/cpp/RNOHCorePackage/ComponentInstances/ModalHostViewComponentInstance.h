@@ -26,7 +26,8 @@ class ModalHostViewComponentInstance
   using ScreenOrientation = facebook::react::ModalHostViewEventEmitter::
       OnOrientationChangeOrientation;
   CustomNode m_virtualNode;
-  CustomNode m_rootStackNode;
+  StackNode m_rootStackNode;
+  CustomNode m_rootCustomNode;
   ArkUIDialogHandler m_dialogHandler;
   std::shared_ptr<UIInputEventHandler> m_touchHandler;
   std::shared_ptr<ArkTSMessageHandler> m_displaySizeChangeHandler;

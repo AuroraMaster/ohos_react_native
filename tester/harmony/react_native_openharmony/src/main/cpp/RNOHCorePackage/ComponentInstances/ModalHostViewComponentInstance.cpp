@@ -31,7 +31,7 @@ class ModalHostTouchHandler : public UIInputEventHandler {
   ModalHostTouchHandler& operator=(ModalHostTouchHandler&& other) = delete;
 
   ModalHostTouchHandler(ModalHostViewComponentInstance* rootView)
-      : UIInputEventHandler(rootView->m_rootStackNode), m_rootView(rootView) {}
+      : UIInputEventHandler(rootView->m_rootCustomNode), m_rootView(rootView) {}
 
   void onTouchEvent(ArkUI_UIInputEvent* event) override {
     m_touchEventDispatcher.dispatchTouchEvent(
@@ -72,19 +72,19 @@ void ModalHostViewComponentInstance::resetModalPosition(
   FoldStatus foldStatus  = static_cast<FoldStatus>(ArkTSBridge::getInstance()->getFoldStatus());
   auto isSplitScreenMode = ArkTSBridge::getInstance()->getIsSplitScreenMode();
   if ((foldStatus == FOLD_STATUS_EXPANDED || foldStatus == FOLD_STATUS_HALF_FOLDED) && isSplitScreenMode) {
-    m_rootStackNode.setPosition(
+    m_rootCustomNode.setPosition(
         {displayMetrics.screenPhysicalPixels.width / windowMetrics.scale, 0});
     } else {
         auto x = windowMetrics.left / windowMetrics.scale;
         auto y = windowMetrics.top / windowMetrics.scale;
-        m_rootStackNode.setPosition({x, y});
+        m_rootCustomNode.setPosition({x, y});
     }
 }
 
 void ModalHostViewComponentInstance::updateSlideTransition(
     DisplayMetrics const& displayMetrics) {
   auto screenSize = displayMetrics.windowPhysicalPixels;
-  m_rootStackNode.setTranslateTransition(
+  m_rootCustomNode.setTranslateTransition(
       0, float(screenSize.height / screenSize.scale), ANIMATION_DURATION);
 }
 
@@ -92,26 +92,31 @@ ModalHostViewComponentInstance::ModalHostViewComponentInstance(Context context)
     : CppComponentInstance(std::move(context)),
       ArkTSMessageHub::Observer(m_deps->arkTSMessageHub),
       m_touchHandler(std::make_unique<ModalHostTouchHandler>(this)) {
-  getLocalRootArkUINode().setSize(facebook::react::Size{0, 0});
-  m_dialogHandler.setDialogDelegate(this);
+    getLocalRootArkUINode().setSize(facebook::react::Size{0, 0});
+    m_dialogHandler.setDialogDelegate(this);
     FoldStatus foldStatus  = static_cast<FoldStatus>(ArkTSBridge::getInstance()->getFoldStatus());
     auto isSplitScreenMode = ArkTSBridge::getInstance()->getIsSplitScreenMode();
     auto displayMetrics = ArkTSBridge::getInstance()->getDisplayMetrics();
     if (foldStatus == FOLD_STATUS_EXPANDED && isSplitScreenMode) {
-        m_rootStackNode.setPosition({displayMetrics.screenPhysicalPixels.width / displayMetrics.windowPhysicalPixels.scale, 0});
+        m_rootCustomNode.setPosition(
+          {displayMetrics.screenPhysicalPixels.width / displayMetrics.windowPhysicalPixels.scale, 0});
     } else {
         auto x = displayMetrics.windowPhysicalPixels.left / displayMetrics.windowPhysicalPixels.scale;
         auto y = displayMetrics.windowPhysicalPixels.top / displayMetrics.windowPhysicalPixels.scale;
-        m_rootStackNode.setPosition({x, y});
+        m_rootCustomNode.setPosition({x, y});
     }
+    auto width = displayMetrics.screenPhysicalPixels.width / displayMetrics.windowPhysicalPixels.scale;
+    auto height = displayMetrics.screenPhysicalPixels.height / displayMetrics.windowPhysicalPixels.scale;
+    m_rootStackNode.setSize(facebook::react::Size{width, height});
+    m_rootStackNode.insertChild(m_rootCustomNode, 0);
 }
 
 void ModalHostViewComponentInstance::setLayout(facebook::react::LayoutMetrics layoutMetrics) {
   CppComponentInstance::setLayout(layoutMetrics);
   int32_t width = static_cast<int32_t>(layoutMetrics.frame.size.width * layoutMetrics.pointScaleFactor + 0.5);
   int32_t height = static_cast<int32_t>(layoutMetrics.frame.size.height * layoutMetrics.pointScaleFactor + 0.5);
-  m_rootStackNode.saveSize(width, height);
-  m_rootStackNode.setSize(layoutMetrics.frame.size);
+  m_rootCustomNode.saveSize(width, height);
+  m_rootCustomNode.setSize(layoutMetrics.frame.size);
 }
 
 void ModalHostViewComponentInstance::onPropsChanged(
@@ -123,15 +128,15 @@ void ModalHostViewComponentInstance::onPropsChanged(
   }
   if (!m_props || props->animationType != m_props->animationType) {
     if (props->animationType == AnimationType::Slide) {
-      m_rootStackNode.resetOpacityTransition();
+      m_rootCustomNode.resetOpacityTransition();
       auto screenSize = ArkTSBridge::getInstance()->getDisplayMetrics();
       updateSlideTransition(screenSize);
     } else if (props->animationType == AnimationType::Fade) {
-      m_rootStackNode.setTranslateTransition(0, 0, 0);
-      m_rootStackNode.setOpacityTransition(ANIMATION_DURATION);
+      m_rootCustomNode.setTranslateTransition(0, 0, 0);
+      m_rootCustomNode.setOpacityTransition(ANIMATION_DURATION);
     } else {
-      m_rootStackNode.setTranslateTransition(0, 0, 0);
-      m_rootStackNode.resetOpacityTransition();
+      m_rootCustomNode.setTranslateTransition(0, 0, 0);
+      m_rootCustomNode.resetOpacityTransition();
     }
   }
 }
@@ -150,14 +155,14 @@ void ModalHostViewComponentInstance::onChildInserted(
     ComponentInstance::Shared const& childComponentInstance,
     std::size_t index) {
   CppComponentInstance::onChildInserted(childComponentInstance, index);
-  m_rootStackNode.insertChild(
+  m_rootCustomNode.insertChild(
       childComponentInstance->getLocalRootArkUINode(), index);
 }
 
 void ModalHostViewComponentInstance::onChildRemoved(
     ComponentInstance::Shared const& childComponentInstance) {
   CppComponentInstance::onChildRemoved(childComponentInstance);
-  m_rootStackNode.removeChild(childComponentInstance->getLocalRootArkUINode());
+  m_rootCustomNode.removeChild(childComponentInstance->getLocalRootArkUINode());
 };
 
 void ModalHostViewComponentInstance::onFinalizeUpdates() {

@@ -34,7 +34,8 @@ enum class ArkuiHitTestMode : int32_t {
 };
 } // namespace
 
-constexpr static float OH_SDK_API_LEVEL_14 = 14.0f;
+constexpr float OH_SDK_API_LEVEL_14 = 14.0f;
+constexpr float OH_SDK_API_LEVEL_15 = 15.0f;
 
 class ArkUINode;
 
