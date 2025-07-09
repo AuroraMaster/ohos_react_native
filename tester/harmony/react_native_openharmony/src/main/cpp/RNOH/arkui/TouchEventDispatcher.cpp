@@ -97,7 +97,7 @@ std::optional<facebook::react::Touch> convertTouchPointToReactTouch(
   return touch;
 }
 
-bool isParentHandlingTouches(
+bool isAncestorHandlingTouches(
     TouchTarget::Shared touchTarget,
     TouchTarget::Shared const& rootTarget) {
   auto tmpTouchTarget = touchTarget;
@@ -211,7 +211,7 @@ void TouchEventDispatcher::dispatchTouchEvent(
       if (touchTarget == nullptr) {
         continue;
       }
-      if (isParentHandlingTouches(touchTarget, rootTarget)) {
+      if (isAncestorHandlingTouches(touchTarget, rootTarget)) {
         continue;
       }
       registerTargetForTouch(activeTouch, touchTarget);
@@ -225,12 +225,14 @@ void TouchEventDispatcher::dispatchTouchEvent(
       auto hasCancelled = maybeCancelPreviousTouchEvent(
           timestampSeconds, touchTarget, rootTarget);
       if (hasCancelled) {
-        // When the event is canceled by isParentHandlingTouches(),
-        // forward the event bubbling to the parent component for processing.
-        auto parentTouchTarget = touchTarget->getTouchTargetParent();
-        if (parentTouchTarget && parentTouchTarget != rootTarget) {
-          m_touchTargetByTouchId.insert_or_assign(activeTouch.id, parentTouchTarget);
-          parentTouchTarget->getTouchEventEmitter()->onTouchStart(m_previousEvent);
+        auto idleTouchTarget = touchTarget;
+        while (!idleTouchTarget->isHandlingTouches()) {
+          idleTouchTarget = idleTouchTarget->getTouchTargetParent();
+        }
+        auto parentOfIdleTouchTarget = idleTouchTarget->getTouchTargetParent();
+        if (parentOfIdleTouchTarget && parentOfIdleTouchTarget != rootTarget) {
+          m_touchTargetByTouchId.insert_or_assign(activeTouch.id, parentOfIdleTouchTarget);
+          parentOfIdleTouchTarget->getTouchEventEmitter()->onTouchStart(m_previousEvent);
         } else {
           m_touchTargetByTouchId.erase(activeTouch.id);
         }
@@ -325,7 +327,7 @@ bool TouchEventDispatcher::maybeCancelPreviousTouchEvent(
     double timestampInSecs,
     TouchTarget::Shared touchTarget,
     TouchTarget::Shared const& rootTarget) {
-  if (!isParentHandlingTouches(touchTarget, rootTarget)) {
+  if (!isAncestorHandlingTouches(touchTarget, rootTarget)) {
     return false;
   }
 

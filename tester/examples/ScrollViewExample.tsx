@@ -64,6 +64,7 @@ export const GesturesInScrollViewExample = () => {
 
 export const ScrollViewNestedInGesturesExample = () => {
   const [refreshing, setRefreshing] = useState(false);
+  const [time, setTime] = useState(0);
   const scrollOffsetY = useRef(0);
   const headerHeight = 80;
   const pan = useRef(new Animated.Value(0)).current;
@@ -142,9 +143,14 @@ export const ScrollViewNestedInGesturesExample = () => {
         {...panResponder.panHandlers}>
           <Animated.ScrollView
             onScroll={handleScroll}
+            onTouchStart={() => {
+              setTime(time + 1)
+            }}
             overScrollMode={'never'}
           >
-            <View style={{ backgroundColor: 'lightgreen', height: 1000 }}></View>
+            <View style={{ backgroundColor: 'lightgreen', height: 1000, alignItems: 'center', justifyContent: 'center' }}>
+              <Text>onTouchStart: {time}</Text>
+            </View>
           </Animated.ScrollView>
       </Animated.View>
     </View>
