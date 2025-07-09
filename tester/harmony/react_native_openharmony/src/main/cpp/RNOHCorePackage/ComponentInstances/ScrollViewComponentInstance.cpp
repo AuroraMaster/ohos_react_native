@@ -324,11 +324,18 @@ bool ScrollViewComponentInstance::isHandlingTouches() const {
   return m_scrollState != IDLE;
 }
 
+void ScrollViewComponentInstance::setNestedScrollMode(
+    ArkUI_ScrollNestedMode scrollForward,
+    ArkUI_ScrollNestedMode scrollBackward) {
+  m_scrollNestedModeFromOutside = true;
+  m_scrollNode.setNestedScroll(scrollForward, scrollBackward);
+}
+
 void ScrollViewComponentInstance::onScroll() {
   auto scrollViewMetrics = getScrollViewMetrics();
   sendEventForNativeAnimations(scrollViewMetrics);
   if (!isContentSmallerThanContainer(m_props) && m_allowScrollPropagation &&
-      !isAtEnd(scrollViewMetrics.contentOffset)) {
+      !m_scrollNestedModeFromOutside && !isAtEnd(scrollViewMetrics.contentOffset)) {
     m_scrollNode.setNestedScroll(ARKUI_SCROLL_NESTED_MODE_SELF_ONLY);
     m_allowScrollPropagation = false;
   }
@@ -374,7 +381,7 @@ void ScrollViewComponentInstance::onScrollStop() {
   }
   m_scrollState = ScrollState::IDLE;
   if (!isContentSmallerThanContainer(m_props) && !m_allowScrollPropagation &&
-      isAtEnd(m_currentOffset)) {
+      !m_scrollNestedModeFromOutside && isAtEnd(m_currentOffset)) {
     m_scrollNode.setNestedScroll(ARKUI_SCROLL_NESTED_MODE_SELF_FIRST);
     m_allowScrollPropagation = true;
   }

@@ -129,8 +129,12 @@ void ScrollNode::setEndFillColor(uint32_t color) {
 }
 
 void ScrollNode::setNestedScroll(ArkUI_ScrollNestedMode scrollNestedMode) {
+  setNestedScroll(scrollNestedMode, scrollNestedMode);
+}
+
+void ScrollNode::setNestedScroll(ArkUI_ScrollNestedMode scrollForward, ArkUI_ScrollNestedMode scrollBackward) {
   std::array<ArkUI_NumberValue, 2> value{
-      {{.i32 = scrollNestedMode}, {.i32 = scrollNestedMode}}};
+      {{.i32 = scrollForward}, {.i32 = scrollBackward}}};
   ArkUI_AttributeItem item = {
       value.data(), sizeof(value) / sizeof(ArkUI_NumberValue)};
   maybeThrow(NativeNodeApi::getInstance()->setAttribute(

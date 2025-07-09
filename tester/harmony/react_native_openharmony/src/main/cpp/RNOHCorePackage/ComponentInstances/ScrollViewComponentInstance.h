@@ -39,6 +39,7 @@ class ScrollViewComponentInstance
   bool m_isNativeResponderBlocked = false;
   std::weak_ptr<NativeAnimatedTurboModule> m_nativeAnimatedTurboModule{};
   bool m_allowScrollPropagation = true;
+  bool m_scrollNestedModeFromOutside = false;
   bool m_disableIntervalMomentum = false;
   bool m_scrollToOverflowEnabled = false;
   float m_recentScrollFrameOffset = 0;
@@ -128,6 +129,13 @@ class ScrollViewComponentInstance
 
   bool setKeyboardAvoider(
       ComponentInstance::Weak keyboardAvoidingComponentInstance);
+  
+  /**
+   * This method is provided for internal third-party library use
+   * and is not recommended for developers to use.
+   * @internal
+   */
+  void setNestedScrollMode(ArkUI_ScrollNestedMode scrollForward, ArkUI_ScrollNestedMode scrollBackward);
 
  protected:
   void onNativeResponderBlockChange(bool isBlocked) override;
