@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.0.0.403
+- fix: Sticky Header Update Issue with Tabs and Animated ScrollView,([4077deda](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4077dedab10634f5d3519da7095754532781ce60))
+- fix: Column nodes beneath Dialog become invisible after Modal pops up.,([1bcc91bb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1bcc91bbd07c1e644ceec6c8157003e0dd04bad2))
+- feat: add setNestedScrollMode API for nested scroll configuration.,([70526c95](https://gitcode.com/openharmony-sig/ohos_react_native/commit/70526c95357c67351c28c379e3587d4fd00e3fe4))
+- fix: ScrollView triggers onTouchStart multiple times during scrolling.,([abf8be94](https://gitcode.com/openharmony-sig/ohos_react_native/commit/abf8be944113ce9a59c703d63f05b96da1ebd55c))
+- [chore]: updated to version 6.0.0.402(0.72.77),([0811173c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0811173c671f87aa42f2f2834b4927209f0f910a))
+
 ## 6.0.0.402
 - doc: compile optimization guide,([52d99e1d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/52d99e1da3995561db4dfe9679e431d844c5c2bd))
 - fix: eventCount does not increase when pressing backspace with empty content in TextInput 72,([af5810eb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/af5810eb82bef54af99168d02eab22592cf63847))
