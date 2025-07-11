@@ -131,8 +131,9 @@ void AnimatedNodesManager::addAnimatedEventToView(
   for (auto& key : dynamicNativeEventPath) {
     nativeEventPath.push_back(key.asString());
   }
-  m_eventDrivers.push_back(std::make_unique<EventAnimationDriver>(
-      eventName, viewTag, std::move(nativeEventPath), nodeTag, *this));
+  m_eventDrivers.push_back(
+      std::make_unique<EventAnimationDriver>(
+          eventName, viewTag, std::move(nativeEventPath), nodeTag, *this));
 }
 
 void AnimatedNodesManager::removeAnimatedEventFromView(
@@ -226,7 +227,7 @@ void AnimatedNodesManager::startAnimatingNode(
     facebook::react::Tag animationId,
     facebook::react::Tag nodeTag,
     folly::dynamic const& config,
-    EndCallback&& endCallback) {
+    std::function<void(bool)>&& endCallback) {
   auto type = config["type"].asString();
   auto& node = getValueNodeByTag(nodeTag);
 
@@ -433,8 +434,10 @@ AnimatedNode& AnimatedNodesManager::getNodeByTag(facebook::react::Tag tag) {
   try {
     return *m_nodeByTag.at(tag);
   } catch (std::out_of_range& e) {
-    std::throw_with_nested(std::out_of_range(
-        "Animated node with tag " + std::to_string(tag) + " does not exist"));
+    std::throw_with_nested(
+        std::out_of_range(
+            "Animated node with tag " + std::to_string(tag) +
+            " does not exist"));
   }
 }
 
@@ -445,9 +448,10 @@ ValueAnimatedNode& AnimatedNodesManager::getValueNodeByTag(
   try {
     return dynamic_cast<ValueAnimatedNode&>(node);
   } catch (std::bad_cast& e) {
-    std::throw_with_nested(std::out_of_range(
-        "Animated node with tag " + std::to_string(tag) +
-        " is not a value node"));
+    std::throw_with_nested(
+        std::out_of_range(
+            "Animated node with tag " + std::to_string(tag) +
+            " is not a value node"));
   }
 }
 

@@ -40,10 +40,10 @@ let queue: Array<() => void> = [];
 // $FlowFixMe
 let singleOpQueue: Array<any> = [];
 
-const useSingleOpBatching = true // RNOH patch
-  // Platform.OS === 'android' &&
-  // !!NativeAnimatedModule?.queueAndExecuteBatchedOperations &&
-  // ReactNativeFeatureFlags.animatedShouldUseSingleOp();
+const useSingleOpBatching =
+  Platform.OS === 'android' &&
+  !!NativeAnimatedModule?.queueAndExecuteBatchedOperations &&
+  ReactNativeFeatureFlags.animatedShouldUseSingleOp();
 let flushQueueTimeout = null;
 
 const eventListenerGetValueCallbacks: {

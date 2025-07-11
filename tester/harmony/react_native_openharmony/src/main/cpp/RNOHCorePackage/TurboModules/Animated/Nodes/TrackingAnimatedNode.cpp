@@ -23,10 +23,7 @@ void TrackingAnimatedNode::update() {
   auto& toValueNode = m_nodesManager.getValueNodeByTag(m_toValueNodeTag);
   m_animationConfig["toValue"] = toValueNode.getOutputAsDouble();
   m_nodesManager.startAnimatingNode(
-      m_animationId,
-      m_valueNodeTag,
-      m_animationConfig,
-      [](auto _finished) {});
+      m_animationId, m_valueNodeTag, m_animationConfig, [](auto _val) {});
 }
 
 void TrackingAnimatedNode::onDetachedFromNode(facebook::react::Tag tag) {
