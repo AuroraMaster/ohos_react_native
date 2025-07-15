@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.0.0.404
+- Revert "fix: Sticky Header Update Issue with Tabs and Animated ScrollView",([83532935](https://gitcode.com/openharmony-sig/ohos_react_native/commit/835329357db3e448249b2d1963d6502c077be376))
+- [feat]: Use REAL_PATH to resolve absolute paths, shortening command lines and preventing "command too long" errors.,([f62013fe](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f62013fee4d9582c6859b3c59c6cba4448ffc862))
+- doc: clarify where the pgo profile should be placed,([d3741fad](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d3741fadd1a43638ea8020117e1487bbf5f23329))
+- [doc]: add RN Application Development Guide.md,([f24c9071](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f24c90712d0f979db51898f1b660bf4c71cab19e))
+- [chore]: updated to version 6.0.0.403(0.72.78),([72eb21d0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/72eb21d007b57c8ae8803f53b0e1e1dc589fbdfb))
+
 ## 6.0.0.403
 - fix: Sticky Header Update Issue with Tabs and Animated ScrollView,([4077deda](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4077dedab10634f5d3519da7095754532781ce60))
 - fix: Column nodes beneath Dialog become invisible after Modal pops up.,([1bcc91bb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1bcc91bbd07c1e644ceec6c8157003e0dd04bad2))

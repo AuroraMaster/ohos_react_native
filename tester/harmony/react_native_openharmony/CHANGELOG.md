@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.72.79
+- Revert "fix: Sticky Header Update Issue with Tabs and Animated ScrollView",([83532935](https://gitcode.com/openharmony-sig/ohos_react_native/commit/835329357db3e448249b2d1963d6502c077be376))
+- [chore]: updated to version 6.0.0.403(0.72.78),([72eb21d0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/72eb21d007b57c8ae8803f53b0e1e1dc589fbdfb))
+
 ## 0.72.78
 - fix: Sticky Header Update Issue with Tabs and Animated ScrollView,([4077deda](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4077dedab10634f5d3519da7095754532781ce60))
 - fix: Column nodes beneath Dialog become invisible after Modal pops up.,([1bcc91bb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1bcc91bbd07c1e644ceec6c8157003e0dd04bad2))

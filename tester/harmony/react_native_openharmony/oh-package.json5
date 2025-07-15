@@ -9,7 +9,7 @@
     org: '',
   },
   type: 'module',
-  version: '0.72.78',
+  version: '0.72.79',
   dependencies: {},
   main: 'index.ets',
   repository: 'https://gitee.com/openharmony-sig/ohos_react_native/tree/master/'
