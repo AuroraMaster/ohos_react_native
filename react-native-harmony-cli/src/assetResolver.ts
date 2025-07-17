@@ -11,22 +11,18 @@ export type Asset = AssetData;
 
 export function getAssetDestRelativePath(asset: Asset): string {
   const fileName = getResourceIdentifier(asset);
-  return `${fileName}.${asset.type}`;
+  // Assets can have relative paths outside of the project root.
+  // Replace `../` with `_` to make sure they don't end up outside of
+  // the expected assets directory.
+  return `${fileName}.${asset.type}`.replace(/\.\.\//g, '_');
 }
 
 function getResourceIdentifier(asset: Asset): string {
   const folderPath = getBasePath(asset);
-  return `${folderPath}/${asset.name}`.slice('assets/'.length);
+  return `${folderPath}/${asset.name}`.replace(/^assets\//, '');
 }
 
 function getBasePath(asset: Asset): string {
-  let basePath = asset.httpServerLocation;
-  if (basePath[0] === '/') {
-    basePath = basePath.substr(1);
-  }
-  // Assets can have relative paths outside of the project root.
-  // Replace `../` with `_` to make sure they don't end up outside of
-  // the expected assets directory.
-  basePath = basePath.replace(/\.\.\//g, '_');
-  return basePath;
+  const basePath = asset.httpServerLocation;
+  return basePath.startsWith('/') ? basePath.slice(1) : basePath;
 }
