@@ -18,7 +18,8 @@ import {
   RNComponentContext,
   WrappedCustomRNComponentBuilder,
   RNOHCoreContext,
-  RNOHContext
+  RNOHContext,
+  ComponentBuilderContext,
 } from './RNOH';
 import { RNSurface, SurfaceConfig2 } from './RNSurface';
 import { LogBoxDialog } from "./LogBoxDialog"
@@ -34,6 +35,24 @@ export type RNInstanceConfig = CustomRNInstance | RNInstanceOptions
 export function buildRNComponentForTag(ctx: RNComponentContext, tag: Tag) {
   buildRNComponent(ctx, ctx.descriptorRegistry.findDescriptorWrapperByTag(tag)!)
 }
+
+
+@Builder
+export function buildCustomRNComponent(ctx: ComponentBuilderContext) {
+  // There seems to be a problem with the placement of ArkTS components in mixed mode. Nested Stack temporarily avoided.
+  Stack() {
+    if (ctx.customRNComponentWrappedBuilderByName.has(ctx.componentName)) {
+      ctx.customRNComponentWrappedBuilderByName.get(ctx.componentName)!.builder(ctx)
+    } else if (ctx.rnComponentContext.customWrappedCustomRNComponentBuilder !== undefined) {
+      ctx.rnComponentContext.customWrappedCustomRNComponentBuilder!.builder(ctx)
+    }
+  }
+  .position({ x: 0, y: 0 })
+
+}
+
+const wrappedCustomRNComponentBuilder = wrapBuilder(buildCustomRNComponent)
+
 
 /**
  * @api: RN_APP_DEVELOPER
@@ -66,7 +85,18 @@ export struct RNApp {
    */
   @BuilderParam public buildCustomComponent: CustomComponentBuilder
   /**
-   * Required unless buildCustomComponent is still used. Builds custom fabric components.
+   * Optional. Builds custom fabric components.
+   *
+   * It's possible now for library devs to register custom components in RNOHPackage
+   * and RNApp handles extracting those components.
+   *
+   * Previously, app developers had to provide those components manually to RNOH using this property.
+   * Once the RNOH ecosystem migrates to the RNOHPackage, then this property becomes deprecated.
+   *
+   * NOTE: RNComponentContext::wrappedCustomRNComponentBuilder is a different builder.
+   * This property should be renamed to customWrappedCustomRNComponentBuilder in order to match its equivalent in
+   * RNComponentContext, however it's not to avoid creating breaking changes.
+   *
    */
   public wrappedCustomRNComponentBuilder: WrappedCustomRNComponentBuilder | undefined = undefined
   /**
@@ -97,22 +127,16 @@ export struct RNApp {
 
     try {
       await (async () => {
-        if (!this.wrappedCustomRNComponentBuilder) {
-          this.logger.error(new RNOHError({
-            whatHappened: "RNApp::wrappedCustomRNComponentBuilder is undefined",
-            howCanItBeFixed: ["Please provide a wrapped custom component builder. Use ArkUI's \"wrapBuilder\" to create the wrapper."]
-          }))
-          return
-        }
         this.rnInstance = await this.getOrCreateRNInstance()
         this.ctx = new RNComponentContext(
           RNOHContext.fromCoreContext(
             this.rnohCoreContext,
             this.rnInstance
           ),
-          this.wrappedCustomRNComponentBuilder,
+          wrappedCustomRNComponentBuilder,
           wrapBuilder(buildRNComponentForTag),
           new Map(),
+          this.wrappedCustomRNComponentBuilder// customWrappedCustomRNComponentBuilder
         )
         this.logBoxDialogController = new CustomDialogController({
           cornerRadius: 0,

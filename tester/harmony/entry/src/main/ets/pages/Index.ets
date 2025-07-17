@@ -26,33 +26,14 @@ const arkTsComponentNames: Array<string> = [SampleView.NAME, GeneratedSampleView
 @Builder
 export function buildCustomRNComponent(ctx: ComponentBuilderContext) {
   // There seems to be a problem with the placement of ArkTS components in mixed mode. Nested Stack temporarily avoided.
-  Stack(){
-    if (ctx.componentName === SampleView.NAME) {
-      SampleView({
-        ctx: ctx.rnComponentContext,
-        tag: ctx.tag,
-      })
-    }
-    if (ctx.componentName === PropsDisplayer.NAME) {
-      PropsDisplayer({
-        ctx: ctx.rnComponentContext,
-        tag: ctx.tag
-      })
-    }
+  Stack() {
+    /**
+     * NOTE: This approach of registering components is no longer recommended.
+     * Libraries are expected to use RNOHPackage.ets and register components there.
+     * If a library doesn't use RNOHPackage, then this approach needs to be used.
+     */
     if (ctx.componentName === GeneratedSampleView.NAME) {
       GeneratedSampleView({
-        ctx: ctx.rnComponentContext,
-        tag: ctx.tag
-      })
-    }
-    if (ctx.componentName === CodegenLibSampleArkTSComponent.NAME) {
-      CodegenLibSampleArkTSComponent({
-        ctx: ctx.rnComponentContext,
-        tag: ctx.tag
-      })
-    }
-    if (ctx.componentName === ContainerView.NAME) {
-      ContainerView({
         ctx: ctx.rnComponentContext,
         tag: ctx.tag
       })

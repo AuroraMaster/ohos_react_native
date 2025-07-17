@@ -14,7 +14,8 @@ import { RNOHContext } from "./RNOHContext"
 import { DescriptorWrapper, Tag } from "./DescriptorBase"
 import { RNComponentDataSource } from './RNComponentDataSource'
 import lang from '@arkts.lang'
-
+import { RNOHPackage } from './RNOHPackage'
+import { RNInstanceImpl } from "./RNInstance"
 export interface EtsUITurboModuleContextDependencies {
   rnohContext: RNOHContext
 }
@@ -116,7 +117,16 @@ export type RNComponentDataSourceFactory = (ctx: RNComponentDataSourceFactoryCon
  * @api
  */
 export class RNComponentContext extends RNOHContext {
+  /**
+   * @internal
+   * This wrapped builder uses components registered in RNOHPackage.
+   */
   public wrappedCustomRNComponentBuilder: WrappedCustomRNComponentBuilder
+  /**
+   * @internal
+   * WrappedCustomRNComponentBuilder provided by the application developer.
+   */
+  public customWrappedCustomRNComponentBuilder: WrappedCustomRNComponentBuilder | undefined
   public wrappedRNChildrenBuilder: WrappedRNChildrenBuilder
   public wrappedRNComponentBuilder: WrappedRNComponentBuilder
   private dataSourceFactoriesByType: Map<string, RNComponentDataSourceFactory>
@@ -158,7 +168,8 @@ export class RNComponentContext extends RNOHContext {
     rnohContext: RNOHContext,
     wrappedCustomRNComponentBuilder: WrappedCustomRNComponentBuilder,
     wrappedRNComponentBuilder: WrappedRNComponentBuilder,
-    rnComponentDataSourceFactoriesByDescriptorType: Map<string, RNComponentDataSourceFactory>
+    rnComponentDataSourceFactoriesByDescriptorType: Map<string, RNComponentDataSourceFactory>,
+    customWrappedCustomRNComponentBuilder: WrappedCustomRNComponentBuilder | undefined = undefined,
   ) {
     super(
       rnohContext._rnohContextDeps
@@ -167,6 +178,7 @@ export class RNComponentContext extends RNOHContext {
     this.wrappedRNChildrenBuilder = wrapBuilder(buildRNChildren)
     this.wrappedRNComponentBuilder = wrappedRNComponentBuilder
     this.dataSourceFactoriesByType = rnComponentDataSourceFactoriesByDescriptorType
+    this.customWrappedCustomRNComponentBuilder = customWrappedCustomRNComponentBuilder
   }
 }
 
@@ -194,6 +206,10 @@ export class ComponentBuilderContext {
   public tag: Tag
   public componentName: string
   /**
+   * @internal
+   */
+  public customRNComponentWrappedBuilderByName = new Map<string, WrappedBuilder<[ComponentBuilderContext]>>()
+  /**
    * @deprecated: Use tag and componentName instead. (latestRNOHVersion: 0.72.27)
    */
   public descriptor: DescriptorEssence
@@ -208,5 +224,22 @@ export class ComponentBuilderContext {
     this.tag = tag
     this.componentName = componentName
     this.descriptor = descriptor
+    const rnInstance = this.rnComponentContext.rnInstance;
+    if (rnInstance instanceof RNInstanceImpl) {
+      this.customRNComponentWrappedBuilderByName = rnInstance.getPackages().flatMap(pkg => {
+        if (!(pkg instanceof RNOHPackage)) {
+          return []
+        }
+        return pkg.createWrappedCustomRNComponentBuilderByComponentNameMap();
+      }).reduce(mergeMaps, new Map<string, WrappedBuilder<[ComponentBuilderContext]>>())
+    }
   }
+}
+
+function mergeMaps<K, V>(map1: Map<K, V>, map2: Map<K, V>): Map<K, V> {
+  const mergedMap = new Map<K, V>(map1);
+  for (const keyAndValue of map2) {
+    mergedMap.set(keyAndValue[0], keyAndValue[1]);
+  }
+  return mergedMap;
 }

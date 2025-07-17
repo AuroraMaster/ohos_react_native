@@ -110,6 +110,12 @@ type TurboModuleFactory<TTurboModule, TTurboModuleContext> = (
   ctx: TTurboModuleContext,
 ) => TTurboModule | null;
 
+/**
+ * @internal
+ * @deprecated: Use RNOHPackage instead, this class became internal. Initially, RNPackage was the default package class on the ETS side, meant to be used by library developers.
+ * However, this class doesn't allow registering ArkTS components. Initially, registering ArkTS components in the package class wasn't possible due to language constraints,
+ * but with the introduction of wrapped builders, it's now possible. Wrapped builders are, however, available only in ETS files. (latest RNOH version: 0.72.38)
+ */
 export abstract class RNPackage {
   constructor(protected ctx: RNPackageContext) {}
 
