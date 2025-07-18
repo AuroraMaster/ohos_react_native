@@ -36,6 +36,15 @@ class ComponentInstance
  private:
   std::string m_componentName;
   std::unordered_set<std::string> m_nativeResponderBlockOrigins;
+  bool m_isJSResponder = false;
+
+  /**
+   * @brief Mark whether the current component is a JS responder.
+   * @param isJSResponder
+   */
+  void setIsJSResponder(bool isJSResponder) {
+    m_isJSResponder = isJSResponder;
+  };
 
  protected:
   using Tag = facebook::react::Tag;
@@ -223,7 +232,18 @@ class ComponentInstance
     }
     onNativeResponderBlockChange(m_nativeResponderBlockOrigins.size() > 0);
   }
-    
+
+  /**
+   * @brief The JSResponder is the view currently recognized by the JavaScript
+   * context as the "responder". It is part of the responder system and
+   * represents the view that exclusively handles touch interactions,
+   * responsible for receiving and processing user touch events.
+   * @return bool
+   */
+  bool isJSResponder() const override {
+    return m_isJSResponder;
+  };
+  
   // TouchTarget implementation
   Tag getTouchTargetTag() const override {
     return getTag();

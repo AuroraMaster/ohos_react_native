@@ -46,10 +46,9 @@ class TouchEventDispatcher {
       TouchPoint touchPoint,
       TouchTarget::Shared const& rootTarget);
   bool canIgnoreMoveEvent(facebook::react::TouchEvent currentEvent);
-  bool maybeCancelPreviousTouchEvent(
+  void cancelPreviousTouchEvent(
       double timestampInMs,
-      TouchTarget::Shared touchTarget,
-      TouchTarget::Shared const& rootTarget);
+      TouchTarget::Shared touchTarget);
   void sendEvent(
       facebook::react::Touches const& touches,
       facebook::react::Touches const& changedTouches,

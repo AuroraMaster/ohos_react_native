@@ -5,7 +5,7 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import {Text, TouchableOpacity, View, ViewProps} from 'react-native';
+import {ScrollView, Text, TouchableOpacity, View, ViewProps} from 'react-native';
 import {TestSuite} from '@rnoh/testerino';
 import {useState} from 'react';
 import {TestCase} from '../components';
@@ -60,6 +60,52 @@ export const TouchableOpacityTest = () => {
           <PressMe />
         </TouchableOpacity>
       </TestCase.Example>
+      <TestCase.Manual
+        itShould="Pressing and dragging on the gray square does not trigger the onPress event."
+        initialState={{
+          pressed: false,
+          drag: false
+        }}
+        arrange={({ setState }) => {
+          return (
+            <TouchableOpacity
+              onPress={() => setState((prev: any) => ({...prev, pressed: true}))}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                onScrollEndDrag={() => {
+                  setState((prev: any) => ({...prev, drag: true}));
+                }}>
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    flexDirection: 'row',
+                    paddingHorizontal: 8,
+                  }}>
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(value => {
+                    return (
+                      <TouchableOpacity
+                        key={value}
+                        style={{
+                          width: 88,
+                          height: 88,
+                          marginRight: 8,
+                          backgroundColor: '#ddddd' + value,
+                        }}>
+                        <Text>{value}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </ScrollView>
+            </TouchableOpacity>
+          );
+        }}
+        assert={({expect, state}) => {
+          expect(state.pressed).to.be.false;
+        }}
+      />
     </TestSuite>
   );
 };
