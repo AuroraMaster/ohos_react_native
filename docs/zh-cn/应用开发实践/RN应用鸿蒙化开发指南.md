@@ -230,11 +230,15 @@ npm run harmony
 
 ### 初始化鸿蒙工程
 
-下面演示在新建工程中集成。点击 File \> New \> Create Project，选择创建 Empty Ability 工程， 点击 Next 按钮，并在 Compile SDK 中选择 API14\(这里按照需要以及RNOH支持的api版本选择\)，创建一个名为 GuidePro \(这个可以自己定义，不一定需要和RNJS同名\)的项目。注意项目路径不要太长.
+下面演示在新建工程中集成。点击 File \> New \> Create Project，选择创建 Empty Ability 工程，点击 Next 按钮，并在 Compile SDK 中选择 API14\(这里按照需要以及RNOH支持的api版本选择\)，创建一个名为 GuidePro \(这个可以自己定义，不一定需要和RNJS同名\)的项目。注意项目路径不要太长.
 
 ![](figures/image-nativeproject.png)
 
-推荐路径选择为上文创建的harmony文件为根文件夹，这样编译的产物就可以自动导出到了native工程如图所示：
+推荐鸿蒙工程路径选择为上文创建的 harmony 文件夹。若创建 Empty Ability 工程时出现 `The folder "harmony" is not empty` 的提示，需先清空 harmony 文件夹再进行创建，随后重新执行 `npm run harmony` 命令生成 bundle 文件。
+
+![](figures/folder_harmony_is_not_empty.png)
+
+完成上述操作后，编译产物会自动导出至 native 工程，如图所示：
 
 ![](figures/image-bundleinnative.png)
 
