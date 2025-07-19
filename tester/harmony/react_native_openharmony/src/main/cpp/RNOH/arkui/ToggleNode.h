@@ -23,7 +23,7 @@ class ToggleNode : public ArkUINode {
   ToggleNodeDelegate* m_toggleNodeDelegate;
 
  public:
-  ToggleNode();
+  explicit ToggleNode(Context context = {});
   ~ToggleNode();
 
   void onNodeEvent(ArkUI_NodeEventType eventType, EventArgs& eventArgs);

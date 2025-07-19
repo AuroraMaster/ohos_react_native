@@ -37,7 +37,8 @@ class FallbackComponentInstance
       : CppComponentInstance(ctx),
         m_arkUIBuilderNodeDeleter(std::move(arkUIBuilderNodeDeleter)),
         m_arkUINode(std::move(arkUINode)),
-        m_contentHandle(std::move(contentHandle)) {
+        m_contentHandle(std::move(contentHandle)),
+        m_stackNode(ctx.arkUINodeContext) {
     m_arkUINode->setArkUINodeDelegate(this);
     m_stackNode.insertChild(*m_arkUINode, 0);
   };

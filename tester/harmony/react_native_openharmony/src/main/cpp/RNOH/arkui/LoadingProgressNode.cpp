@@ -9,9 +9,8 @@
 #include "NativeNodeApi.h"
 
 namespace rnoh {
-LoadingProgressNode::LoadingProgressNode()
-    : ArkUINode(NativeNodeApi::getInstance()->createNode(
-          ArkUI_NodeType::ARKUI_NODE_LOADING_PROGRESS)) {}
+LoadingProgressNode::LoadingProgressNode(Context context)
+    : ArkUINode(context, ArkUI_NodeType::ARKUI_NODE_LOADING_PROGRESS) {}
 
 LoadingProgressNode& LoadingProgressNode::setColor(
     facebook::react::SharedColor const& color) {
@@ -22,7 +21,7 @@ LoadingProgressNode& LoadingProgressNode::setColor(
   ArkUI_AttributeItem loadingProgressColorItem = {
       loadingProgressColorValue.data(), loadingProgressColorValue.size()};
 
-  maybeThrow(NativeNodeApi::getInstance()->setAttribute(
+  maybeThrow(m_context.nodeApi.setAttribute(
       m_nodeHandle, NODE_LOADING_PROGRESS_COLOR, &loadingProgressColorItem));
   return *this;
 }
@@ -36,7 +35,7 @@ LoadingProgressNode& LoadingProgressNode::setAnimating(const bool& enable) {
       enableLoadingProgressNodeAnimationValue.data(),
       enableLoadingProgressNodeAnimationValue.size()};
 
-  maybeThrow(NativeNodeApi::getInstance()->setAttribute(
+  maybeThrow(m_context.nodeApi.setAttribute(
       m_nodeHandle,
       NODE_LOADING_PROGRESS_ENABLE_LOADING,
       &enableLoadingProgressNodeAnimationItem));

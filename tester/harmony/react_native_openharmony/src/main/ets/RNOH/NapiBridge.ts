@@ -33,6 +33,7 @@ import {
 import type { TurboModuleProvider } from "./TurboModuleProvider";
 import type { DisplayMetrics, InspectorInstance } from './types'
 import { deviceInfo } from '@kit.BasicServicesKit';
+import { UIContext } from '@kit.ArkUI';
 
 export type CppFeatureFlag = "ENABLE_NDK_TEXT_MEASURING" | "C_API_ARCH" | "WORKER_THREAD_ENABLED"
 
@@ -405,6 +406,11 @@ export class NapiBridge {
 
   detachRootView(instanceId: number, surfaceId: number) {
     const result = this.libRNOHApp?.detachRootView(instanceId, surfaceId)
+    return this.unwrapResult(result);
+  }
+
+  setUIContext(instanceId: number, context: UIContext) {
+    const result = this.libRNOHApp?.setUIContext(instanceId, context)
     return this.unwrapResult(result);
   }
 }

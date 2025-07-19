@@ -55,7 +55,8 @@ class ComponentInstanceFactory {
         .tag = tag,
         .componentHandle = componentHandle,
         .componentName = componentName,
-        .dependencies = m_dependencies};
+        .dependencies = m_dependencies,
+        .arkUINodeContext = m_arkUINodeContext};
 
     auto maybeCustomComponentWrapper =
         m_customComponentArkUINodeHandleFactory->create(tag, componentName);
@@ -82,7 +83,8 @@ class ComponentInstanceFactory {
         .tag = tag,
         .componentHandle = componentHandle,
         .componentName = componentName,
-        .dependencies = m_dependencies};
+        .dependencies = m_dependencies,
+        .arkUINodeContext = m_arkUINodeContext};
     for (auto& delegate : m_delegates) {
       auto componentInstance = delegate->create(ctx);
       if (componentInstance != nullptr) {
@@ -93,11 +95,17 @@ class ComponentInstanceFactory {
     return nullptr;
   }
 
+  void setArkUINodeContext(ArkUINode::Context arkUINodeContext) {
+    m_threadGuard.assertThread();
+    m_arkUINodeContext = arkUINodeContext;
+  }
+
   private:
     std::vector<ComponentInstanceFactoryDelegate::Shared> m_delegates;
     ComponentInstance::Dependencies::Shared m_dependencies;
     CustomComponentArkUINodeHandleFactory::Shared
         m_customComponentArkUINodeHandleFactory;
     ThreadGuard m_threadGuard{};
+    ArkUINode::Context m_arkUINodeContext;
 };
 } // namespace rnoh

@@ -12,9 +12,8 @@
 #include "NativeNodeApi.h"
 
 namespace rnoh {
-CustomNode::CustomNode()
-    : ArkUINode(NativeNodeApi::getInstance()->createNode(
-          ArkUI_NodeType::ARKUI_NODE_CUSTOM)),
+CustomNode::CustomNode(Context context)
+    : ArkUINode(context, ArkUI_NodeType::ARKUI_NODE_CUSTOM),
       m_customNodeDelegate(nullptr) {
   userCallback_ = new UserCallback();
 
@@ -49,7 +48,7 @@ CustomNode::CustomNode()
       m_nodeHandle, ARKUI_NODE_CUSTOM_EVENT_ON_LAYOUT, 90, userCallback_));
   ArkUI_NumberValue focusValue[] = {{.i32 = 1}};
   ArkUI_AttributeItem focusItem = {.value = focusValue, .size = 1};
-  maybeThrow(NativeNodeApi::getInstance() -> setAttribute(
+  maybeThrow(m_context.nodeApi.setAttribute(
     m_nodeHandle, NODE_FOCUSABLE, &focusItem));
   /**
    * This is for 2in1 CustomNode focusing problem, focusing would 
@@ -60,7 +59,7 @@ CustomNode::CustomNode()
    */
   ArkUI_NumberValue zIndexValue[] = {{.i32 = 0}};
   ArkUI_AttributeItem zIndexItem = {.value = zIndexValue, .size = 1};
-  maybeThrow(NativeNodeApi::getInstance() -> setAttribute(
+  maybeThrow(m_context.nodeApi.setAttribute(
       m_nodeHandle, NODE_Z_INDEX, &zIndexItem));
 }
 
@@ -74,18 +73,18 @@ void CustomNode::onMeasure(ArkUI_NodeCustomEventType eventType) {
     // int32_t height = rect->value[3].i32;
     int32_t width = getSavedWidth();
     int32_t height = getSavedHeight();
-    maybeThrow(NativeNodeApi::getInstance()->setMeasuredSize(m_nodeHandle, width, height));
+    maybeThrow(m_context.nodeApi.setMeasuredSize(m_nodeHandle, width, height));
 }
 
 void CustomNode::onLayout() {}
 
 void CustomNode::insertChild(ArkUINode& child, std::size_t index) {
-  maybeThrow(NativeNodeApi::getInstance()->insertChildAt(
+  maybeThrow(m_context.nodeApi.insertChildAt(
       m_nodeHandle, child.getArkUINodeHandle(), static_cast<int32_t>(index)));
 }
 
 void CustomNode::addChild(ArkUINode &child){
-  maybeThrow(NativeNodeApi::getInstance()->addChild(
+  maybeThrow(m_context.nodeApi.addChild(
       m_nodeHandle, child.getArkUINodeHandle()));
 }
 void CustomNode::removeChild(ArkUINode& child) {
@@ -139,7 +138,7 @@ CustomNode::~CustomNode() {
 CustomNode& CustomNode::setAlign(int32_t align) {
   ArkUI_NumberValue value[] = {{.i32 = align}};
   ArkUI_AttributeItem item = {.value = value, .size = 1};
-  maybeThrow(NativeNodeApi::getInstance()->setAttribute(
+  maybeThrow(m_context.nodeApi.setAttribute(
       m_nodeHandle, NODE_STACK_ALIGN_CONTENT, &item));
   return *this;
 }
@@ -149,7 +148,7 @@ CustomNode& CustomNode::setFocusable(bool focusable) {
   ArkUI_NumberValue preparedFocusable[] = {{.i32 = focusableValue}};
   ArkUI_AttributeItem focusItem = {
       preparedFocusable, sizeof(preparedFocusable) / sizeof(ArkUI_NumberValue)};
-  maybeThrow(NativeNodeApi::getInstance()->setAttribute(
+  maybeThrow(m_context.nodeApi.setAttribute(
       m_nodeHandle, NODE_FOCUSABLE, &focusItem));
   return *this;
 }

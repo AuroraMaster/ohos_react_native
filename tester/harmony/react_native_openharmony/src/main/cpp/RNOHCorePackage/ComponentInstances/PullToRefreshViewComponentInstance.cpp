@@ -12,7 +12,12 @@ using namespace rnoh;
 
 PullToRefreshViewComponentInstance::PullToRefreshViewComponentInstance(
     Context context)
-    : CppComponentInstance(std::move(context)) {
+    : CppComponentInstance(std::move(context)),
+      m_refreshNode(context.arkUINodeContext),
+      m_refreshIndicatorContainerNode(context.arkUINodeContext),
+      m_refreshIndicatorBackgroundNode(context.arkUINodeContext),
+      m_refreshIndicatorSpinnerNode(context.arkUINodeContext),
+      m_refreshIndicatorTitleNode(context.arkUINodeContext) {
   m_refreshIndicatorContainerNode.setZIndex(1.0);
   m_refreshIndicatorContainerNode.setVisibility(ARKUI_VISIBILITY_HIDDEN);
 

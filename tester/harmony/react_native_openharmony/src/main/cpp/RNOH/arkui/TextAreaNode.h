@@ -45,7 +45,7 @@ class TextAreaNode : public TextInputNodeBase {
   TextAreaNodeDelegate* m_textAreaNodeDelegate;
 
  public:
-  TextAreaNode();
+  explicit TextAreaNode(Context context = {});
   ~TextAreaNode() override;
 
   facebook::react::Point getTextAreaOffset() const;

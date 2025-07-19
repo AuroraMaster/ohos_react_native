@@ -76,6 +76,7 @@ class ComponentInstance
     ComponentHandle componentHandle;
     std::string componentName;
     Dependencies::Shared dependencies;
+    ArkUINode::Context arkUINodeContext;
   };
 
   virtual ArkUINode& getLocalRootArkUINode() = 0;

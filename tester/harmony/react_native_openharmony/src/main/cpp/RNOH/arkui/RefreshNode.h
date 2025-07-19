@@ -31,7 +31,7 @@ class RefreshNode : public ArkUINode {
   static constexpr float REFRESH_NODE_SIZE = 29;
 
  public:
-  RefreshNode();
+  explicit RefreshNode(Context context = {});
   ~RefreshNode();
 
   void insertChild(ArkUINode& child, std::size_t index);

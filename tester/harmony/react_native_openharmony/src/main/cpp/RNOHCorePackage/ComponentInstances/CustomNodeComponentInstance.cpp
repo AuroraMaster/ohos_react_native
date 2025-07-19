@@ -10,7 +10,8 @@
 
 namespace rnoh {
 CustomNodeComponentInstance::CustomNodeComponentInstance(Context context)
-    : CppComponentInstance(std::move(context)) {
+    : CppComponentInstance(std::move(context)),
+      m_customNode(context.arkUINodeContext) {
   getLocalRootArkUINode().setCustomNodeDelegate(this);
 }
 

@@ -15,7 +15,7 @@ namespace rnoh {
 
 class TextInputNodeBase : public ArkUINode {
  protected:
-  TextInputNodeBase(ArkUI_NodeType nodeType);
+  TextInputNodeBase(Context context, ArkUI_NodeType nodeType);
   void setCommonFontAttributes(
       facebook::react::TextAttributes const& textAttributes);
     const float defaultFontSize = 16.0;

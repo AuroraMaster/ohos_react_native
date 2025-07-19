@@ -17,7 +17,8 @@ const std::string RAWFILE_PREFIX = "resource://RAWFILE/assets/";
 const std::string INVALID_PATH_PREFIX = "invalidpathprefix/";
 
 ImageComponentInstance::ImageComponentInstance(Context context)
-    : CppComponentInstance(std::move(context)) {
+    : CppComponentInstance(std::move(context)),
+      m_imageNode(context.arkUINodeContext) {
   this->getLocalRootArkUINode().setNodeDelegate(this);
   this->getLocalRootArkUINode().setInterpolation(
       ARKUI_IMAGE_INTERPOLATION_HIGH);

@@ -162,6 +162,7 @@ struct ContentAdaptiveSurface {
     )
     this.surfaceHandle.attachRootView(this.ctx.rnInstance.getId(), this.surfaceHandle.getTag(),
       this.rootViewNodeContent);
+    this.surfaceHandle.setUIContext(this.ctx.rnInstance.getId(), this.getUIContext());
     stopTracing()
   }
 

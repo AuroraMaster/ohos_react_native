@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include "glog/logging.h"
 #include "react/renderer/components/view/primitives.h"
+#include "NodeApi.h"
 
 namespace rnoh {
 
@@ -51,6 +52,14 @@ class ArkUINodeDelegate {
 
 class ArkUINode {
   ArkUINodeDelegate* m_arkUINodeDelegate = nullptr;
+  public:
+  /**
+   * @brief Context class that encapsulates NodeApi and related functionality
+   * Used by non-singleton NativeNodeApi to provide context-aware operations
+   */
+  struct Context {
+    NodeApi nodeApi;
+  };
 
  protected:
   ArkUINode(const ArkUINode& other) = delete;
@@ -72,6 +81,7 @@ class ArkUINode {
 
   ArkUI_NodeHandle getArkUINodeHandle();
   ArkUINode(ArkUI_NodeHandle nodeHandle);
+  ArkUINode(Context context, ArkUI_NodeType nodeType);
 
   void setArkUINodeDelegate(ArkUINodeDelegate* arkUiNodeDelegate);
 
@@ -211,6 +221,7 @@ class ArkUINode {
   }
 
   ArkUI_NodeHandle m_nodeHandle;
+  Context m_context;
 
  private:
   int32_t m_width = 0;

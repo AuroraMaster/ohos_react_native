@@ -27,7 +27,7 @@ class CustomNode : public ArkUINode {
   CustomNodeDelegate* m_customNodeDelegate;
 
  public:
-  CustomNode();
+  explicit CustomNode(Context context = {});
   ~CustomNode() override;
 
   void insertChild(ArkUINode& child, std::size_t index);

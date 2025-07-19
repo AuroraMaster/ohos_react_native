@@ -18,7 +18,9 @@
 namespace rnoh {
 
 ScrollViewComponentInstance::ScrollViewComponentInstance(Context context)
-    : CppComponentInstance(std::move(context)) {
+    : CppComponentInstance(std::move(context)),
+      m_scrollNode(context.arkUINodeContext),
+      m_contentContainerNode(context.arkUINodeContext) {
   m_scrollNode.insertChild(m_contentContainerNode);
   // NOTE: perhaps this needs to take rtl into account?
   m_scrollNode.setAlignment(ARKUI_ALIGNMENT_TOP_START);

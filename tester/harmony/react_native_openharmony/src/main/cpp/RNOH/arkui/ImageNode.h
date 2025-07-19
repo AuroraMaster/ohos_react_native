@@ -29,7 +29,7 @@ class ImageNode : public ArkUINode {
   std::string m_uri;
 
  public:
-  ImageNode();
+  explicit ImageNode(Context context = {});
   ~ImageNode();
   ImageNode& setSources(std::string const& uri, std::string prefix = "");
   ImageNode& setResizeMode(facebook::react::ImageResizeMode const& mode);

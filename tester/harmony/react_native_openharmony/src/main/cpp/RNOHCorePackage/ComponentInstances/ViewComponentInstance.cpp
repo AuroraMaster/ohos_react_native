@@ -10,7 +10,8 @@
 
 namespace rnoh {
 ViewComponentInstance::ViewComponentInstance(Context context)
-    : CppComponentInstance(std::move(context)) {
+    : CppComponentInstance(std::move(context)),
+      m_stackNode(context.arkUINodeContext) {
   getLocalRootArkUINode().setStackNodeDelegate(this);
 }
 

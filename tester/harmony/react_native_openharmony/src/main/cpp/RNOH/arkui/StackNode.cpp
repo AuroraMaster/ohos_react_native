@@ -13,21 +13,20 @@
 
 namespace rnoh {
 
-StackNode::StackNode()
-    : ArkUINode(NativeNodeApi::getInstance()->createNode(
-          ArkUI_NodeType::ARKUI_NODE_STACK)),
+StackNode::StackNode(Context context)
+    : ArkUINode(context, ArkUI_NodeType::ARKUI_NODE_STACK),
       m_stackNodeDelegate(nullptr) {
   registerNodeEvent(NODE_ON_CLICK);
   registerNodeEvent(NODE_ON_HOVER);
 }
 
 void StackNode::insertChild(ArkUINode& child, std::size_t index) {
-  maybeThrow(NativeNodeApi::getInstance()->insertChildAt(
+  maybeThrow(m_context.nodeApi.insertChildAt(
       m_nodeHandle, child.getArkUINodeHandle(), static_cast<int32_t>(index)));
 }
 
 void StackNode::addChild(ArkUINode &child){
-  maybeThrow(NativeNodeApi::getInstance()->addChild(
+  maybeThrow(m_context.nodeApi.addChild(
       m_nodeHandle, child.getArkUINodeHandle()));
 }
 void StackNode::removeChild(ArkUINode& child) {
@@ -73,7 +72,7 @@ StackNode::~StackNode() {
 StackNode& StackNode::setAlign(int32_t align) {
   ArkUI_NumberValue value[] = {{.i32 = align}};
   ArkUI_AttributeItem item = {.value = value, .size = 1};
-  maybeThrow(NativeNodeApi::getInstance()->setAttribute(
+  maybeThrow(m_context.nodeApi.setAttribute(
       m_nodeHandle, NODE_STACK_ALIGN_CONTENT, &item));
   return *this;
 }

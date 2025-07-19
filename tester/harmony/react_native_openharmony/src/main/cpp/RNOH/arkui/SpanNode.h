@@ -13,12 +13,12 @@ namespace rnoh {
 
 class ImageSpanNode : public ArkUINode {
  public:
-  ImageSpanNode();
+  explicit ImageSpanNode(Context context = {});
 };
 
 class SpanNode : public ArkUINode {
  public:
-  SpanNode();
+  explicit SpanNode(Context context = {});
 
   SpanNode& setSpanContent(const std::string& text);
   SpanNode& setFontColor(uint32_t fontColor);
