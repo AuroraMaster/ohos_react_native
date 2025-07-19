@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Technologies Co., Ltd.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE-MIT file in the root directory of this source tree.
@@ -7,7 +7,7 @@
 
 import pathUtils from 'node:path';
 import Case from 'case';
-import { Command } from '@react-native-community/cli-types';
+import { Command } from './types';
 import {
   AbsolutePath,
   DescriptiveError,
@@ -169,11 +169,9 @@ function validateArgs(args: any) {
   if (!args.rnohModulePath) {
     throw new DescriptiveError({
       whatHappened: "--rnoh-module-path argument wasn't provided",
-      whatCanUserDo: {
-        default: [
-          'Please provide a path to the native React Native for Open Harmony module (rnoh) which is probably located somewhere in "<PROJECT_ROOT>/harmony" directory',
-        ],
-      },
+      whatCanUserDo: [
+        'Please provide a path to the native React Native for Open Harmony module (rnoh) which is probably located somewhere in "<PROJECT_ROOT>/harmony" directory',
+      ],
     });
   }
 }
@@ -222,12 +220,10 @@ function throwErrorIfUnsupportedCodegenVersion(
   if (codegenVersion > maxSupportedCodegenVersion) {
     throw new CodegenError({
       whatHappened: `Package "${packageName}" requires codegenVersion: ${codegenVersion}, which is not supported (maxSupportedCodegenVersion=${maxSupportedCodegenVersion}).`,
-      whatCanUserDo: {
-        rnAppDeveloper: [
-          `Try downgrading "${packageName}".`,
-          'Update the "@rnoh/react-native-harmony-cli" package.',
-        ],
-      },
+      whatCanUserDo: [
+        `Try downgrading "${packageName}".`,
+        'Update the "@rnoh/react-native-harmony-cli" package.',
+      ],
     });
   }
 }
@@ -262,7 +258,7 @@ function prepareDirectory(path: AbsolutePath, enableSafetyCheck: boolean) {
   if (enableSafetyCheck && !path.getValue().startsWith(process.cwd())) {
     throw new DescriptiveError({
       whatHappened: `Tried to remove files in ${path.getValue()}\nand that path is outside current working directory`,
-      whatCanUserDo: { default: ['Run codegen from different location'] },
+      whatCanUserDo: ['Run codegen from different location'],
     });
   }
   maybeRemoveFilesInDirectory(path);
@@ -278,15 +274,14 @@ function logCodegenResult(
   );
   sortedRelativePathStrings.sort();
   sortedRelativePathStrings.forEach((pathStr) => {
-    logger.info((styles) => styles.gray(`• ${pathStr}`));
+    logger.debug((styles) => styles.gray(`• ${pathStr}`));
   });
-  logger.info(() => '');
+  logger.debug(() => '');
   logger.info(
     (styles) =>
-      `Generated ${styles.green(styles.bold(fileContentByPath.size))} file(s)`,
-    { prefix: true }
+      `Generated ${styles.green(styles.bold(fileContentByPath.size))} file(s)`
   );
-  logger.info(() => '');
+  logger.debug(() => '');
 }
 
 function deriveCppDirectoryNameFromNpmPackageName(

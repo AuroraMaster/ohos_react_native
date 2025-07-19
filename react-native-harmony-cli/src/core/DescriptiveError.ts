@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Technologies Co., Ltd.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE-MIT file in the root directory of this source tree.
@@ -10,11 +10,7 @@ export class DescriptiveError extends Error {
     private data:
       | {
           whatHappened: string;
-          whatCanUserDo: {
-            default?: string[];
-            rnAppDeveloper?: string[];
-            rnPackageDeveloper?: string[];
-          };
+          whatCanUserDo?: string[];
           extraData?: any;
         }
       | {
@@ -34,12 +30,16 @@ export class DescriptiveError extends Error {
     return this.data.whatHappened;
   }
 
-  getSuggestionsByRole() {
+  getSuggestions() {
     if ('whatCanUserDo' in this.data) {
-      return this.data.whatCanUserDo;
+      return this.data.whatCanUserDo ?? [];
     } else {
-      return null;
+      return [];
     }
+  }
+
+  getRawData() {
+    return this.data;
   }
 
   getDetails(): string {

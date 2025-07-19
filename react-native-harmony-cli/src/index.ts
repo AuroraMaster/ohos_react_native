@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2024 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Technologies Co., Ltd.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import { Config } from '@react-native-community/cli-types';
+import { Config, Command } from '@react-native-community/cli-types';
 import {
   commandBundleHarmony,
   commandPackHarmony,
@@ -15,6 +15,7 @@ import {
   commandVerifyPackageHarmony,
   commandCodegenLibHarmony,
   commandLinkHarmony,
+  commandRunHarmony,
 } from './commands';
 
 export const config = {
@@ -27,5 +28,6 @@ export const config = {
     commandVerifyPackageHarmony,
     commandCodegenLibHarmony,
     commandLinkHarmony,
-  ],
+    commandRunHarmony,
+  ] as Command[],
 } satisfies Partial<Config>;

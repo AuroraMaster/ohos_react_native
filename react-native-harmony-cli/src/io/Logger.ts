@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Technologies Co., Ltd.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE-MIT file in the root directory of this source tree.
@@ -7,26 +7,57 @@
 
 import chalk from 'chalk';
 import { DescriptiveError } from '../core';
-
+import { getLoader, logger as LOGGER } from '@react-native-community/cli-tools';
+import process from 'node:process';
 export class Logger {
-  info(
-    prepareMsg: (styles: typeof chalk) => string,
-    options?: { prefix?: boolean }
-  ) {
-    const prefix = options?.prefix ? `[${chalk.bold(chalk.cyan('INFO'))}]` : '';
-    if (prefix) {
-      console.info(prefix, prepareMsg(chalk));
-    } else {
-      console.info(prepareMsg(chalk));
-    }
+  private loader = getLoader({
+    interval: process.stdout.isTTY ? undefined : 0,
+  });
+  private logger = LOGGER;
+  private isLoaderActive = false;
+
+  start(prepareMsg: (styles: typeof chalk) => string) {
+    this.loader.start(prepareMsg(chalk));
+    this.isLoaderActive = true;
+    return (options?: { persist?: boolean }) => {
+      this.isLoaderActive = false;
+      if (options?.persist) {
+        console.log({ loader: this.loader });
+        this.loader.stopAndPersist();
+      } else {
+        this.loader.stop();
+      }
+    };
   }
-  
+
+  info(prepareMsg: (styles: typeof chalk) => string) {
+    const info = (msg: string) => {
+      this.isLoaderActive ? this.loader.info(msg) : this.logger.info(msg);
+    };
+    info(prepareMsg(chalk));
+  }
+
+  succeed(prepareMsg: (styles: typeof chalk) => string) {
+    const succeed = (msg: string) =>
+      this.isLoaderActive ? this.loader.succeed(msg) : this.logger.success(msg);
+    succeed(prepareMsg(chalk));
+  }
+
   warn(prepareMsg: (styles: typeof chalk) => string) {
-    console.warn(prepareMsg(chalk));
+    const warn = (msg: string) =>
+      this.isLoaderActive ? this.loader.warn(msg) : this.logger.warn(msg);
+    warn(prepareMsg(chalk));
   }
 
   debug(prepareMsg: (styles: typeof chalk) => string) {
-    console.debug(prepareMsg(chalk));
+    if (this.isLoaderActive) {
+      clearLine(process.stdout);
+      moveCursor(process.stdout, 0);
+      console.debug(prepareMsg(chalk));
+      this.loader.render();
+    } else {
+      console.debug(prepareMsg(chalk));
+    }
   }
 
   descriptiveError(error: DescriptiveError) {
@@ -43,37 +74,39 @@ export class Logger {
       details.split('\n').forEach((line) => lines.push(line));
     }
     lines.push('');
-    let prefix = '';
-    if (error.isUnexpected()) {
-      prefix = '[' + chalk.red(chalk.bold('UNEXPECTED_ERROR')) + ']';
+    lines.push(`${error.getMessage()}`);
+    const suggestions = error.getSuggestions();
+
+    if (suggestions.length > 0) {
+      lines.push('');
+      lines.push(chalk.bold(`Suggestions`));
+      suggestions.forEach((suggestion) => {
+        lines.push('• ' + suggestion);
+      });
+    }
+
+    if (this.isLoaderActive) {
+      this.loader.fail(lines.join('\n').trim());
     } else {
-      prefix = '[' + chalk.red(chalk.bold('ERROR')) + ']';
+      this.logger.error(lines.join('\n').trim());
     }
-    lines.push(`${prefix} ${error.getMessage()}`);
-    const suggestionsByRole = error.getSuggestionsByRole();
-    if (suggestionsByRole) {
-      if ((suggestionsByRole.default?.length ?? 0) > 0) {
-        lines.push('');
-        lines.push(chalk.bold(`Suggestions`));
-        suggestionsByRole.default?.forEach((suggestion) => {
-          lines.push(suggestion);
-        });
-      }
-      if ((suggestionsByRole.rnAppDeveloper?.length ?? 0) > 0) {
-        lines.push('');
-        lines.push(chalk.bold(`Suggestions for RN App developers`));
-        suggestionsByRole.rnAppDeveloper?.forEach((suggestion) => {
-          lines.push(suggestion);
-        });
-      }
-      if (suggestionsByRole.rnPackageDeveloper?.length ?? 0) {
-        lines.push('');
-        lines.push(chalk.bold(`Suggestions for RN package developers`));
-        suggestionsByRole.rnPackageDeveloper?.forEach((suggestion) => {
-          lines.push(suggestion);
-        });
-      }
-    }
-    console.error(lines.join('\n'));
   }
 }
+
+const clearLine = (stream: NodeJS.WriteStream): void => {
+  if (stream.clearLine) {
+    stream.clearLine(0);
+  } else {
+    process.stdout.write(
+      '\r' + ' '.repeat(process.stdout.columns || 80) + '\r'
+    );
+  }
+};
+
+const moveCursor = (stream: NodeJS.WriteStream, x: number): void => {
+  if (stream.cursorTo) {
+    stream.cursorTo(x);
+  } else {
+    process.stdout.write('\r');
+  }
+};

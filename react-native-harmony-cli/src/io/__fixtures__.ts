@@ -1,12 +1,12 @@
 /**
- * Copyright (c) 2024 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Technologies Co., Ltd.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
 import { AbsolutePath, DescriptiveError, Dirent, FS } from '../core';
-import { CliExecutor } from './CliExecutor';
+import { CliExecutor, CliOptions } from './CliExecutor';
 import { IFs, memfs, NestedDirectoryJSON } from 'memfs';
 import RawMemDirent from 'memfs/lib/Dirent';
 import { Logger } from './Logger';
@@ -15,20 +15,14 @@ import chalk from 'chalk';
 export class FakeCliExecutor extends CliExecutor {
   private commands: string[] = [];
 
-  constructor(private onRun: (command: string) => string) {
+  constructor(private onRun: (command: string) => Promise<string>) {
     super();
   }
 
-  run(
-    command: string,
-    options: {
-      args?: Record<string, string | number | boolean>;
-      cwd?: AbsolutePath;
-    } = {}
-  ): string {
+  run(command: string, options: CliOptions): Promise<string> {
     let commandWithArgs = command;
     if (options.args) {
-      commandWithArgs += ' ' + this.stringifyCliArgs(options.args);
+      commandWithArgs += options.args.join(' ');
     }
     this.commands.push(commandWithArgs);
     return this.onRun(commandWithArgs);
@@ -48,8 +42,18 @@ class MemFSDirent extends Dirent {
     return this.rawDirent.isDirectory();
   }
 
+  isSymbolicLink(): boolean {
+    return false;
+  }
+
   get name(): string {
     return this.rawDirent.name.toString();
+  }
+
+  get path(): AbsolutePath {
+    return new AbsolutePath(this.rawDirent.path).copyWithNewSegment(
+      this.rawDirent.name.toString()
+    );
   }
 }
 export class MemFS extends FS {

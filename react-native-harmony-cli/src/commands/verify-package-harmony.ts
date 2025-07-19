@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2024 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Technologies Co., Ltd.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import { Command } from '@react-native-community/cli-types';
+import { Command } from './types';
 import { getLoader, Loader } from '@react-native-community/cli-tools';
 import chalk from 'chalk';
 import { DescriptiveError, AbsolutePath } from '../core';
@@ -82,7 +82,7 @@ function validateArgs(args: any): Args {
   if (!args.packagePath) {
     throw new DescriptiveError({
       whatHappened: 'package-path is undefined',
-      whatCanUserDo: { default: ['Please provide --package-path'] },
+      whatCanUserDo: ['Please provide --package-path'],
     });
   }
   return {

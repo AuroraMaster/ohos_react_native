@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2024 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Technologies Co., Ltd.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import { Command } from '@react-native-community/cli-types';
+import { Command } from './types';
 import { Logger, RealFS } from '../io';
 
 import pathUtils from 'path';
@@ -61,9 +61,7 @@ async function unpack(
     fs,
     projectRootPath
   );
-  logger.info((styles) => styles.bold(`Unpacking RNOH modules`), {
-    prefix: true,
-  });
+  logger.info((styles) => styles.bold(`Unpacking RNOH modules`));
   let unpackedArchivesCount = 0;
   let skippedArchivesCount = 0;
   await projectDependenciesManager.forEachAsync(async (dependency) => {

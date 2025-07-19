@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Technologies Co., Ltd.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE-MIT file in the root directory of this source tree.
@@ -23,7 +23,7 @@ export function maybeRemoveFilesInDirectory(path: AbsolutePath): void {
     throw new DescriptiveError({
       whatHappened:
         "Tried to remove all files from a path that doesn't point to a directory",
-      whatCanUserDo: { default: [`Verify path: ${path.getValue()}`] },
+      whatCanUserDo: [`Verify path: ${path.getValue()}`],
     });
   }
   const fileOrDirNames = fs.readdirSync(path.getValue());
