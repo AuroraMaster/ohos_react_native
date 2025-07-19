@@ -35,6 +35,16 @@
                 <filteritem type="filepath"
                     name="tester/harmony/react_native_openharmony/src/main/cpp/patches/.*" desc="上游社区代码，无需检测" />
                 <filteritem type="filepath" name="react-native-harmony/Libraries/.*" desc="上游社区代码，无需检测" />
+                <filteritem type="filepath" name="template/template.config.js" desc="上游社区代码，无需检测" />
+                <filteritem type="filepath" name="template/template/_eslintrc.js" desc="上游社区代码，无需检测" />
+                <filteritem type="filepath" name="template/template/_gitignore" desc="上游社区代码，无需检测" />
+                <filteritem type="filepath" name="template/template/_prettierrc.js" desc="上游社区代码，无需检测" />
+                <filteritem type="filepath" name="template/template/_watchmanconfig" desc="上游社区代码，无需检测" />
+                <filteritem type="filepath" name="template/template/App.tsx" desc="上游社区代码，无需检测" />
+                <filteritem type="filepath" name="template/template/babel.config.js" desc="上游社区代码，无需检测" />
+                <filteritem type="filepath" name="template/template/index.js" desc="上游社区代码，无需检测" />
+                <filteritem type="filepath" name="template/template/jest.config.js" desc="上游社区代码，无需检测" />
+                <filteritem type="filepath" name="template/template/__tests__/App.test.tsx" desc="上游社区代码，无需检测" />
             </filefilter>
             <filefilter name="copyrightPolicyFilter" desc="">
                 <filteritem type="filepath" name="tester/benchmarks/stresstest/.*" desc="上游社区代码，无需检测" />
