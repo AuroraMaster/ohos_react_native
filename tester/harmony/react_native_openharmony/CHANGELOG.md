@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.72.81
+- The subwindow affects the page rendering of the mainwindow,([c550cfd5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c550cfd5556efa5ed4bd8d932620559d65b7570b))
+- fix: the issue where scrolling the ScrollView triggers the outer TouchableOpacity's onPress event.,([a32720f0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a32720f07804c1c769f2cad8bf071535f1478fca))
+- fix: call createWrappedCustomRNComponentBuilderByComponentNameMap,([c3875c50](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c3875c50a9d1ff4d10e6d12dcee1176ebf84a9f2))
+- [chore]: updated to version 6.0.0.404(0.72.79),([ea215474](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ea21547492111f387d622b105f09601c9e5a08aa))
+
 ## 0.72.79
 - Revert "fix: Sticky Header Update Issue with Tabs and Animated ScrollView",([83532935](https://gitcode.com/openharmony-sig/ohos_react_native/commit/835329357db3e448249b2d1963d6502c077be376))
 - [chore]: updated to version 6.0.0.403(0.72.78),([72eb21d0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/72eb21d007b57c8ae8803f53b0e1e1dc589fbdfb))

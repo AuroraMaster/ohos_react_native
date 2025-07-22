@@ -1,9 +1,9 @@
 {
   "name": "@rnoh/react-native-harmony",
-  "version": "0.72.79",
+  "version": "0.72.81",
   "description": "",
   "scripts": {
-    "install:local-cli": "cd ../react-native-harmony-cli && npm pack && cd ../react-native-harmony && npm i ../react-native-harmony-cli/rnoh-react-native-harmony-cli-0.0.25.tgz && cd ../react-native-harmony",
+    "install:local-cli": "cd ../react-native-harmony-cli && npm pack && cd ../react-native-harmony && npm i ../react-native-harmony-cli/rnoh-react-native-harmony-cli-0.0.32.tgz && cd ../react-native-harmony",
     "prepublishOnly": "npm run verify",
     "hermes:build": "sh ./scripts/build-hermes.sh",
     "update_version": "node ./scripts/update-version.js",
@@ -44,7 +44,7 @@
     "./harmony/*"
   ],
   "dependencies": {
-    "@rnoh/react-native-harmony-cli": "file:../react-native-harmony-cli/rnoh-react-native-harmony-cli-0.0.31.tgz",
+    "@rnoh/react-native-harmony-cli": "file:../react-native-harmony-cli/rnoh-react-native-harmony-cli-0.0.32.tgz",
     "colors": "^1.4.0",
     "fs-extra": "^11.1.1",
     "metro": "^0.76.3",

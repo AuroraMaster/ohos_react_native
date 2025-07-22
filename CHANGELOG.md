@@ -1,5 +1,15 @@
 # Changelog
 
+## 6.0.0.500
+- The subwindow affects the page rendering of the mainwindow,([c550cfd5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c550cfd5556efa5ed4bd8d932620559d65b7570b))
+- feat:  72 supports the command npx @react-native-oh/react-native-harmony-cli init.,([ab538e92](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ab538e9259c35c97afc10bfb4b098942e158b9fa))
+- feat: The project template of version 0.72.x,([33db41e7](https://gitcode.com/openharmony-sig/ohos_react_native/commit/33db41e7b5d9879ac64888b111bf1228db0c8f41))
+- fix: the issue where scrolling the ScrollView triggers the outer TouchableOpacity's onPress event.,([a32720f0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a32720f07804c1c769f2cad8bf071535f1478fca))
+- Improve the description of the steps to create a harmony project.,([deefd253](https://gitcode.com/openharmony-sig/ohos_react_native/commit/deefd253b5f1ff28fb558ffaad37915003be3ed0))
+- fix: the issue where static resources placed outside the root directory are not bundled into the assets directory after packaging.,([304600fb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/304600fb98370a5ae2644caf5725810fa6b09110))
+- fix: call createWrappedCustomRNComponentBuilderByComponentNameMap,([c3875c50](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c3875c50a9d1ff4d10e6d12dcee1176ebf84a9f2))
+- [chore]: updated to version 6.0.0.404(0.72.79),([ea215474](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ea21547492111f387d622b105f09601c9e5a08aa))
+
 ## 6.0.0.404
 - Revert "fix: Sticky Header Update Issue with Tabs and Animated ScrollView",([83532935](https://gitcode.com/openharmony-sig/ohos_react_native/commit/835329357db3e448249b2d1963d6502c077be376))
 - [feat]: Use REAL_PATH to resolve absolute paths, shortening command lines and preventing "command too long" errors.,([f62013fe](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f62013fee4d9582c6859b3c59c6cba4448ffc862))

@@ -1,6 +1,6 @@
 {
   "name": "@rnoh/react-native-harmony-cli",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
