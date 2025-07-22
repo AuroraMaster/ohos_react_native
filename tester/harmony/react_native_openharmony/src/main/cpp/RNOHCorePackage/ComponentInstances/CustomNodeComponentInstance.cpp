@@ -58,7 +58,11 @@ void CustomNodeComponentInstance::onPropsChanged(SharedConcreteProps const& prop
   if (!props->removeClippedSubviews && !m_childrenClippedState.empty()) {
     restoreClippedSubviews();
   }
-  if (props->rawProps.count("focusable") > 0) {
+  if (props->accessible) {
+    // Refer to other plateform, accessible={true} property for a react-native View will
+    // be translated into native focusable={true}.
+    m_customNode.setFocusable(props->accessible);
+  } else if (props->rawProps.count("focusable") > 0) {
     if (!m_props || 
           props->rawProps["focusable"].asBool() != 
               m_props->rawProps["focusable"].asBool()) {
