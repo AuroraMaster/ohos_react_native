@@ -65,7 +65,7 @@ void TextInputNodeBase::setTextInputLineHeight(
         allowFontScaling = textAttributes.allowFontScaling.value();
   }
   float lineHeight = static_cast<float>(textAttributes.lineHeight);
-  if (isnan(lineHeight)){ //if lineHeight is NAN,make it 0
+  if (isnan(lineHeight) || lineHeight < 0){ //if lineHeight is NAN or negative,make it 0
     lineHeight = 0;
   }
   if (!allowFontScaling) {
