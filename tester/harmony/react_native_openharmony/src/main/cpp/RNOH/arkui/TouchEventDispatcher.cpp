@@ -225,13 +225,16 @@ void TouchEventDispatcher::dispatchTouchEvent(
       if (isAncestorHandlingTouches(touchTarget, rootTarget)) {
         auto ancestorJSResponderTouchTarget =
             touchTarget->getTouchTargetParent();
-        while (ancestorJSResponderTouchTarget != rootTarget &&
+        while (ancestorJSResponderTouchTarget &&
+               ancestorJSResponderTouchTarget != rootTarget &&
                !ancestorJSResponderTouchTarget->isJSResponder()) {
           ancestorJSResponderTouchTarget =
               ancestorJSResponderTouchTarget->getTouchTargetParent();
         }
         cancelPreviousTouchEvent(timestampSeconds, touchTarget);
-        if (ancestorJSResponderTouchTarget != rootTarget) {
+        if (ancestorJSResponderTouchTarget &&
+            ancestorJSResponderTouchTarget != rootTarget &&
+            (ancestorJSResponderTouchTarget->getTouchEventEmitter() != nullptr)) {
           m_touchTargetByTouchId.insert_or_assign(
               activeTouch.id, ancestorJSResponderTouchTarget);
           DLOG(INFO) << "TOUCH::DOWN";

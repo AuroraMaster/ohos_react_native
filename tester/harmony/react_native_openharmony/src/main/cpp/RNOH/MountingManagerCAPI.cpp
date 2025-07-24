@@ -163,6 +163,9 @@ void MountingManagerCAPI::setIsJsResponder(
 
   auto componentInstance =
       m_componentInstanceRegistry->findByTag(shadowView.tag);
+  if (componentInstance == nullptr) {
+    return;
+  }
   componentInstance->setIsJSResponder(isJsResponder);
   while (componentInstance != nullptr) {
     componentInstance->setNativeResponderBlocked(blockNativeResponder);
