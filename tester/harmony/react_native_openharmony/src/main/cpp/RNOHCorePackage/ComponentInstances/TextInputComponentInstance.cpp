@@ -504,6 +504,9 @@ void TextInputComponentInstance::setTextContent(std::string const& content) {
   int32_t selectionFromEnd = getTextSize(m_content) - m_selectionLocation;
   int32_t selectionStart = getTextSize(content) - selectionFromEnd;
   int32_t selectionEnd = selectionStart + m_selectionLength;
+  if (m_isControlledTextInput) {
+    m_caretPositionForControlledInput = selectionStart;
+  }
   setTextContentAndSelection(content, selectionStart, selectionEnd);
 }
 

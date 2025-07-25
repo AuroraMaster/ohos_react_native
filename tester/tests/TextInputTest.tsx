@@ -635,6 +635,12 @@ export function TextInputTest() {
         itShould="extended textContentType test (based on SDK API 16)">
         <TextInputTextContentType />
       </TestCase.Example>
+      <TestCase.Example
+        modal
+        itShould="When entering a bank card number, the cursor should
+        automatically move past the space after encountering one.">
+        <TextInputBankCardNumber />
+      </TestCase.Example>
     </TestSuite>
   );
 }
@@ -1046,6 +1052,41 @@ const TextInputTextContentType = () => {
 
       />
     </ScrollView>
+  )
+}
+
+const TextInputBankCardNumber = () => {
+  const [value, setValue] = useState('');
+
+  const handleChangeText = (text) => {
+    let ruleArr = [3, 7]
+    let newText = ""
+    let ruleIndex = 0
+    if (text) {
+      text = text.replace(/\D/g, '')
+      text = text.split(" ").join("")
+      text = text.replace(/\s+/g, "")
+      for (let i = 0; i < text.length; i++) {
+        if (i % ruleArr[ruleIndex] == 0 && i != 0) {
+          ruleIndex++
+          newText += " " + text[i]
+        } else {
+          newText += text[i]
+        }
+      }
+    }
+    setValue(newText);
+  }
+
+  return (
+    <View>
+      <TextInput
+        maxLength={21}
+        style={styles.textInput}
+        onChangeText={handleChangeText}
+        value={value}
+      />
+    </View>
   )
 }
 
