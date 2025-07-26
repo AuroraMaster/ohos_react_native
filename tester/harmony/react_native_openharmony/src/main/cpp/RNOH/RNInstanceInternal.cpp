@@ -24,6 +24,7 @@ RNInstanceInternal::RNInstanceInternal(
     :  m_id(id),
        m_contextContainer(std::move(contextContainer)),
        taskExecutor(std::move(taskExecutor)),
+       m_isAboutToBeDestroyed(std::make_shared<std::atomic<bool>>(false)),
        m_nativeResourceManager(std::move(nativeResourceManager))
 {
     instance = std::make_shared<facebook::react::Instance>();
@@ -136,6 +137,16 @@ NativeResourceManager const *RNInstanceInternal::getNativeResourceManager()
 {
     RNOH_ASSERT(m_nativeResourceManager != nullptr);
     return m_nativeResourceManager.get();
+}
+
+void RNInstanceInternal::onCreate() {
+  m_weakSelf = RNInstance::SafeWeak(shared_from_this(), m_isAboutToBeDestroyed);
+}
+
+ void RNInstanceInternal::markSelfAboutToDestroyed() {
+  if (m_isAboutToBeDestroyed) {
+    m_isAboutToBeDestroyed->store(true);
+  }
 }
 
 } // namespace rnoh

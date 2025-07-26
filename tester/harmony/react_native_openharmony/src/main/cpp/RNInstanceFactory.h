@@ -279,6 +279,7 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
         std::move(nativeResourceManager),
         shouldEnableDebugger,
         shouldEnableBackgroundExecutor);
+    rnInstance->onCreate();
     componentInstanceDependencies->rnInstance = rnInstance;
     HarmonyReactMarker::logMarker(
         HarmonyReactMarker::HarmonyReactMarkerId::REACT_INSTANCE_INIT_STOP, id);

@@ -11,16 +11,15 @@
 #include <glog/logging.h>
 #include <memory>
 #include "RNOH/ArkTSMessageHub.h"
+#include "RNOH/RNInstance.h"
 
 namespace rnoh {
-
-class RNInstance;
 
 class TurboModule : public facebook::react::TurboModule {
  public:
   struct Context {
     std::shared_ptr<facebook::react::CallInvoker> jsInvoker;
-    std::weak_ptr<RNInstance> instance;
+    RNInstance::SafeWeak instance;
     std::shared_ptr<ArkTSMessageHub> arkTSMessageHub;
   };
 

@@ -336,17 +336,21 @@ static napi_value onDestroyRNInstance(
   try {
     auto args = arkJs.getCallbackArgs(info, 1);
     size_t rnInstanceId = arkJs.getDouble(args[0]);
-    CLEANUP_RUNNER->runAsyncTask([rnInstanceId] {
-      std::shared_ptr<RNInstanceInternal> instance;
-      {
-        auto lock = std::lock_guard<std::mutex>(RN_INSTANCE_BY_ID_MTX);
-        if (auto it = RN_INSTANCE_BY_ID.find(rnInstanceId);
-            it != RN_INSTANCE_BY_ID.end()) {
-          std::swap(it->second, instance);
-          RN_INSTANCE_BY_ID.erase(rnInstanceId);
-        }
+    std::shared_ptr<RNInstanceInternal> instance;
+    {
+      auto lock = std::lock_guard<std::mutex>(RN_INSTANCE_BY_ID_MTX);
+      if (auto it = RN_INSTANCE_BY_ID.find(rnInstanceId);
+          it != RN_INSTANCE_BY_ID.end()) {
+        std::swap(it->second, instance);
+        RN_INSTANCE_BY_ID.erase(rnInstanceId);
       }
-    });
+    }
+
+    if (instance) {
+      instance->markSelfAboutToDestroyed();
+      CLEANUP_RUNNER->runAsyncTask(
+          [instance = std::move(instance)]() mutable {});
+    }
   } catch (...) {
     ArkTSBridge::getInstance()->handleError(std::current_exception());
   }

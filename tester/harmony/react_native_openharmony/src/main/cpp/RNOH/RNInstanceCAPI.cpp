@@ -173,13 +173,12 @@ void RNInstanceCAPI::initializeScheduler(
 std::shared_ptr<TurboModuleProvider>
 RNInstanceCAPI::createTurboModuleProvider() {
   DLOG(INFO) << "RNInstanceCAPI::createTurboModuleProvider";
-  auto sharedInstance = shared_from_this();
   auto turboModuleProvider = std::make_shared<TurboModuleProvider>(
       this->instance->getJSCallInvoker(),
       std::move(m_turboModuleFactory),
       m_eventDispatcher,
       std::move(m_jsQueue),
-      sharedInstance);
+      m_weakSelf);
   turboModuleProvider->installJSBindings(this->instance->getRuntimeExecutor());
   return turboModuleProvider;
 }

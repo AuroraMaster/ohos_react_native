@@ -120,7 +120,8 @@ RNInstanceArkTS::createTurboModuleProvider() {
       this->instance->getJSCallInvoker(),
       std::move(m_turboModuleFactory),
       m_eventDispatcher,
-      std::move(m_jsQueue));
+      std::move(m_jsQueue),
+      m_weakSelf);
   turboModuleProvider->installJSBindings(this->instance->getRuntimeExecutor());
   return turboModuleProvider;
 }

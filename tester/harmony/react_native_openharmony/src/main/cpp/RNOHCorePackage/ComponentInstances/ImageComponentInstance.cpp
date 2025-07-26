@@ -10,6 +10,7 @@
 #include <react/renderer/components/image/ImageState.h>
 #include <react/renderer/core/ConcreteState.h>
 #include <sstream>
+#include "RNOH/ArkTSTurboModule.h"
 
 namespace rnoh {
 

@@ -20,16 +20,14 @@
 #include "RNOH/ArkTSChannel.h"
 #include "RNOH/Assert.h"
 #include "RNOH/EventEmitRequestHandler.h"
-#include "RNOH/GlobalJSIBinder.h"
 #include "RNOH/MessageQueueThread.h"
 #include "RNOH/MutationsToNapiConverter.h"
 #include "RNOH/TaskExecutor/TaskExecutor.h"
-#include "RNOH/TurboModule.h"
-#include "RNOH/TurboModuleProvider.h"
 #include "RNOH/TouchTarget.h"
 #include "RNOH/arkui/UIInputEventHandler.h"
 
 namespace rnoh {
+class TurboModule;
 using MutationsListener = std::function<void(
     MutationsToNapiConverter const&,
     facebook::react::ShadowViewMutationList const& mutations)>;
@@ -68,10 +66,52 @@ class RNInstance {
 
   using Weak = std::weak_ptr<RNInstance>;
 
+  /**
+   * @actor RNOH_LIBRARY
+   * @brief Prevents locking RNInstance if it's about to be destroyed,
+   * avoiding crashes when the last shared_ptr is held on a non-JS thread.
+   */
+  class SafeWeak {
+   public:
+    SafeWeak() = default;
+
+    SafeWeak(
+        const std::weak_ptr<RNInstance>& instance,
+
+        const std::weak_ptr<std::atomic<bool>>& destroyFlag)
+        : m_weak(instance), m_destroyFlag(destroyFlag) {}
+
+    std::shared_ptr<RNInstance> lock() const {
+      auto flag = m_destroyFlag.lock();
+      if (!flag || flag->load()) {
+        return nullptr;
+      }
+
+      return m_weak.lock();
+    }
+
+    bool expired() const {
+      return m_weak.expired();
+    }
+
+    void reset() {
+      m_weak.reset();
+    }
+
+    long use_count() const {
+      return m_weak.use_count();
+    }
+
+   private:
+    std::weak_ptr<RNInstance> m_weak;
+    std::weak_ptr<std::atomic<bool>> m_destroyFlag;
+  };
+
   virtual ~RNInstance();
 
   virtual ContextContainer const& getContextContainer() const = 0;
-  virtual TurboModule::Shared getTurboModule(const std::string& name) = 0;
+  virtual std::shared_ptr<TurboModule> getTurboModule(
+      const std::string& name) = 0;
   template <typename T>
   std::shared_ptr<T> getTurboModule(const std::string& name) {
     auto turboModule = getTurboModule(name);
@@ -186,11 +226,15 @@ class RNInstanceInternal : public RNInstance,
         std::string const sourceURL,
         std::function<void(const std::string)> onFinish);
     NativeResourceManager const *getNativeResourceManager() const;
-    
+    void onCreate();
+    void markSelfAboutToDestroyed();
+
     TaskExecutor::Shared taskExecutor;
 
 protected:
     int m_id;
+    std::shared_ptr<std::atomic<bool>> m_isAboutToBeDestroyed;
+    RNInstance::SafeWeak m_weakSelf;
     facebook::react::ContextContainer::Shared m_contextContainer;
     std::unique_ptr<facebook::react::SchedulerDelegate> m_schedulerDelegate = nullptr;
     SharedNativeResourceManager m_nativeResourceManager;

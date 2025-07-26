@@ -20,7 +20,7 @@ TurboModuleProvider::TurboModuleProvider(
     TurboModuleFactory&& turboModuleFactory,
     std::shared_ptr<EventDispatcher> eventDispatcher,
     std::shared_ptr<MessageQueueThread> jsQueue,
-    std::shared_ptr<RNInstance> const& instance)
+    RNInstance::SafeWeak const& instance)
     : m_jsInvoker(jsInvoker),
       m_instance(instance),
       m_createTurboModule(
