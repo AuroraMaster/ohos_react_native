@@ -108,6 +108,7 @@ struct ContentAdaptiveSurface {
   private cleanUpCallbacks: (() => void)[] = [];
   private touchDispatcher!: TouchDispatcher;
   private shouldStopSurface: boolean = false;
+  private surfaceContext: SurfaceContext | undefined = undefined;
   private initialProps!: SurfaceProps;
   private logger!: RNOHLogger
   private rootViewNodeContent: NodeContent = new NodeContent();
@@ -194,7 +195,7 @@ struct ContentAdaptiveSurface {
   updateSurfaceConstraints(constraints: Constraints): Size {
     const isRTL = this.ctx.rnInstance.getTurboModule<I18nManagerTurboModule>('I18nManager').getConstants()
       .isRTL;
-    const surfaceContext: SurfaceContext = {
+    this.surfaceContext = {
       minWidth: this.constraints?.minWidth ?? constraints?.minWidth ?? 0,
       minHeight: this.constraints?.minHeight ?? constraints?.minHeight ?? 0,
       maxWidth: this.constraints?.maxWidth ?? constraints?.maxWidth ?? 0,
@@ -206,12 +207,12 @@ struct ContentAdaptiveSurface {
     }
     if (this.shouldStartSurface) {
       this.surfaceHandle.setDisplayMode(DisplayMode.Visible)
-      this.surfaceHandle.start(surfaceContext, this.initialProps)
+      this.surfaceHandle.start(this.surfaceContext, this.initialProps)
       this.shouldStartSurface = false
     } else {
-      this.surfaceHandle.updateConstraints(surfaceContext);
+      this.surfaceHandle.updateConstraints(this.surfaceContext);
     }
-    return this.surfaceHandle.measure(surfaceContext)
+    return this.surfaceHandle.measure(this.surfaceContext)
   }
 
   override onMeasureSize(selfLayoutInfo: GeometryInfo, children: Array<Measurable>,
@@ -308,6 +309,9 @@ struct ContentAdaptiveSurface {
     .onAreaChange((oldArea, newArea) => {
       this.surfaceOffsetX = newArea.globalPosition.x as number
       this.surfaceOffsetY = newArea.globalPosition.y as number
+      this.surfaceContext!.surfaceOffsetX = this.surfaceOffsetX
+      this.surfaceContext!.surfaceOffsetY = this.surfaceOffsetY
+      this.surfaceHandle.updateConstraints(this.surfaceContext);
     })
     .onTouch((e) => this.handleTouch(e))
   }
