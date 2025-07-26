@@ -1,5 +1,17 @@
 # Changelog
 
+## 6.0.0.501
+- fix:crash due to destruction on main thread,([1298e437](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1298e4371589dc8431cebb1312263e5092859680))
+- Improve the stability and abstraction of the API（72）.,([07ba8fba](https://gitcode.com/openharmony-sig/ohos_react_native/commit/07ba8fbaf0e74700553cca87f3af5ea420ec1f4b))
+- [doc]: improve 3 documents.,([46f24236](https://gitcode.com/openharmony-sig/ohos_react_native/commit/46f242364140c6f949c3ab58a336c755de7957c0))
+- ​​fix: the issue where RNGH third-party library gestures are not working in RNSurface adaptive scenarios​.,([0531b718](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0531b718ec3cec2961d0bec8be5ea03cf51f1f48))
+- chore: modify metro version,([4680ee90](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4680ee906fbfde30f43af45c6b2634bf59fcf3d6))
+- fix: In the TextInput component, when entering a bank card number, the cursor does not automatically move past the space after encountering one.,([0e12e352](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0e12e35222c54d03a96f2fed820c9d72916433b9))
+- ​​fix the componentInstance null pointer issue​.,([f8f98fa0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f8f98fa09b559c3c091cbe747bbc7a9e7d4f16c6))
+- fix: C TextInput/TextArea with negative lineHeight behave differently from ArkTS TextInput/TextArea,([68304199](https://gitcode.com/openharmony-sig/ohos_react_native/commit/6830419992dd145b232b02c23db6c29bf48ed0c4))
+- fix: If accessible={true}, then focusable={true}.,([a32caf3c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a32caf3c836044061c38d55222902dc4276e19a1))
+- [chore]: updated to version 6.0.0.500(0.72.81),([d869bdfb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d869bdfb098c8c0342608330292bb4d72f119df8))
+
 ## 6.0.0.500
 - The subwindow affects the page rendering of the mainwindow,([c550cfd5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c550cfd5556efa5ed4bd8d932620559d65b7570b))
 - feat:  72 supports the command npx @react-native-oh/react-native-harmony-cli init.,([ab538e92](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ab538e9259c35c97afc10bfb4b098942e158b9fa))
