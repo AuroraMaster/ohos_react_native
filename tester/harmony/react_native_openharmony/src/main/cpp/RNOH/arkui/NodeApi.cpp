@@ -64,50 +64,62 @@ ArkUI_NodeHandle NodeApi::createNode(ArkUI_NodeType nodeType) {
   return NativeNodeApi::getInstance()->createNode(nodeType);
 }
 
-int32_t NodeApi::setAttribute(
+void NodeApi::setAttribute(
     ArkUI_NodeHandle node,
     ArkUI_NodeAttributeType attribute,
     const ArkUI_AttributeItem* item) {
   if (IsNewAPIVersion() && m_uiContext != nullptr) {
-    return setAttributeWithUIContext(node, attribute, item);
+    setAttributeWithUIContext(node, attribute, item);
+    return;
   }
 
-  return NativeNodeApi::getInstance()->setAttribute(node, attribute, item);
+  maybeThrow(NativeNodeApi::getInstance()->setAttribute(node, attribute, item));
 }
 
-int32_t NodeApi::resetAttribute(
+void NodeApi::resetAttribute(
     ArkUI_NodeHandle node,
     ArkUI_NodeAttributeType attribute) {
   if (IsNewAPIVersion() && m_uiContext != nullptr) {
-    return resetAttributeWithUIContext(node, attribute);
+    resetAttributeWithUIContext(node, attribute);
+    return;
   }
 
-  return NativeNodeApi::getInstance()->resetAttribute(node, attribute);
+  maybeThrow(NativeNodeApi::getInstance()->resetAttribute(node, attribute));
 }
 
-int32_t
-NodeApi::setMeasuredSize(ArkUI_NodeHandle node, int32_t width, int32_t height) {
+void NodeApi::setMeasuredSize(
+    ArkUI_NodeHandle node,
+    int32_t width,
+    int32_t height) {
   if (IsNewAPIVersion() && m_uiContext != nullptr) {
-    return setMeasuredSizeWithUIContext(node, width, height);
+    setMeasuredSizeWithUIContext(node, width, height);
+    return;
   }
-  return NativeNodeApi::getInstance()->setMeasuredSize(node, width, height);
+
+  maybeThrow(
+      NativeNodeApi::getInstance()->setMeasuredSize(node, width, height));
 }
 
-int32_t NodeApi::insertChildAt(
+void NodeApi::insertChildAt(
     ArkUI_NodeHandle parent,
     ArkUI_NodeHandle child,
     int32_t position) {
   if (IsNewAPIVersion() && m_uiContext != nullptr) {
-    return insertChildAtWithUIContext(parent, child, position);
+    insertChildAtWithUIContext(parent, child, position);
+    return;
   }
-  return NativeNodeApi::getInstance()->insertChildAt(parent, child, position);
+
+  maybeThrow(
+      NativeNodeApi::getInstance()->insertChildAt(parent, child, position));
 }
 
-int32_t NodeApi::addChild(ArkUI_NodeHandle parent, ArkUI_NodeHandle child) {
+void NodeApi::addChild(ArkUI_NodeHandle parent, ArkUI_NodeHandle child) {
   if (IsNewAPIVersion() && m_uiContext != nullptr) {
-    return addChildWithUIContext(parent, child);
+    addChildWithUIContext(parent, child);
+    return;
   }
-  return NativeNodeApi::getInstance()->addChild(parent, child);
+
+  maybeThrow(NativeNodeApi::getInstance()->addChild(parent, child));
 }
 
 ArkUI_NodeHandle NodeApi::createNodeWithUIContext(ArkUI_NodeType nodeType) {
@@ -132,7 +144,7 @@ ArkUI_NodeHandle NodeApi::createNodeWithUIContext(ArkUI_NodeType nodeType) {
   }
 }
 
-int32_t NodeApi::setAttributeWithUIContext(
+void NodeApi::setAttributeWithUIContext(
     ArkUI_NodeHandle node,
     ArkUI_NodeAttributeType attribute,
     const ArkUI_AttributeItem* item) {
@@ -154,10 +166,10 @@ int32_t NodeApi::setAttributeWithUIContext(
     delete taskData;
     LOG(ERROR) << "setAttributeWithUIContext failed to run task in scope";
   }
-  return result;
+  maybeThrow(result);
 }
 
-int32_t NodeApi::resetAttributeWithUIContext(
+void NodeApi::resetAttributeWithUIContext(
     ArkUI_NodeHandle node,
     ArkUI_NodeAttributeType attribute) {
   auto* taskData = new ResetAttributeTaskData{node, attribute};
@@ -178,10 +190,10 @@ int32_t NodeApi::resetAttributeWithUIContext(
     delete taskData;
     LOG(ERROR) << "resetAttributeWithUIContext failed to run task in scope";
   }
-  return result;
+  maybeThrow(result);
 }
 
-int32_t NodeApi::setMeasuredSizeWithUIContext(
+void NodeApi::setMeasuredSizeWithUIContext(
     ArkUI_NodeHandle node,
     int32_t width,
     int32_t height) {
@@ -203,10 +215,10 @@ int32_t NodeApi::setMeasuredSizeWithUIContext(
     delete taskData;
     LOG(ERROR) << "setMeasuredSizeWithUIContext failed to run task in scope";
   }
-  return result;
+  maybeThrow(result);
 }
 
-int32_t NodeApi::insertChildAtWithUIContext(
+void NodeApi::insertChildAtWithUIContext(
     ArkUI_NodeHandle parent,
     ArkUI_NodeHandle child,
     int32_t position) {
@@ -228,10 +240,10 @@ int32_t NodeApi::insertChildAtWithUIContext(
     delete taskData;
     LOG(ERROR) << "insertChildAtWithUIContext failed to run task in scope";
   }
-  return result;
+  maybeThrow(result);
 }
 
-int32_t NodeApi::addChildWithUIContext(
+void NodeApi::addChildWithUIContext(
     ArkUI_NodeHandle parent,
     ArkUI_NodeHandle child) {
   auto* taskData = new NodeChildData{parent, child};
@@ -250,6 +262,6 @@ int32_t NodeApi::addChildWithUIContext(
     delete taskData;
     LOG(ERROR) << "addChildWithUIContext failed to run task in scope";
   }
-  return result;
+  maybeThrow(result);
 }
 } // namespace rnoh

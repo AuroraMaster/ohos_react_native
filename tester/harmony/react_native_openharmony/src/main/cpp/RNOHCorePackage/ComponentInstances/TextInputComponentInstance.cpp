@@ -25,8 +25,8 @@ namespace rnoh {
 TextInputComponentInstance::TextInputComponentInstance(Context context)
     : CppComponentInstance(std::move(context)),
       ArkTSMessageHub::Observer(m_deps->arkTSMessageHub),
-      m_textInputNode(context.arkUINodeContext),
-      m_textAreaNode(context.arkUINodeContext) {}
+      m_textInputNode(m_arkUINodeCtx),
+      m_textAreaNode(m_arkUINodeCtx) {}
 
 void TextInputComponentInstance::onContentSizeChange(float width, float height, bool multiline) {
   if (multiline == m_multiline){

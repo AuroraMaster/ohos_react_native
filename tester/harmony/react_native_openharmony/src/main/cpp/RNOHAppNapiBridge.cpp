@@ -754,7 +754,9 @@ static napi_value setUIContext(napi_env env, napi_callback_info info) {
     auto rnInstanceCAPIRawPtr =
         std::dynamic_pointer_cast<RNInstanceCAPI>(rnInstance);
     if (rnInstanceCAPIRawPtr != nullptr) {
-      ArkUINode::Context arkUINodeContext = {.nodeApi = NodeApi(newContext)};
+      auto sharedNodeApi = std::make_shared<NodeApi>(newContext);
+      auto arkUINodeContext =
+          std::make_shared<ArkUINode::Context>(sharedNodeApi);
       rnInstanceCAPIRawPtr->setArkUINodeContext(arkUINodeContext);
     }
     return arkJS.getNull();

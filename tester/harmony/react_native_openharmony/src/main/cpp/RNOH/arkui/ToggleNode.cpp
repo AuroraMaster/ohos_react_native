@@ -5,12 +5,13 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-#include "ToggleNode.h"
 #include "NativeNodeApi.h"
+#include "ToggleNode.h"
 #include "glog/logging.h"
+
 namespace rnoh {
 
-ToggleNode::ToggleNode(Context context)
+ToggleNode::ToggleNode(const ArkUINode::Context::Shared& context)
     : ArkUINode(context, ArkUI_NodeType::ARKUI_NODE_TOGGLE),
       m_childArkUINodeHandle(nullptr),
       m_toggleNodeDelegate(nullptr) {
@@ -41,8 +42,7 @@ ToggleNode& ToggleNode::setSelectedColor(
     facebook::react::SharedColor const& color) {
   if (!color) {
     // restore default value
-    maybeThrow(m_context.nodeApi.resetAttribute(
-        m_nodeHandle, NODE_TOGGLE_SELECTED_COLOR));
+    m_nodeApi->resetAttribute(m_nodeHandle, NODE_TOGGLE_SELECTED_COLOR);
     return *this;
   }
   uint32_t colorValue = *color;
@@ -50,16 +50,14 @@ ToggleNode& ToggleNode::setSelectedColor(
   ArkUI_AttributeItem colorItem = {
       preparedColorValue,
       sizeof(preparedColorValue) / sizeof(ArkUI_NumberValue)};
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_TOGGLE_SELECTED_COLOR, &colorItem));
+  m_nodeApi->setAttribute(m_nodeHandle, NODE_TOGGLE_SELECTED_COLOR, &colorItem);
   return *this;
 }
 
 ToggleNode& ToggleNode::setUnselectedColor(
     facebook::react::SharedColor const& color) {
   if (!color) {
-    maybeThrow(m_context.nodeApi.resetAttribute(
-        m_nodeHandle, NODE_TOGGLE_UNSELECTED_COLOR));
+    m_nodeApi->resetAttribute(m_nodeHandle, NODE_TOGGLE_UNSELECTED_COLOR);
     return *this;
   }
   uint32_t colorValue = *color;
@@ -67,8 +65,8 @@ ToggleNode& ToggleNode::setUnselectedColor(
   ArkUI_AttributeItem colorItem = {
       preparedColorValue,
       sizeof(preparedColorValue) / sizeof(ArkUI_NumberValue)};
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_TOGGLE_UNSELECTED_COLOR, &colorItem));
+  m_nodeApi->setAttribute(
+      m_nodeHandle, NODE_TOGGLE_UNSELECTED_COLOR, &colorItem);
   return *this;
 }
 
@@ -79,8 +77,8 @@ ToggleNode& ToggleNode::setThumbColor(
   ArkUI_AttributeItem colorItem = {
       preparedColorValue,
       sizeof(preparedColorValue) / sizeof(ArkUI_NumberValue)};
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_TOGGLE_SWITCH_POINT_COLOR, &colorItem));
+  m_nodeApi->setAttribute(
+      m_nodeHandle, NODE_TOGGLE_SWITCH_POINT_COLOR, &colorItem);
   return *this;
 }
 
@@ -89,8 +87,7 @@ ToggleNode& ToggleNode::setFocusable(bool focusable) {
   ArkUI_NumberValue preparedFocusable[] = {{.i32 = focusableValue}};
   ArkUI_AttributeItem focusItem = {
       preparedFocusable, sizeof(preparedFocusable) / sizeof(ArkUI_NumberValue)};
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_FOCUSABLE, &focusItem));
+  m_nodeApi->setAttribute(m_nodeHandle, NODE_FOCUSABLE, &focusItem);
   return *this;
 }
 
@@ -106,8 +103,7 @@ ToggleNode& ToggleNode::setValue(bool value) {
   ArkUI_NumberValue preparedValue[] = {{.i32 = valueValue}};
   ArkUI_AttributeItem valueItem = {
       preparedValue, sizeof(preparedValue) / sizeof(ArkUI_NumberValue)};
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_TOGGLE_VALUE, &valueItem));
+  m_nodeApi->setAttribute(m_nodeHandle, NODE_TOGGLE_VALUE, &valueItem);
   return *this;
 }
 

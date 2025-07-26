@@ -23,7 +23,7 @@ class StackNode : public ArkUINode {
   StackNodeDelegate* m_stackNodeDelegate;
 
  public:
-  explicit StackNode(Context context = {});
+  explicit StackNode(const ArkUINode::Context::Shared& context = nullptr);
   ~StackNode() override;
 
   void insertChild(ArkUINode& child, std::size_t index);

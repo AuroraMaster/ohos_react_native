@@ -13,7 +13,8 @@ ComponentInstance::ComponentInstance(Context ctx)
     : m_tag(ctx.tag),
       m_componentHandle(ctx.componentHandle),
       m_componentName(std::move(ctx.componentName)),
-      m_deps(std::move(ctx.dependencies)) {
+      m_deps(std::move(ctx.dependencies)),
+      m_arkUINodeCtx(std::move(ctx.arkUINodeContext)) {
         if (m_deps != nullptr && m_deps->rnInstance.lock() != nullptr) {
           m_rnInstanceId = m_deps->rnInstance.lock()->getId();
         }

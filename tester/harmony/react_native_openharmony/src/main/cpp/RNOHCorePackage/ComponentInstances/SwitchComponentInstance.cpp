@@ -17,7 +17,7 @@ namespace rnoh {
 
 SwitchComponentInstance::SwitchComponentInstance(Context context)
     : CppComponentInstance(std::move(context)),
-      m_toggleNode(context.arkUINodeContext) {
+      m_toggleNode(m_arkUINodeCtx) {
   getLocalRootArkUINode().setToggleNodeDelegate(this);
 }
 

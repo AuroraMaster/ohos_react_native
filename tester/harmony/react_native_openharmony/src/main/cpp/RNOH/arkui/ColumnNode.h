@@ -21,7 +21,7 @@ class ColumnNode : public ArkUINode {
   ColumnNodeDelegate* m_columnNodeDelegate;
 
  public:
- explicit ColumnNode(Context context = {});
+ explicit ColumnNode(const ArkUINode::Context::Shared& context = nullptr);
   ~ColumnNode() override;
 
   ArkUI_NodeHandle getChildAt(std::size_t index);

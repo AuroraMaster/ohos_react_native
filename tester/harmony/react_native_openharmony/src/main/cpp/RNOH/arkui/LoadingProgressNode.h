@@ -13,7 +13,7 @@ namespace rnoh {
 
 class LoadingProgressNode : public ArkUINode {
  public:
-  explicit LoadingProgressNode(Context context = {});
+  explicit LoadingProgressNode(const ArkUINode::Context::Shared& context = nullptr);
   LoadingProgressNode& setColor(facebook::react::SharedColor const& color);
   LoadingProgressNode& setAnimating(const bool& enable);
 };

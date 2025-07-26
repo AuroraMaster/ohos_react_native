@@ -206,7 +206,7 @@ class RNInstanceCAPI : public RNInstanceInternal,
   void setJavaScriptExecutorFactory(
       std::shared_ptr<facebook::react::JSExecutorFactory> jsExecutorFactory)
       override;
-  void setArkUINodeContext(ArkUINode::Context arkUINodeContext) {
+  void setArkUINodeContext(const ArkUINode::Context::Shared& arkUINodeContext) {
     if (m_componentInstanceFactory) {
       m_componentInstanceFactory->setArkUINodeContext(arkUINodeContext);
     } else {

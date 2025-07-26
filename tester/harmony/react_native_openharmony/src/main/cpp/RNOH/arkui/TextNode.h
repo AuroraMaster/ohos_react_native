@@ -42,7 +42,7 @@ class TextNode : public ArkUINode {
   std::shared_ptr<TextMeasureInfo> m_measureInfo;
 
  public:
-  explicit TextNode(Context context = {});
+  explicit TextNode(const ArkUINode::Context::Shared& context = nullptr);
   void insertChild(ArkUINode& child, std::size_t index);
   void removeChild(ArkUINode& child);
 

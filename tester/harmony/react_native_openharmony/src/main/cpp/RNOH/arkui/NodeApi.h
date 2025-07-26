@@ -7,7 +7,10 @@
 
 #pragma once
 #include <arkui/native_node.h>
+#include <stdexcept>
+#include <string>
 #include "NativeNodeApi.h"
+#include "glog/logging.h"
 
 namespace rnoh {
 
@@ -45,9 +48,9 @@ class NodeApi {
    * @param node Indicates the node whose attribute needs to be set
    * @param attribute Indicates the type of attribute to set
    * @param item Indicates the attribute value
-   * @return Returns the error code
+   * @throws std::runtime_error if the operation fails
    */
-  int32_t setAttribute(
+  void setAttribute(
       ArkUI_NodeHandle node,
       ArkUI_NodeAttributeType attribute,
       const ArkUI_AttributeItem* item);
@@ -56,11 +59,9 @@ class NodeApi {
    * @brief Resets an attribute of a node using the encapsulated UIContext
    * @param node Indicates the node whose attribute needs to be reset
    * @param attribute Indicates the type of attribute to reset
-   * @return Returns the error code
+   * @throws std::runtime_error if the operation fails
    */
-  int32_t resetAttribute(
-      ArkUI_NodeHandle node,
-      ArkUI_NodeAttributeType attribute);
+  void resetAttribute(ArkUI_NodeHandle node, ArkUI_NodeAttributeType attribute);
 
   /**
    * @brief Sets the width and height for a component after the measurement.
@@ -68,9 +69,9 @@ class NodeApi {
    * @param node Indicates the target node.
    * @param width Indicates the width.
    * @param height Indicates the height.
-   * @return Returns the error code.
+   * @throws std::runtime_error if the operation fails
    */
-  int32_t setMeasuredSize(ArkUI_NodeHandle node, int32_t width, int32_t height);
+  void setMeasuredSize(ArkUI_NodeHandle node, int32_t width, int32_t height);
 
   /**
    * @brief Inserts a component to the specified position in a parent node.
@@ -80,9 +81,9 @@ class NodeApi {
    * @param position Indicates the position to which the target child node is to
    * be inserted. If the value is a negative number or invalid, the node is
    * inserted at the end of the parent node.
-   * @return Returns the error code.
+   * @throws std::runtime_error if the operation fails
    */
-  int32_t insertChildAt(
+  void insertChildAt(
       ArkUI_NodeHandle parent,
       ArkUI_NodeHandle child,
       int32_t position);
@@ -92,9 +93,9 @@ class NodeApi {
    *
    * @param parent Indicates the pointer to the parent node.
    * @param child Indicates the pointer to the child node.
-   * @return Returns the error code.
+   * @throws std::runtime_error if the operation fails
    */
-  int32_t addChild(ArkUI_NodeHandle parent, ArkUI_NodeHandle child);
+  void addChild(ArkUI_NodeHandle parent, ArkUI_NodeHandle child);
 
   /**
    * @brief the NodeApi is available if the UIContext is not null.
@@ -106,31 +107,43 @@ class NodeApi {
   }
 
  private:
+  void maybeThrow(int32_t status) const {
+    static const auto ARKUI_ERROR_CODE_NOT_SUPPORTED_FOR_ARKTS_NODE = 106103;
+    if (status == ARKUI_ERROR_CODE_NOT_SUPPORTED_FOR_ARKTS_NODE) {
+      LOG(WARNING) << "Couldn't set a property on ArkTS node";
+      return;
+    }
+    if (status != 0) {
+      auto message = std::string("NodeApi operation failed with status: ") +
+          std::to_string(status);
+      LOG(ERROR) << message;
+      throw std::runtime_error(std::move(message));
+    }
+  }
+
   // Helper functions for handling UIContext-specific operations
   ArkUI_NodeHandle createNodeWithUIContext(ArkUI_NodeType nodeType);
 
-  int32_t setAttributeWithUIContext(
+  void setAttributeWithUIContext(
       ArkUI_NodeHandle node,
       ArkUI_NodeAttributeType attribute,
       const ArkUI_AttributeItem* item);
 
-  int32_t resetAttributeWithUIContext(
+  void resetAttributeWithUIContext(
       ArkUI_NodeHandle node,
       ArkUI_NodeAttributeType attribute);
 
-  int32_t setMeasuredSizeWithUIContext(
+  void setMeasuredSizeWithUIContext(
       ArkUI_NodeHandle node,
       int32_t width,
       int32_t height);
 
-  int32_t insertChildAtWithUIContext(
+  void insertChildAtWithUIContext(
       ArkUI_NodeHandle parent,
       ArkUI_NodeHandle child,
       int32_t position);
 
-  int32_t addChildWithUIContext(
-      ArkUI_NodeHandle parent,
-      ArkUI_NodeHandle child);
+  void addChildWithUIContext(ArkUI_NodeHandle parent, ArkUI_NodeHandle child);
 
  private:
   ArkUI_ContextHandle m_uiContext = nullptr;

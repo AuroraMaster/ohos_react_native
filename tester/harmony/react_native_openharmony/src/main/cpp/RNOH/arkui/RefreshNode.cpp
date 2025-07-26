@@ -12,7 +12,7 @@ static constexpr ArkUI_NodeEventType REFRESH_NODE_EVENT_TYPES[] = {
     NODE_REFRESH_STATE_CHANGE};
 
 namespace rnoh {
-RefreshNode::RefreshNode(Context context)
+RefreshNode::RefreshNode(const ArkUINode::Context::Shared& context)
     : ArkUINode(context, ArkUI_NodeType::ARKUI_NODE_REFRESH) {
   for (auto eventType : REFRESH_NODE_EVENT_TYPES) {
     registerNodeEvent(eventType);
@@ -28,8 +28,7 @@ RefreshNode::~RefreshNode() {
 RefreshNode& RefreshNode::setRefreshContent(ArkUINode& refreshContent) {
   ArkUI_AttributeItem loadingItem = {
       .object = refreshContent.getArkUINodeHandle()};
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_REFRESH_CONTENT, &loadingItem));
+  m_nodeApi->setAttribute(m_nodeHandle, NODE_REFRESH_CONTENT, &loadingItem);
   return *this;
 }
 
@@ -40,8 +39,7 @@ RefreshNode& RefreshNode::setRefreshNodeDelegate(
 }
 
 void RefreshNode::insertChild(ArkUINode& child, std::size_t index) {
-  maybeThrow(m_context.nodeApi.addChild(
-      m_nodeHandle, child.getArkUINodeHandle()));
+  m_nodeApi->addChild(m_nodeHandle, child.getArkUINodeHandle());
 }
 
 void RefreshNode::removeChild(ArkUINode& child) {
@@ -53,8 +51,8 @@ RefreshNode& RefreshNode::setNativeRefreshing(bool isRefreshing) {
   ArkUI_NumberValue refreshingValue[] = {{.u32 = isRefreshing}};
   ArkUI_AttributeItem refreshingItem = {
       refreshingValue, sizeof(refreshingValue) / sizeof(ArkUI_NumberValue)};
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_REFRESH_REFRESHING, &refreshingItem));
+  m_nodeApi->setAttribute(
+      m_nodeHandle, NODE_REFRESH_REFRESHING, &refreshingItem);
   return *this;
 }
 
@@ -63,8 +61,8 @@ RefreshNode& RefreshNode::setNativeRefreshing(bool isRefreshing) {
    ArkUI_AttributeItem pullDownRatioItem = {
        pullDownRatioValue, sizeof(pullDownRatioValue) /
        sizeof(ArkUI_NumberValue)};
-   maybeThrow(m_context.nodeApi.setAttribute(
-       m_nodeHandle, NODE_REFRESH_PULL_DOWN_RATIO, &pullDownRatioItem));
+   m_nodeApi->setAttribute(
+       m_nodeHandle, NODE_REFRESH_PULL_DOWN_RATIO, &pullDownRatioItem);
    return *this;
  }
 

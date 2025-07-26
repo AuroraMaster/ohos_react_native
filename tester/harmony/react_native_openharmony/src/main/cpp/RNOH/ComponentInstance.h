@@ -76,7 +76,7 @@ class ComponentInstance
     ComponentHandle componentHandle;
     std::string componentName;
     Dependencies::Shared dependencies;
-    ArkUINode::Context arkUINodeContext;
+    ArkUINode::Context::Shared arkUINodeContext;
   };
 
   virtual ArkUINode& getLocalRootArkUINode() = 0;
@@ -312,6 +312,7 @@ class ComponentInstance
   facebook::react::BorderMetrics m_oldBorderMetrics;
   facebook::react::LayoutMetrics m_layoutMetrics;
   Dependencies::Shared m_deps;
+  ArkUINode::Context::Shared m_arkUINodeCtx;
   std::unordered_set<std::string> m_ignoredPropKeys;
   facebook::react::ShadowView m_shadowView;
   int m_rnInstanceId = 0;

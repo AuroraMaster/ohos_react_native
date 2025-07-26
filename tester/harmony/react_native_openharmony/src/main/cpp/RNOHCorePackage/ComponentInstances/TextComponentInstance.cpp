@@ -22,7 +22,7 @@ const static float DEFAULT_LINE_SPACING = 0.15f;
 
 TextComponentInstance::TextComponentInstance(Context context)
     : CppComponentInstance(std::move(context)),
-      m_textNode(context.arkUINodeContext) {
+      m_textNode(m_arkUINodeCtx) {
 }
 
 TextComponentInstance::~TextComponentInstance() {

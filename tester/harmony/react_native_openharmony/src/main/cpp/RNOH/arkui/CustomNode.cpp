@@ -12,7 +12,7 @@
 #include "NativeNodeApi.h"
 
 namespace rnoh {
-CustomNode::CustomNode(Context context)
+CustomNode::CustomNode(const ArkUINode::Context::Shared& context)
     : ArkUINode(context, ArkUI_NodeType::ARKUI_NODE_CUSTOM),
       m_customNodeDelegate(nullptr) {
   userCallback_ = new UserCallback();
@@ -36,7 +36,8 @@ CustomNode::CustomNode(Context context)
       userData->callback(event);
     }
   };
-  maybeThrow(NativeNodeApi::getInstance()->addNodeCustomEventReceiver(m_nodeHandle, eventReceiver));
+  maybeThrow(NativeNodeApi::getInstance()->addNodeCustomEventReceiver(
+      m_nodeHandle, eventReceiver));
 
   maybeThrow(NativeNodeApi::getInstance()->registerNodeEvent(
       m_nodeHandle, NODE_ON_CLICK, 0, this));
@@ -48,8 +49,7 @@ CustomNode::CustomNode(Context context)
       m_nodeHandle, ARKUI_NODE_CUSTOM_EVENT_ON_LAYOUT, 90, userCallback_));
   ArkUI_NumberValue focusValue[] = {{.i32 = 1}};
   ArkUI_AttributeItem focusItem = {.value = focusValue, .size = 1};
-  maybeThrow(m_context.nodeApi.setAttribute(
-    m_nodeHandle, NODE_FOCUSABLE, &focusItem));
+  m_nodeApi->setAttribute(m_nodeHandle, NODE_FOCUSABLE, &focusItem);
   /**
    * This is for 2in1 CustomNode focusing problem, focusing would 
    * raise the component and setting ZIndex as 2^31-1, which would
@@ -59,8 +59,7 @@ CustomNode::CustomNode(Context context)
    */
   ArkUI_NumberValue zIndexValue[] = {{.i32 = 0}};
   ArkUI_AttributeItem zIndexItem = {.value = zIndexValue, .size = 1};
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_Z_INDEX, &zIndexItem));
+  m_nodeApi->setAttribute(m_nodeHandle, NODE_Z_INDEX, &zIndexItem);
 }
 
 void CustomNode::onMeasure(ArkUI_NodeCustomEventType eventType) {
@@ -73,19 +72,18 @@ void CustomNode::onMeasure(ArkUI_NodeCustomEventType eventType) {
     // int32_t height = rect->value[3].i32;
     int32_t width = getSavedWidth();
     int32_t height = getSavedHeight();
-    maybeThrow(m_context.nodeApi.setMeasuredSize(m_nodeHandle, width, height));
+    m_nodeApi->setMeasuredSize(m_nodeHandle, width, height);
 }
 
 void CustomNode::onLayout() {}
 
 void CustomNode::insertChild(ArkUINode& child, std::size_t index) {
-  maybeThrow(m_context.nodeApi.insertChildAt(
-      m_nodeHandle, child.getArkUINodeHandle(), static_cast<int32_t>(index)));
+  m_nodeApi->insertChildAt(
+      m_nodeHandle, child.getArkUINodeHandle(), static_cast<int32_t>(index));
 }
 
-void CustomNode::addChild(ArkUINode &child){
-  maybeThrow(m_context.nodeApi.addChild(
-      m_nodeHandle, child.getArkUINodeHandle()));
+void CustomNode::addChild(ArkUINode& child) {
+  m_nodeApi->addChild(m_nodeHandle, child.getArkUINodeHandle());
 }
 void CustomNode::removeChild(ArkUINode& child) {
   maybeThrow(NativeNodeApi::getInstance()->removeChild(
@@ -138,8 +136,7 @@ CustomNode::~CustomNode() {
 CustomNode& CustomNode::setAlign(int32_t align) {
   ArkUI_NumberValue value[] = {{.i32 = align}};
   ArkUI_AttributeItem item = {.value = value, .size = 1};
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_STACK_ALIGN_CONTENT, &item));
+  m_nodeApi->setAttribute(m_nodeHandle, NODE_STACK_ALIGN_CONTENT, &item);
   return *this;
 }
 
@@ -148,8 +145,7 @@ CustomNode& CustomNode::setFocusable(bool focusable) {
   ArkUI_NumberValue preparedFocusable[] = {{.i32 = focusableValue}};
   ArkUI_AttributeItem focusItem = {
       preparedFocusable, sizeof(preparedFocusable) / sizeof(ArkUI_NumberValue)};
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_FOCUSABLE, &focusItem));
+  m_nodeApi->setAttribute(m_nodeHandle, NODE_FOCUSABLE, &focusItem);
   return *this;
 }
 } // namespace rnoh

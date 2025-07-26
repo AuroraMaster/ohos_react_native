@@ -95,7 +95,7 @@ class ComponentInstanceFactory {
     return nullptr;
   }
 
-  void setArkUINodeContext(ArkUINode::Context arkUINodeContext) {
+  void setArkUINodeContext(const ArkUINode::Context::Shared& arkUINodeContext) {
     m_threadGuard.assertThread();
     m_arkUINodeContext = arkUINodeContext;
   }
@@ -106,6 +106,6 @@ class ComponentInstanceFactory {
     CustomComponentArkUINodeHandleFactory::Shared
         m_customComponentArkUINodeHandleFactory;
     ThreadGuard m_threadGuard{};
-    ArkUINode::Context m_arkUINodeContext;
+    ArkUINode::Context::Shared m_arkUINodeContext;
 };
 } // namespace rnoh

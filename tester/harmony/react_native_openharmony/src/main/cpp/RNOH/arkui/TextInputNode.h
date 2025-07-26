@@ -46,7 +46,7 @@ class TextInputNode : public TextInputNodeBase {
   TextInputNodeDelegate* m_textInputNodeDelegate;
 
  public:
-  explicit TextInputNode(Context context = {});
+  explicit TextInputNode(const ArkUINode::Context::Shared& context = nullptr);
   ~TextInputNode() override;
 
   facebook::react::Point getTextInputOffset() const;

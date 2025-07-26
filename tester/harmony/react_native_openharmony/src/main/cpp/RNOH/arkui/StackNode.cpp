@@ -13,7 +13,7 @@
 
 namespace rnoh {
 
-StackNode::StackNode(Context context)
+StackNode::StackNode(const ArkUINode::Context::Shared& context)
     : ArkUINode(context, ArkUI_NodeType::ARKUI_NODE_STACK),
       m_stackNodeDelegate(nullptr) {
   registerNodeEvent(NODE_ON_CLICK);
@@ -21,13 +21,12 @@ StackNode::StackNode(Context context)
 }
 
 void StackNode::insertChild(ArkUINode& child, std::size_t index) {
-  maybeThrow(m_context.nodeApi.insertChildAt(
-      m_nodeHandle, child.getArkUINodeHandle(), static_cast<int32_t>(index)));
+  m_nodeApi->insertChildAt(
+      m_nodeHandle, child.getArkUINodeHandle(), static_cast<int32_t>(index));
 }
 
-void StackNode::addChild(ArkUINode &child){
-  maybeThrow(m_context.nodeApi.addChild(
-      m_nodeHandle, child.getArkUINodeHandle()));
+void StackNode::addChild(ArkUINode& child) {
+  m_nodeApi->addChild(m_nodeHandle, child.getArkUINodeHandle());
 }
 void StackNode::removeChild(ArkUINode& child) {
   maybeThrow(NativeNodeApi::getInstance()->removeChild(
@@ -72,8 +71,7 @@ StackNode::~StackNode() {
 StackNode& StackNode::setAlign(int32_t align) {
   ArkUI_NumberValue value[] = {{.i32 = align}};
   ArkUI_AttributeItem item = {.value = value, .size = 1};
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_STACK_ALIGN_CONTENT, &item));
+  m_nodeApi->setAttribute(m_nodeHandle, NODE_STACK_ALIGN_CONTENT, &item);
   return *this;
 }
 } // namespace rnoh

@@ -17,7 +17,7 @@ namespace rnoh {
 ActivityIndicatorComponentInstance::ActivityIndicatorComponentInstance(
     Context context)
     : CppComponentInstance(std::move(context)),
-      m_loadingProgressNode(context.arkUINodeContext) {}
+      m_loadingProgressNode(m_arkUINodeCtx) {}
 
 void ActivityIndicatorComponentInstance::onPropsChanged(
     SharedConcreteProps const& props) {

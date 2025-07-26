@@ -18,7 +18,7 @@ const std::string INVALID_PATH_PREFIX = "invalidpathprefix/";
 
 ImageComponentInstance::ImageComponentInstance(Context context)
     : CppComponentInstance(std::move(context)),
-      m_imageNode(context.arkUINodeContext) {
+      m_imageNode(m_arkUINodeCtx) {
   this->getLocalRootArkUINode().setNodeDelegate(this);
   this->getLocalRootArkUINode().setInterpolation(
       ARKUI_IMAGE_INTERPOLATION_HIGH);

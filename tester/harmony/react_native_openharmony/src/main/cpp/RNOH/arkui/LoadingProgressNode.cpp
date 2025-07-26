@@ -9,7 +9,7 @@
 #include "NativeNodeApi.h"
 
 namespace rnoh {
-LoadingProgressNode::LoadingProgressNode(Context context)
+LoadingProgressNode::LoadingProgressNode(const ArkUINode::Context::Shared& context)
     : ArkUINode(context, ArkUI_NodeType::ARKUI_NODE_LOADING_PROGRESS) {}
 
 LoadingProgressNode& LoadingProgressNode::setColor(
@@ -21,8 +21,8 @@ LoadingProgressNode& LoadingProgressNode::setColor(
   ArkUI_AttributeItem loadingProgressColorItem = {
       loadingProgressColorValue.data(), loadingProgressColorValue.size()};
 
-  maybeThrow(m_context.nodeApi.setAttribute(
-      m_nodeHandle, NODE_LOADING_PROGRESS_COLOR, &loadingProgressColorItem));
+  m_nodeApi->setAttribute(
+      m_nodeHandle, NODE_LOADING_PROGRESS_COLOR, &loadingProgressColorItem);
   return *this;
 }
 
@@ -35,10 +35,10 @@ LoadingProgressNode& LoadingProgressNode::setAnimating(const bool& enable) {
       enableLoadingProgressNodeAnimationValue.data(),
       enableLoadingProgressNodeAnimationValue.size()};
 
-  maybeThrow(m_context.nodeApi.setAttribute(
+  m_nodeApi->setAttribute(
       m_nodeHandle,
       NODE_LOADING_PROGRESS_ENABLE_LOADING,
-      &enableLoadingProgressNodeAnimationItem));
+      &enableLoadingProgressNodeAnimationItem);
   return *this;
 };
 

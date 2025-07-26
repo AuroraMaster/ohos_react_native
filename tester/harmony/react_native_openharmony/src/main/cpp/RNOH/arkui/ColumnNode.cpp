@@ -14,15 +14,15 @@
 
 namespace rnoh {
 
-ColumnNode::ColumnNode(Context context)
+ColumnNode::ColumnNode(const ArkUINode::Context::Shared& context)
     : ArkUINode(context, ArkUI_NodeType::ARKUI_NODE_COLUMN),
       m_columnNodeDelegate(nullptr) {
   registerNodeEvent(NODE_ON_CLICK);
 }
 
 void ColumnNode::insertChild(ArkUINode& child, std::size_t index) {
-  maybeThrow(m_context.nodeApi.insertChildAt(
-      m_nodeHandle, child.getArkUINodeHandle(), static_cast<int32_t>(index)));
+  m_nodeApi->insertChildAt(
+      m_nodeHandle, child.getArkUINodeHandle(), static_cast<int32_t>(index));
 }
 
 void ColumnNode::removeChild(ArkUINode& child) {
