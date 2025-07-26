@@ -87,11 +87,11 @@ Tid:xxxx, Name:RNOH_BACKGROUND
  
 该问题的解决方法：
  
-需要在 `entry/build-profile.json5` 中增加：
- 
+需要在 har 模块 `/build-profile.json5` 中增加：
+
 ```json5
-"nativeLib": { // apiType字段同级别 
-   "excludeFromHar": false
+"nativeLib": {  // 与externalNativeOptions字段同级别
+  "excludeFromHar": false
 }
 ```
  

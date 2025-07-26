@@ -52,7 +52,7 @@
                 "path": "./src/main/cpp/CMakeLists.txt",  // native层对应的CMakeLists.txt
                 "arguments": "",
                 "cppFlags": "",            
-            }                
+            }
         }
         ```
     - 原因 2 解决方案：
@@ -68,10 +68,10 @@
  
         har 模块 `/build-profile.json5` 中增加：
         ```json5
-        （modules.json5中type=har）
-            "nativeLib": { // apiType字段同级别
-            "excludeFromHar": false
-            }    
+        //（modules.json5中type=har）
+        "nativeLib": {  // 与externalNativeOptions字段同级别
+          "excludeFromHar": false
+        }
         ```
         **参数说明详见**[文档](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-hvigor-build-profile-V5)。
  
