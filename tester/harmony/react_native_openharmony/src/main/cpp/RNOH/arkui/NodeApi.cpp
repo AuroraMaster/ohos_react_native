@@ -7,9 +7,8 @@
 
 #include "NodeApi.h"
 
-#include <deviceinfo.h>
 #include "DynamicArkUILoader.h"
-#include "glog/logging.h"
+#include "NativeNodeApi.h"
 #include "RNOH/ArkTSBridge.h"
 
 namespace rnoh {

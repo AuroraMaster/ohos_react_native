@@ -9,7 +9,6 @@
 #include <arkui/native_node.h>
 #include <stdexcept>
 #include <string>
-#include "NativeNodeApi.h"
 #include "glog/logging.h"
 
 namespace rnoh {
