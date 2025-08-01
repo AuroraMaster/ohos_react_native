@@ -34,11 +34,11 @@ namespace rnoh {
 
 AnimatedNodesManager::AnimatedNodesManager(
     const std::function<void(int)>& scheduleUpdateFn,
-    const std::function<void()>& scheduleStopFn,
-    const std::function<void()>& scheduleStartFn)
+    const std::function<void()>& scheduleStartFn,
+    const std::function<void()>& scheduleStopFn)
     : m_scheduleUpdateFn(scheduleUpdateFn),
-      m_scheduleStopFn(scheduleStopFn),
-      m_scheduleStartFn(scheduleStartFn) {}
+      m_scheduleStartFn(scheduleStartFn),
+      m_scheduleStopFn(scheduleStopFn) {}
 
 void AnimatedNodesManager::createNode(
     facebook::react::Tag tag,
@@ -281,7 +281,11 @@ PropUpdatesList AnimatedNodesManager::runUpdates(long long frameTimeNanos) {
   }
 
   auto propUpdatesList = updateNodes();
-  auto finalFrameRate = getMinAcceptableFrameRate(valueNodeTags);
+
+  int32_t finalFrameRate;
+  if (IsAtLeastApi20()) {
+    finalFrameRate = getMinAcceptableFrameRate(valueNodeTags);
+  }
 
   for (auto animationId : finishedAnimations) {
     m_animationById.at(animationId)->endCallback_(true);
@@ -289,11 +293,17 @@ PropUpdatesList AnimatedNodesManager::runUpdates(long long frameTimeNanos) {
     m_animationById.erase(animationId);
   }
   if (m_animationById.empty()) {
-    m_scheduleStopFn();
+    if (IsAtLeastApi20()) {
+      m_scheduleStopFn();
+    }
     m_isRunningAnimations = false;
   } else {
     m_isRunningAnimations = true;
-    m_scheduleUpdateFn(finalFrameRate);
+    if (IsAtLeastApi20()) {
+      m_scheduleUpdateFn(finalFrameRate);
+    } else {
+      m_scheduleStartFn();
+    }
   }
   return propUpdatesList;
 }

@@ -16,6 +16,7 @@
 #include "Drivers/AnimationDriver.h"
 #include "Drivers/EventAnimationDriver.h"
 #include "Nodes/AnimatedNode.h"
+#include "RNOH/ApiVersionCheck.h"
 
 namespace rnoh {
 using PropUpdate = std::pair<facebook::react::Tag, folly::dynamic>;
@@ -30,8 +31,8 @@ class AnimatedNodesManager {
  public:
   AnimatedNodesManager(
       const std::function<void(int)>& scheduleUpdateFn,
-      const std::function<void()>& scheduleStopFn,
-      const std::function<void()>& scheduleStartFn);
+      const std::function<void()>& scheduleStartFn,
+      const std::function<void()>& scheduleStopFn);
 
   void createNode(facebook::react::Tag tag, folly::dynamic const& config);
   void dropNode(facebook::react::Tag tag);
@@ -99,8 +100,8 @@ class AnimatedNodesManager {
       const std::vector<facebook::react::Tag>& valueNodeTags);
 
   const std::function<void(int32_t)> m_scheduleUpdateFn;
-  const std::function<void()> m_scheduleStopFn;
   const std::function<void()> m_scheduleStartFn;
+  const std::function<void()> m_scheduleStopFn;
   std::unordered_map<facebook::react::Tag, std::unique_ptr<AnimatedNode>>
       m_nodeByTag;
   std::unordered_map<facebook::react::Tag, std::unique_ptr<AnimationDriver>>

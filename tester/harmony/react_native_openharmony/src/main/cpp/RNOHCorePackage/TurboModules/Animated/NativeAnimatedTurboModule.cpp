@@ -256,6 +256,15 @@ bool NativeAnimatedTurboModule::isDisplaySoloistRegistered() const {
   return m_isDisplaySoloistRegistered.load();
 }
 
+void NativeAnimatedTurboModule::requestAnimationFrame() {
+  m_vsyncListener->requestFrame(
+      [weakSelf = weak_from_this()](long long _timestamp) {
+        if (auto self = weakSelf.lock()) {
+          self->runUpdates(_timestamp);
+        }
+      });
+}
+
 void NativeAnimatedTurboModule::setDisplaySoloistFrameRate(int32_t frameRate) {
   if (frameRate != m_currentFrameRate) {
     DisplaySoloist_ExpectedRateRange range = {0, 120, frameRate};
@@ -314,15 +323,23 @@ NativeAnimatedTurboModule::NativeAnimatedTurboModule(
     const std::string name)
     : rnoh::ArkTSTurboModule(ctx, name),
       m_nativeDisplaySoloist(
-          OH_DisplaySoloist_Create(false),
-          &OH_DisplaySoloist_Destroy),
+          IsAtLeastApi20() ? OH_DisplaySoloist_Create(false) : nullptr,
+          IsAtLeastApi20()
+              ? [](OH_DisplaySoloist* d) { OH_DisplaySoloist_Destroy(d); }
+              : [](OH_DisplaySoloist* d) {}),
       m_isDisplaySoloistRegistered(false),
       m_animatedNodesManager(
           [this](int frameRate) {
             this->setDisplaySoloistFrameRate(frameRate);
           },
-          [this]() { this->stopDisplaySoloist(); },
-          [this]() { this->startDisplaySoloist(); }) {
+          [this]() {
+            if (IsAtLeastApi20()) {
+              this->startDisplaySoloist();
+            } else {
+              this->requestAnimationFrame();
+            }
+          },
+          [this]() { this->stopDisplaySoloist(); }) {
   methodMap_ = {
       {"startOperationBatch", {0, rnoh::startOperationBatch}},
       {"finishOperationBatch", {0, rnoh::finishOperationBatch}},
