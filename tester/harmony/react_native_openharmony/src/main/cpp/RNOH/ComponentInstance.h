@@ -22,6 +22,7 @@
 #include "RNOH/TouchTarget.h"
 #include "RNOH/arkui/ArkUINode.h"
 #include "RNOH/arkui/UIInputEventHandler.h"
+#include "RNOH/ArkTSTurboModule.h"
 
 namespace rnoh {
 
