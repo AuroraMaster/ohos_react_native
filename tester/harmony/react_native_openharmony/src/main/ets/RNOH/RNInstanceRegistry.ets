@@ -128,6 +128,7 @@ export class RNInstanceRegistry {
     const packages = options.createRNPackages({})
     packages.unshift(new RNOHCorePackage({}));
     await rnInstance.initialize(packages);
+    rnInstance.setUIAbilityContext(this.uiAbilityContext);
     this.instanceMap.set(id, rnInstance);
     return rnInstance;
   }

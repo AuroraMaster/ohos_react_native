@@ -39,7 +39,7 @@ export class KeyboardObserverTurboModule extends TurboModule {
   }
 
   private async subscribeListeners() {
-    const windowInstance = await window.getLastWindow(this.ctx.uiAbilityContext);
+    const windowInstance = await this.ctx.rnInstance.getRNWindow();
     // using inputMethodEngine.on('keyboardShow') and .on('keyboardHide') would be preferable, but it doesn't work at the time of writing.
     windowInstance.on('keyboardHeightChange', async (keyboardHeight) => {
       if (keyboardHeight > 0) {

@@ -32,6 +32,7 @@ import resourceManager from '@ohos.resourceManager'
 import { DisplayMetricsManager } from './DisplayMetricsManager'
 import { WorkerThread } from "./WorkerThread"
 import font from "@ohos.font"
+import { common } from '@kit.AbilityKit'
 
 export type Resource = Exclude<font.FontOptions["familySrc"], string>
 
@@ -329,6 +330,10 @@ export interface RNInstance {
    * @example registerFont("Pacifico-Regular", "/data/storage/el2/base/files/Pacifico-Regular.ttf")
    */
   registerFont(fontFamily: string, fontResource: Resource | string)
+  /**
+   * @returns The RNWindow associated with this RNInstance.
+   */
+  getRNWindow(): Promise<window.Window>;
 }
 
 /**
@@ -458,6 +463,8 @@ export class RNInstanceImpl implements RNInstance {
   private unregisterWorkerMessageListener = () => {
   };
   private uiCtx: UIContext;
+  private uiAbilityContext: common.UIAbilityContext = undefined;
+  private rnWindow: window.Window = undefined;
 
   /**
    * @deprecated
@@ -1042,6 +1049,30 @@ export class RNInstanceImpl implements RNInstance {
     })()
     this.fontPathByFontFamily[fontFamily] = fontPath
     this.napiBridge.registerFont(this.id, fontFamily, fontPath)
+  }
+
+  public setUIAbilityContext(uiAbilityContext: common.UIAbilityContext): void {
+    if (uiAbilityContext != undefined) {
+      this.uiAbilityContext = uiAbilityContext;
+    }
+  }
+
+  public setRNWindow(rnWindow: window.Window): void {
+    if (rnWindow != undefined) {
+      this.rnWindow = rnWindow;
+      return;
+    }
+
+    if (this.uiAbilityContext != undefined) {
+      this.rnWindow = this.uiAbilityContext.windowStage.getMainWindowSync();
+    }
+  }
+
+  public async getRNWindow(): Promise<window.Window> {
+    if (this.rnWindow != undefined) {
+      return this.rnWindow;
+    }
+    return await window.getLastWindow(this.uiAbilityContext);
   }
 }
 

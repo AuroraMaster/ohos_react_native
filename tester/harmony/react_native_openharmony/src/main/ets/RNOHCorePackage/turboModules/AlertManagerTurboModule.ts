@@ -39,7 +39,7 @@ export class AlertManagerTurboModule extends TurboModule {
   }
 
   alert(options: AlertOptions, onError: (error: string) => void, onAction: (action: string, buttonKey?: number) => void) {
-    window.getLastWindow(this.ctx.uiAbilityContext).then((value) => {
+    this.ctx.rnInstance.getRNWindow().then((value) => {
       {
         const uiContext = value.getUIContext()
 
