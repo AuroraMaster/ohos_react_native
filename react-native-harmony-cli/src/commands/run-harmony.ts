@@ -9,9 +9,16 @@ import { AbsolutePath, DescriptiveError } from '../core';
 import { Logger, RealFS } from '../io';
 import { RealCliExecutor } from '../io/CliExecutor';
 import { Command } from './types';
+import fs from 'fs-extra';
 import crypto from 'node:crypto';
 import JSON5 from 'json5';
 import inquirer from 'inquirer';
+import path from 'path';
+import {
+  getDefaultUserTerminal,
+  startServerInNewWindow,
+  findDevServerPort,
+} from '@react-native-community/cli-tools';
 
 const COMMAND_NAME = 'run-harmony';
 
@@ -48,6 +55,15 @@ export const commandRunHarmony: Command = {
       name: '--simulator <string>',
       description: 'The name of the simulator that are currently connected.',
       default: 'undefined',
+    },
+    {
+      name: '--port <number>',
+      description: 'The port to use for the device.',
+      default: process.env.RCT_METRO_PORT || 8081,
+    },
+    {
+      name: '--no-packager',
+      description: 'Do not launch packager while running the app.',
     },
   ],
   func: async (_argv, _config, rawArgs: any) => {
@@ -93,6 +109,8 @@ export const commandRunHarmony: Command = {
       const moduleName: string = rawArgs.module;
       const abilityName: string = rawArgs.ability;
       const simulatorName: string = rawArgs.simulator;
+      const defaultPort: number = rawArgs.port;
+      const packager: boolean = rawArgs.packager;
       const devEcoStudioToolsPath = new AbsolutePath(
         DEVECO_SDK_HOME
       ).copyWithNewSegment('..', 'tools');
@@ -164,26 +182,31 @@ export const commandRunHarmony: Command = {
 
       const deviceOrSimulatorName = await selectDevice(deviceAndSimulatorInfo)
 
-      const isForwardPortingEnabled = async () => {
-        let fportInfo: string = '';
-        await cli.run(
-          sdkToolchainsPath.copyWithNewSegment('hdc').toString(),
-          {
-            args: ['fport', 'ls'],
-            cwd: harmonyProjectPath,
-            onStdout: (msg) => {
-              fportInfo += msg;
-            },
-            onStderr: (msg) => {
-              logger.debug((s) => s.gray(msg.trimEnd()));
-            },
-          });
-        if (fportInfo.includes('tcp:8081 tcp:8081')) {
-          return true;
-        } else {
-          return false;
+      let currentPort: number = defaultPort;
+      if (packager) {
+        const root: string = _config.root || '.';
+        const reactNativePath: string = _config.reactNativePath || path.dirname(
+          require.resolve('react-native', { paths: [root] }),
+        );
+        const { port: newPort, startPackager } = await findDevServerPort(
+          defaultPort,
+          root,
+        );
+
+        if (newPort !== 8081) {
+          await trySetMetroPort(harmonyProjectPath.copyWithNewSegment(
+            'entry', 'src', 'main', 'ets', 'pages', 'Index.ets').toString(), newPort);
         }
-      };
+        if (startPackager) {
+          startServerInNewWindow(
+            newPort,
+            root,
+            reactNativePath,
+            getDefaultUserTerminal(),
+          );
+        }
+        currentPort = newPort;
+      }
 
       const runJob = async (name: string, job: () => Promise<void>) => {
         const stop = logger.start((s) => s.bold(name));
@@ -299,6 +322,31 @@ export const commandRunHarmony: Command = {
           .copyWithNewSegment('hdc')
           .toString();
         const hdcPathStr = process.platform === 'win32' ? `"${hdcPathStrRaw.toString()}"` : hdcPathStrRaw;
+
+        const tryRemoveForwardPorting = async () => {
+          let fportInfo: string = '';
+          await cli.run(
+            hdcPathStrRaw,
+            {
+              args: ['fport', 'ls'],
+              cwd: harmonyProjectPath,
+              onStdout: (msg) => {
+                fportInfo += msg;
+              },
+              onStderr: (msg) => {
+                logger.debug((s) => s.gray(msg.trimEnd()));
+              },
+            });
+          if (fportInfo.includes(`tcp:${currentPort} tcp:${currentPort}`)) {
+            await exec(hdcPathStr, [
+              'fport',
+              'rm',
+              `tcp:${currentPort}`,
+              `tcp:${currentPort}`
+            ]);
+          }
+        };
+
         await exec(hdcPathStr, ['-t', deviceOrSimulatorName, 'shell', 'aa', 'force-stop', bundleName]);
         try {
           await exec(hdcPathStr, ['-t', deviceOrSimulatorName, 'shell', 'mkdir', ohosTmpDirPath]);
@@ -354,20 +402,13 @@ export const commandRunHarmony: Command = {
           '-b',
           bundleName,
         ]);
-        if (await isForwardPortingEnabled() === true) {
-          await exec(hdcPathStr, [
-            'fport',
-            'rm',
-            'tcp:8081',
-            'tcp:8081'
-          ]);
-        }
+        await tryRemoveForwardPorting();
         await exec(hdcPathStr, [
           '-t',
           deviceOrSimulatorName,
           'rport',
-          'tcp:8081',
-          'tcp:8081'
+          `tcp:${currentPort}`,
+          `tcp:${currentPort}`
         ]);
       });
     } catch (err) {
@@ -399,4 +440,39 @@ function generateRandomString(length: number = 32): string {
     result += chars[randomIndex];
   }
   return result;
+}
+
+async function trySetMetroPort(filePath: string, port: number): Promise<void> {
+  let content = await fs.readFile(filePath, 'utf-8');
+
+  const reFromServerIp = /MetroJSBundleProvider\.fromServerIp\(\s*"([^"]+)"\s*,\s*(\d+)\s*\)/;
+  if (reFromServerIp.test(content)) {
+    content = content.replace(reFromServerIp, (_match: any, host: any) => {
+      return `MetroJSBundleProvider.fromServerIp("${host}", ${port})`;
+    });
+    await fs.writeFile(filePath, content, 'utf-8');
+    return;
+  }
+
+  const reNewProvider = /new\s+MetroJSBundleProvider\s*\(\s*\)/;
+  if (reNewProvider.test(content)) {
+    content = content.replace(reNewProvider, () => {
+      return `MetroJSBundleProvider.fromServerIp("localhost", ${port}),\n              new MetroJSBundleProvider()`;
+    });
+    await fs.writeFile(filePath, content, 'utf-8');
+    return;
+  }
+
+  throw new DescriptiveError({
+    whatHappened: `Unable to set the specified port [${port}] for the Metro server automatically.`,
+    whatCanUserDo: [
+      `Please manually add "MetroJSBundleProvider.fromServerIp("localhost", ${port})" in the "new AnyJSBundleProvider" section of your ${filePath} file.
+e.g:
+      new AnyJSBundleProvider([
+        MetroJSBundleProvider.fromServerIp("localhost", ${port}),
+        new MetroJSBundleProvider(),
+        new ResourceJSBundleProvider(this.rnohCoreContext.uiAbilityContext.resourceManager, 'hermes_bundle.hbc'),
+      ])`
+    ],
+  });
 }
