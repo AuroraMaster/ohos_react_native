@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.72.84
+- chore:API level isolation LTPO feature,([1bbf4c779](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1bbf4c779af665083bd0084c28ad2f751eacb9a5))
+- When modifying multiple windows, the issue of getting mismatched windows using getLastWindow（72）,([e3d9338f6](https://gitcode.com/openharmony-sig/ohos_react_native/commit/e3d9338f6816b284983a668478138ca44b4eedd7))
+- fix:Compilation failed because header file dependencies are missing,([caee879a0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/caee879a05738c6678757970c0560fed133c8a17))
+- fix: Solve the compilation problem of linear-gradient,([ea6fc5bdb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ea6fc5bdbdb3fd13d51d09ac85ab74a2ce1783d9))
+- chore: updated to version 6.0.0.501(0.72.83),([8999c67a6](https://gitcode.com/openharmony-sig/ohos_react_native/commit/8999c67a6e9a5c87357133d238461ea1990c8c1d))
+
 ## 0.72.83
 - fix:crash due to destruction on main thread,([1298e437](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1298e4371589dc8431cebb1312263e5092859680))
 - Improve the stability and abstraction of the API（72）.,([07ba8fba](https://gitcode.com/openharmony-sig/ohos_react_native/commit/07ba8fbaf0e74700553cca87f3af5ea420ec1f4b))
