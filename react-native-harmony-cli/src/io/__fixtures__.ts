@@ -8,7 +8,7 @@
 import { AbsolutePath, DescriptiveError, Dirent, FS } from '../core';
 import { CliExecutor, CliOptions } from './CliExecutor';
 import { IFs, memfs, NestedDirectoryJSON } from 'memfs';
-import RawMemDirent from 'memfs/lib/node/Dirent';
+import RawMemDirent from 'memfs/lib/Dirent';
 import { Logger } from './Logger';
 import chalk from 'chalk';
 

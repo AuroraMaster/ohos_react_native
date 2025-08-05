@@ -8,7 +8,7 @@
 import pathUtils from 'node:path';
 import { AbsolutePath } from '../core';
 import { IFs } from 'memfs';
-import MemDirent from 'memfs/lib/node/Dirent';
+import MemDirent from 'memfs/lib/Dirent';
 import nodeFS from 'node:fs';
 import { Dirent } from 'node:fs';
 
