@@ -123,8 +123,15 @@ class ArkUITypography final {
             OH_Drawing_TypographyLayout(m_typography.get(), maxWidth);
             // TextComponentInstance implements left margin by layoutConstraints
             // typography doesn't need to, also shouldn't, have left margin
-            // do re-layout here using the longest line width as max width to eliminate the left margin
-            OH_Drawing_TypographyLayout(m_typography.get(), OH_Drawing_TypographyGetLongestLine(m_typography.get()));
+            // do re-layout here using the longest line width as max width to
+            // eliminate the left margin
+            //
+            // The return value of the OH_Drawing_TypographyGetLongestLine ()
+            // interface needs to be rounded up; otherwise, abnormal text line
+            // breaks may occur on some devices, such as mate 70 pro.
+            OH_Drawing_TypographyLayout(
+                m_typography.get(),
+                std::ceil(OH_Drawing_TypographyGetLongestLine(m_typography.get())));
         }
 
   std::shared_ptr<OH_Drawing_Typography>
