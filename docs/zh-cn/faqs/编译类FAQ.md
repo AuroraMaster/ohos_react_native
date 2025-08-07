@@ -272,3 +272,22 @@ target_link_libraries(xxx PUBLIC ${folly_compile_options})
             "check-action-status":"false"
         }
         ```
+
+## RN前端工程编译打包时提示错误信息："error: unknown command 'codegen-lib-harmony'"
+- 错误提示
+```
+ error: unknown command 'codegen-lib-harmony'
+```
+
+- 原因
+社区metro库版本更新及memfs库版本更新导致不兼容
+
+- 解决
+在前端工程目录中的package.json文件新增下面两个依赖，然后执行npm i命令，再重新编译即可。
+```
+"dependencies": {
+  ...
+  "metro": "0.82.5",
+  "memfs": "4.17.2"
+}
+```
