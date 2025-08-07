@@ -47,9 +47,6 @@ CustomNode::CustomNode(const ArkUINode::Context::Shared& context)
       m_nodeHandle, ARKUI_NODE_CUSTOM_EVENT_ON_MEASURE, 89, userCallback_));
   maybeThrow(NativeNodeApi::getInstance()->registerNodeCustomEvent(
       m_nodeHandle, ARKUI_NODE_CUSTOM_EVENT_ON_LAYOUT, 90, userCallback_));
-  ArkUI_NumberValue focusValue[] = {{.i32 = 1}};
-  ArkUI_AttributeItem focusItem = {.value = focusValue, .size = 1};
-  m_nodeApi->setAttribute(m_nodeHandle, NODE_FOCUSABLE, &focusItem);
   /**
    * This is for 2in1 CustomNode focusing problem, focusing would 
    * raise the component and setting ZIndex as 2^31-1, which would
