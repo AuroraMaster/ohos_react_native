@@ -5,7 +5,7 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, TextStyle, TouchableOpacity, View} from 'react-native';
 import {TestSuite} from '@rnoh/testerino';
 import {TestCase} from '../../components';
 import {Button} from '../../components';
@@ -303,7 +303,7 @@ export function TextNestedTest() {
       </TestCase.Example>
       <TestCase.Example
         modal
-        itShould="increase the counter when 'press me' is pressed (handling gestures in text fragments)">
+        itShould="increase the counter when 'Press Me' is pressed (handling gestures in text fragments)">
         <TextPressNestedTest />
       </TestCase.Example>
       <TestCase.Manual
@@ -409,6 +409,19 @@ const TextPressRetentionOffsetTest = () => {
 const TextPressNestedTest = () => {
   const [textPressCount, setTextPressCount] = useState(0);
   const [attachmentPressCount, setAttachmentPressCount] = useState(0);
+  const TextAligns: Array<TextStyle['textAlign']> = [
+    'auto',
+    'left',
+    'center',
+    'right',
+    'justify',
+    undefined,
+  ];
+  const [alignIndex, setAlignIndex] = useState(0);
+  const [mutil, setMutil] = useState(false);
+  const [hasPadding, setHasPadding] = useState(false);
+  const [hasMargin, setHasMargin] = useState(false);
+  const [hasAttachment, setHasAttachment] = useState(false);
 
   return (
     <View style={{height: 500, justifyContent: 'center'}}>
@@ -424,21 +437,66 @@ const TextPressNestedTest = () => {
         style={{
           backgroundColor: 'lightblue',
           height: 250,
-          justifyContent: 'center',
+
         }}>
-        <Text style={{backgroundColor: 'green', height: 250}}>
+        <Text
+          style={{
+            textAlign: TextAligns[alignIndex % 6],
+            padding: hasPadding ? 40 : 0,
+            margin: hasMargin ? 20 : 0,
+          }}>
+          {mutil
+            ? 'Text with multiple lines ======================================== '
+            : 'SingleLine '}
           <Text
-            style={{backgroundColor: 'purple', height: 150, fontSize: 34}}
+            style={{
+              color: 'blue',
+              textAlign: 'right',
+            }}
             onPress={() => setTextPressCount(textPressCount + 1)}>
-            press me (on android press below also triggers event)
+            Press Me
           </Text>
-          <View>
-            <Button
-              onPress={() => setAttachmentPressCount(prev => prev + 1)}
-              label="Press me (Attachment)"
-            />
-          </View>
+          ====
+          {hasAttachment ? (
+            <View>
+              <Button
+                onPress={() => setAttachmentPressCount(prev => prev + 1)}
+                label="Press Me"
+              />
+            </View>
+          ) : null}
         </Text>
+      </View>
+      <View
+        style={{
+          backgroundColor: 'lightyellow',
+        }}>
+        <Text>Below is the property controller.</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setAlignIndex(alignIndex + 1)}>
+          <Text>textAlign: {TextAligns[alignIndex % 6]}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setMutil(!mutil)}>
+          <Text>{mutil ? 'Multiline' : 'Singleline'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setHasPadding(!hasPadding)}>
+          <Text>{hasPadding ? 'HasPadding' : 'NoPadding'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setHasMargin(!hasMargin)}>
+          <Text>{hasMargin ? 'HasMargin' : 'NoMargin'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setHasAttachment(!hasAttachment)}>
+          <Text>{hasAttachment ? 'HasAttachment' : 'NoAttachment'}</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -475,5 +533,9 @@ const styles = StyleSheet.create({
     height: 15,
     width: 15,
     backgroundColor: 'yellow',
+  },
+  button: {
+    backgroundColor: 'pink',
+    padding: 8,
   },
 });
