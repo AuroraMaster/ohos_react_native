@@ -222,7 +222,7 @@ function throwErrorIfUnsupportedCodegenVersion(
       whatHappened: `Package "${packageName}" requires codegenVersion: ${codegenVersion}, which is not supported (maxSupportedCodegenVersion=${maxSupportedCodegenVersion}).`,
       whatCanUserDo: [
         `Try downgrading "${packageName}".`,
-        'Update the "@rnoh/react-native-harmony-cli" package.',
+        'Update the "@react-native-oh/react-native-harmony-cli" package.',
       ],
     });
   }
