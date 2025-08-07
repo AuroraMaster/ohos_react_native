@@ -43,7 +43,6 @@
     "@rnoh/react-native-harmony-cli": "file:../react-native-harmony-cli/rnoh-react-native-harmony-cli-0.0.34.tgz",
     "@types/react": "^18.2.47",
     "react": "18.2.0",
-    "react-native": "0.72.5",
-	"metro": "0.82.5"
+    "react-native": "0.72.5"
   }
 }

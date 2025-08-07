@@ -59,7 +59,8 @@
     "memfs": "4.12.0",
     "mustache": "^4.2.0",
     "tar": "^6.1.15",
-    "tmp": "^0.2.1"
+    "tmp": "^0.2.1",
+    "metro": "0.82.5"
   },
   "homepage": "https://gitee.com/openharmony-sig/ohos_react_native",
   "repository": {
