@@ -14,6 +14,7 @@ namespace rnoh {
 constexpr int API_LEVEL_20 = 20;
 
 /**
+ * @internal
  * @brief Lazily check if API level is at least the given level.
  *
  * @tparam ApiLevel Minimum API level to check.
@@ -30,8 +31,9 @@ inline bool IsAtLeastApi() {
 
 /**
  * @ThreadSafe
+ * @internal
+ * @brief Check if current API level is at least 20.
  *
- * Check if current API level is at least 20.
  * @return true if API level >= 20, false otherwise.
  */
 inline bool IsAtLeastApi20() {

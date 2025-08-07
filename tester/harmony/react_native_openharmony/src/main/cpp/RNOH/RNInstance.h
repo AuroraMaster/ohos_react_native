@@ -69,7 +69,7 @@ class RNInstance {
   /**
    * @actor RNOH_LIBRARY
    * @brief Prevents locking RNInstance if it's about to be destroyed,
-   * avoiding crashes when the last shared_ptr is held on a non-JS thread.
+   * avoiding crashes when the last shared_ptr is held on main thread.
    */
   class SafeWeak {
    public:
