@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.72.85
+- fix: the click response position offset in nested text scenarios.​,([ef378c368](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ef378c3689a026b06dc0a811352ce7db5b274048))
+- fix: The text content abnormally breaks lines on mate 70 pro,([2ba6b3bd3](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2ba6b3bd35f6f26e41468835efc91c1ec90e0486))
+- fix: Update the default value of the focusable property for the CustomNode to false.,([0985df07d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0985df07daa169f27cd41fd41b63c8b4f965e10b))
+- chore:modify doc,([0b47028ba](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0b47028ba3a8e3eded007e756e317ebf7df8cc19))
+- chore: updated to version 6.0.0.502(0.72.84),([c0fb823a5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c0fb823a53967a6c34ba521526a603687c9ad0d8))
+
 ## 0.72.84
 - chore:API level isolation LTPO feature,([1bbf4c779](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1bbf4c779af665083bd0084c28ad2f751eacb9a5))
 - When modifying multiple windows, the issue of getting mismatched windows using getLastWindow（72）,([e3d9338f6](https://gitcode.com/openharmony-sig/ohos_react_native/commit/e3d9338f6816b284983a668478138ca44b4eedd7))

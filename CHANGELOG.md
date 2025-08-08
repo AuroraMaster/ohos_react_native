@@ -1,5 +1,16 @@
 # Changelog
 
+## 6.0.0.503
+- fix: the click response position offset in nested text scenarios.​,([ef378c368](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ef378c3689a026b06dc0a811352ce7db5b274048))
+- fix: The text content abnormally breaks lines on mate 70 pro,([2ba6b3bd3](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2ba6b3bd35f6f26e41468835efc91c1ec90e0486))
+- fix: Update the default value of the focusable property for the CustomNode to false.,([0985df07d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0985df07daa169f27cd41fd41b63c8b4f965e10b))
+- chore:modify doc,([0b47028ba](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0b47028ba3a8e3eded007e756e317ebf7df8cc19))
+- chore: change @rnoh/react-native-harmony-cli to @react-native-oh/react-native-harmony-cli,([09e79ae05](https://gitcode.com/openharmony-sig/ohos_react_native/commit/09e79ae05af0ed1e1b2b31e5d252caff72e86109))
+- Chore: Set the metro version to 0.82.5.,([dcb0c39b3](https://gitcode.com/openharmony-sig/ohos_react_native/commit/dcb0c39b3d2192392071c94729ad3e17a4b85c2f))
+- fix: Register ContainerView,([0aa20a0dd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0aa20a0dd82a8e6062e14fe0eb6eade6fccee57c))
+- Chore: update memfs version to 4.12.0(72),([9a7c7fb8b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/9a7c7fb8b09b94f667dbe46a18ac2585ad22cb5e))
+- chore: updated to version 6.0.0.502(0.72.84),([c0fb823a5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c0fb823a53967a6c34ba521526a603687c9ad0d8))
+
 ## 6.0.0.502
 - chore:API level isolation LTPO feature,([1bbf4c779](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1bbf4c779af665083bd0084c28ad2f751eacb9a5))
 - feat: Add the --port and --no-packager parameters to the run-harmony command.,([cd6a0daaf](https://gitcode.com/openharmony-sig/ohos_react_native/commit/cd6a0daaf373ec3e7bedf742abe794751fa70036))
