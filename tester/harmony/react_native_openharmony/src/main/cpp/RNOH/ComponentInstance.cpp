@@ -32,10 +32,15 @@ void ComponentInstance::insertChild(
   m_children.insert(it, std::move(childComponentInstance));
 }
 
-void ComponentInstance::removeChild(ComponentInstance::Shared childComponentInstance) {
-    auto it = std::find(m_children.begin(), m_children.end(), childComponentInstance);
+void ComponentInstance::removeChild(
+    ComponentInstance::Shared childComponentInstance) {
+  auto it =
+      std::find(m_children.begin(), m_children.end(), childComponentInstance);
+  if (it != m_children.end()) {
+    auto childComponentInstance = std::move(*it);
     m_children.erase(it);
     onChildRemoved(childComponentInstance);
+  }
 }
 
 } // namespace rnoh
