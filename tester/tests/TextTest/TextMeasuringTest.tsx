@@ -8,7 +8,7 @@
 import {Text, View, Button} from 'react-native';
 import {TestSuite, TestCase} from '@rnoh/testerino';
 import {SAMPLE_PARAGRAPH_TEXT} from './fixtures';
-import {useState} from 'react';
+import {useState, useRef} from 'react';
 
 export function TextMeasuringTest() {
   return (
@@ -374,6 +374,24 @@ export function TextMeasuringTest() {
             </Text>
           </Text>
         </TestCase>
+        <TestCase
+          itShould="auto pass when onTextLayout provides complete text information"
+          initialState={null}
+          arrange={({setState, state, done}: any) => {
+            const safeDone = typeof done === 'function' ? done : () => {};
+            return (
+              <TextLayoutAutoPassTestWithCallback
+                onLayoutComplete={(isValid: boolean) => {
+                  setState(isValid);
+                  safeDone();
+                }}
+              />
+            );
+          }}
+          assert={({expect, state}: any) => {
+            expect(state).to.be.true;
+          }}
+        />
       </TestSuite>
     </TestSuite>
   );
@@ -391,6 +409,75 @@ const TextUpdateNumberOfLinesTest = () => {
         }}
       />
       <Text numberOfLines={testCases[caseIndex]}>{SAMPLE_PARAGRAPH_TEXT}</Text>
+    </View>
+  );
+};
+
+const TextLayoutAutoPassTestWithCallback = (
+  { onLayoutComplete }: { onLayoutComplete: (isValid: boolean) => void }
+) => {
+  const [textInfo, setTextInfo] = useState<{
+    text: string;
+    lines: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const testCaseRef = useRef(null);
+
+  const expectedText =
+    '这是一段示例文本，用于演示onTextLayout回调的使用。你可以通过这个回调获取文本的布局信息，例如行数、宽度和高度。';
+
+  const handleTextLayout = (event: any) => {
+    const { lines } = event.nativeEvent;
+    if (lines && lines.length > 0) {
+      const allText = lines.map((line: any) => line.text ?? '').join('');
+      const firstLine = lines[0];
+      const lastLine = lines[lines.length - 1];
+      const totalHeight = lastLine.y + lastLine.height;
+      const info = {
+        text: allText,
+        lines: lines.length,
+        width: firstLine.width,
+        height: totalHeight,
+      };
+      setTextInfo(info);
+      const isValid =
+        allText === expectedText &&
+        lines.length > 0 &&
+        firstLine.width > 0 &&
+        totalHeight > 0;
+      onLayoutComplete(isValid);
+    }
+  };
+
+  return (
+    <View style={{ padding: 10 }}>
+      <Text
+        ref={testCaseRef}
+        onTextLayout={handleTextLayout}
+        numberOfLines={2}
+        style={{ fontSize: 16, marginBottom: 10 }}
+      >
+        {expectedText}
+      </Text>
+      {textInfo && (
+        <View
+          style={{
+            marginTop: 10,
+            padding: 8,
+            backgroundColor: '#e7f3ff',
+            borderRadius: 4,
+          }}
+        >
+          <Text style={{ fontWeight: 'bold', marginBottom: 4 }}>
+            文本布局信息:
+          </Text>
+          <Text>行数: {textInfo.lines}</Text>
+          <Text>宽度: {textInfo.width}px</Text>
+          <Text>高度: {textInfo.height}px</Text>
+          <Text>文本: {textInfo.text}</Text>
+        </View>
+      )}
     </View>
   );
 };
