@@ -12,8 +12,9 @@ import Metro from 'metro';
 import { RunBuildOptions as BuildOptions } from 'metro';
 import MetroServer from 'metro/src/Server';
 import pathUtils from 'path';
-import { getAssetDestRelativePath } from '../assetResolver';
+import { copyAssets } from '../assetResolver';
 import { ConfigT as MetroConfig } from 'metro-config';
+import { Logger } from '../io';
 
 const ARK_RESOURCE_PATH = './harmony/entry/src/main/resources/rawfile';
 const ASSETS_DEFAULT_DEST_PATH =
@@ -68,6 +69,7 @@ export const commandBundleHarmony: Command = {
     },
   ],
   func: async (argv, config, args: any) => {
+    const logger = new Logger();
     const buildOptions: BuildOptions = {
       entry: args.entryFile,
       platform: 'harmony',
@@ -80,7 +82,7 @@ export const commandBundleHarmony: Command = {
     const bundle = await createBundle(metroConfig, buildOptions);
     await saveBundle(bundle, args.bundleOutput, args.sourcemapOutput);
     const assets = await retrieveAssetsData(metroConfig, buildOptions);
-    copyAssets(assets, args.assetsDest);
+    copyAssets(logger, assets, args.assetsDest);
   },
 };
 
@@ -129,81 +131,4 @@ async function retrieveAssetsData(
   } finally {
     metroServer.end();
   }
-}
-
-async function copyAssets(
-  assetsData: readonly AssetData[],
-  assetsDest: Path
-): Promise<void> {
-  if (assetsDest == null) {
-    console.warn('Assets destination folder is not set, skipping...');
-    return;
-  }
-  await fse.ensureDir(assetsDest);
-  const fileDestBySrc: Record<Path, Path> = {};
-  for (const asset of assetsData) {
-    const idx = getHighestQualityFileIdx(asset);
-    fileDestBySrc[asset.files[idx]] = pathUtils.join(
-      assetsDest,
-      getAssetDestRelativePath(asset)
-    );
-  }
-  return copyFiles(fileDestBySrc);
-}
-
-function getHighestQualityFileIdx(assetData: AssetData): number {
-  let result = 0;
-  let maxScale = -1;
-  for (let idx = 0; idx < assetData.scales.length; idx++) {
-    const scale = assetData.scales[idx];
-    if (scale > maxScale) {
-      maxScale = scale;
-      result = idx;
-    }
-  }
-  return result;
-}
-
-function copyFiles(fileDestBySrc: Record<Path, Path>) {
-  const fileSources = Object.keys(fileDestBySrc);
-  if (fileSources.length === 0) {
-    return Promise.resolve();
-  }
-
-  console.info(`Copying ${fileSources.length} asset files`);
-  return new Promise<void>((resolve, reject) => {
-    const copyNext = (error?: Error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      if (fileSources.length === 0) {
-        console.info('Done copying assets');
-        resolve();
-      } else {
-        // fileSources.length === 0 is checked in previous branch, so this is string
-        const src = fileSources.shift()!;
-        const dest = fileDestBySrc[src];
-        copyFile(src, dest, copyNext);
-      }
-    };
-    copyNext();
-  });
-}
-
-function copyFile(
-  src: string,
-  dest: string,
-  onFinished: (error?: Error) => void
-): void {
-  const destDir = pathUtils.dirname(dest);
-  fs.mkdir(destDir, { recursive: true }, (err?) => {
-    if (err) {
-      onFinished(err);
-      return;
-    }
-    fs.createReadStream(src)
-      .pipe(fs.createWriteStream(dest))
-      .on('finish', onFinished);
-  });
 }

@@ -5,7 +5,14 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import {Image, ImageSourcePropType, ScrollView, Text, View} from 'react-native';
+import {
+  Dimensions,
+  Image,
+  ImageSourcePropType,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import {TestSuite} from '@rnoh/testerino';
 import React from 'react';
 import {Button, TestCase} from '../components';
@@ -13,6 +20,7 @@ import {getScrollViewContentHorizontal} from './ScrollViewTest/fixtures';
 
 const WRONG_IMAGE_SRC = 'not_image';
 const LOCAL_IMAGE_ASSET_ID = require('../assets/pravatar-131.jpg');
+const MULTI_DENSITY_IMAGE_ASSET_ID = require('../assets/fig-without-poppy.jpeg');
 const REMOTE_IMAGE_URL = 'https://i.pravatar.cc/100?img=31';
 const BASE64_IMAGE_STRING =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC';
@@ -194,6 +202,28 @@ export const ImageTest = () => {
           expect(result?.[REMOTE_IMAGE_URL]).to.be.not.undefined;
           expect(result?.[REMOTE_IMAGE_URL]).to.be.eq('disk');
           expect(result?.[WRONG_IMAGE_SRC]).to.be.undefined;
+        }}
+      />
+      <TestCase.Logical
+        itShould="Automatically select high-density image variants.​"
+        fn={({expect}) => {
+          const resolvedAsset = Image.resolveAssetSource(
+            MULTI_DENSITY_IMAGE_ASSET_ID,
+          );
+          const deviceScale = Dimensions.get('window').scale;
+          const scales = [1, 2, 3];
+          let scale = 0;
+          for (let i = 0; i < scales.length; i++) {
+            if (scales[i] >= deviceScale) {
+              scale = scales[i];
+              break;
+            }
+          }
+          if (!scale) {
+            scale = scales[scales.length - 1];
+          }
+          const filename = `fig-without-poppy${scale === 1 ? '' : '@' + scale + 'x'}.jpeg`;
+          expect(resolvedAsset.uri).to.be.includes(filename);
         }}
       />
       <TestCase.Example
