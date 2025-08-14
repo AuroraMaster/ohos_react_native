@@ -13,6 +13,7 @@
 #include "JSVMUtil.h"
 #include <filesystem>
 #include <fstream>
+#include <random>
 #include "RNOH/Assert.h"
 
 #define DFX()                  \
@@ -1054,18 +1055,59 @@ std::vector<uint8_t> JSVMRuntime::GetCodeCacheL1(const std::string &sourceURL) {
   }
 }
 
-void JSVMRuntime::UpdateCodeCacheL1(const std::string &sourceURL, const std::vector<uint8_t>& buffer) {
-  DLOG(INFO) << "Update L1 CACHE: " << sourceURL << "; size = " << buffer.size();
+void JSVMRuntime::UpdateCodeCacheL1(
+    const std::string& sourceURL,
+    const std::vector<uint8_t>& buffer) {
+  DLOG(INFO) << "Update L1 CACHE: " << sourceURL
+             << "; size = " << buffer.size();
 
-  std::filesystem::create_directories(std::filesystem::path{sourceURL}.parent_path());
-  if (auto *file = std::fopen(sourceURL.c_str(), "wb")) {
-    std::fwrite(buffer.data(), 1, buffer.size(), file);
-    std::fclose(file);
-    DLOG(INFO) << "Updating L1 CACHE success: " << sourceURL;
-    UpdateCodeCacheL2(sourceURL, buffer);
+  namespace fs = std::filesystem;
+
+  fs::path targetPath = sourceURL;
+  fs::create_directories(targetPath.parent_path());
+
+  std::string tmpSuffix = ".tmp_" + std::to_string(getpid()) + "_" +
+      std::to_string(std::random_device{}());
+  fs::path tmpPath = sourceURL + tmpSuffix;
+
+  std::ofstream outFile(tmpPath, std::ios::binary | std::ios::out);
+  if (outFile) {
+    outFile.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+    outFile.close();
+
+    if (!outFile.fail() && fs::file_size(tmpPath) == buffer.size()) {
+      std::error_code ec_perm;
+      fs::permissions(
+          tmpPath,
+          fs::perms::owner_write | fs::perms::group_write |
+              fs::perms::others_write,
+          fs::perm_options::remove,
+          ec_perm);
+
+      if (ec_perm) {
+        LOG(ERROR) << "Set read-only failed for temp file: " << tmpPath;
+        fs::remove(tmpPath);
+        LOG(ERROR) << "Updating L1 CACHE failed: " << sourceURL;
+        return;
+      }
+
+      std::error_code ec_rename;
+      fs::rename(tmpPath, targetPath, ec_rename);
+
+      if (!ec_rename) {
+        DLOG(INFO) << "Updating L1 CACHE success: " << sourceURL;
+        UpdateCodeCacheL2(sourceURL, buffer);
+        return;
+      }
+      LOG(ERROR) << "Rename failed: " << ec_rename.message();
+    } else {
+      LOG(ERROR) << "Write incomplete to temp file: " << tmpPath;
+    }
+    fs::remove(tmpPath);
   } else {
-    LOG(ERROR) << "Updating L1 CACHE failed: " << sourceURL;
+    LOG(ERROR) << "Open temp file failed: " << tmpPath;
   }
+  LOG(ERROR) << "Updating L1 CACHE failed: " << sourceURL;
 }
 
 std::vector<uint8_t> JSVMRuntime::GetCodeCacheL2(const std::string &sourceURL) {
