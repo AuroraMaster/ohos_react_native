@@ -311,20 +311,12 @@ std::vector<OH_Drawing_LineMetrics> TextMeasurer::getLineMetrics(
     AttributedString const& attributedString,
     ParagraphAttributes const& paragraphAttributes,
     LayoutConstraints const& layoutConstraints) {
-    std::vector<OH_Drawing_LineMetrics> data;
-  if (!attributedString.getFragments().empty()) {
-    std::string key =
-      std::to_string(m_rnInstanceId) + "_" + std::to_string(attributedString.getFragments()[0].parentShadowView.tag) +
-      "_" + std::to_string(attributedString.getFragments()[0].parentShadowView.surfaceId);
-    auto measureInfo = TextMeasureRegistry::getTextMeasureRegistry().getTextMeasureInfoByKey(key);
-    if (measureInfo.has_value()) {
-      measureInfo.value()->typography.getLineMetrics(data);
-    }
-  } else {
-    auto typographyBuilder = measureTypography(attributedString, paragraphAttributes, layoutConstraints);
-    auto typography = typographyBuilder.build();
-    typography.getLineMetrics(data);
-  }
+  std::vector<OH_Drawing_LineMetrics> data;
+  ParagraphAttributes paragraphAttributesWithoutMaxLines = paragraphAttributes;
+  paragraphAttributesWithoutMaxLines.maximumNumberOfLines = {};
+  auto typographyBuilder = measureTypography(attributedString, paragraphAttributesWithoutMaxLines, layoutConstraints);
+  auto typography = typographyBuilder.build();
+  typography.getLineMetrics(data);
   for (int i = 0; i < data.size(); i++) {
     data[i].width = static_cast<Float>(data[i].width) / m_scale;
     data[i].height = static_cast<Float>(data[i].height) / m_scale;
