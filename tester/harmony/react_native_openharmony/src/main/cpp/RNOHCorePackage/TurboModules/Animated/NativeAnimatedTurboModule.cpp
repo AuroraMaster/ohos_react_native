@@ -552,7 +552,7 @@ void NativeAnimatedTurboModule::runUpdates(long long frameTimeNanos) {
 
 void NativeAnimatedTurboModule::setNativeProps(
     PropUpdatesList const& tagsToUpdate) {
-  if (auto instance = m_ctx.instance.lock(); instance != nullptr) {
+  if (auto instance = m_ctx.safeInstance.lock(); instance != nullptr) {
     for (auto const& [tag, props] : tagsToUpdate) {
       instance->synchronouslyUpdateViewOnUIThread(tag, props);
     }
@@ -564,7 +564,7 @@ void NativeAnimatedTurboModule::setNativeProps(
     facebook::react::Tag tag,
     folly::dynamic const& props) {
 #ifdef C_API_ARCH
-  if (auto instance = m_ctx.instance.lock(); instance != nullptr) {
+  if (auto instance = m_ctx.safeInstance.lock(); instance != nullptr) {
     instance->synchronouslyUpdateViewOnUIThread(tag, props);
     return;
   }

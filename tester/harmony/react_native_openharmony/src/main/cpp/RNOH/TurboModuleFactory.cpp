@@ -49,7 +49,8 @@ TurboModuleFactory::SharedTurboModule TurboModuleFactory::create(
       this->getArkTSTurboModuleEnvironmentByTaskThread(arkTSTurboModuleThread);
   Context ctx{
       {.jsInvoker = jsInvoker,
-       .instance = instance,
+       .instance = instance.lock(),
+       .safeInstance = instance,
        .arkTSMessageHub = m_arkTSMessageHub},
        .env = arkTSTurboModuleEnvironment.napiEnv,
        .arkTSTurboModuleInstanceRef = arkTSTurboModuleThread == TaskThread::JS

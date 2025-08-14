@@ -19,7 +19,11 @@ class TurboModule : public facebook::react::TurboModule {
  public:
   struct Context {
     std::shared_ptr<facebook::react::CallInvoker> jsInvoker;
-    RNInstance::SafeWeak instance;
+    /**
+     * @deprecated Use `safeInstance` instead.
+     */
+    std::weak_ptr<RNInstance> instance;
+    RNInstance::SafeWeak safeInstance;
     std::shared_ptr<ArkTSMessageHub> arkTSMessageHub;
   };
 

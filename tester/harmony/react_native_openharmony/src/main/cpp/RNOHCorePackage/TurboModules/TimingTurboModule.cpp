@@ -74,7 +74,7 @@ TimingTurboModule::TimingTurboModule(
 
   // LifecycleObserver must be created on the main thread
   m_ctx.taskExecutor->runTask(
-      TaskThread::MAIN, [weakInstance = m_ctx.instance] {
+      TaskThread::MAIN, [weakInstance = m_ctx.safeInstance] {
         auto instance = weakInstance.lock();
         if (!instance) {
           return;
@@ -175,7 +175,7 @@ void TimingTurboModule::LifecycleObserver::onMessageReceived(
 
 void TimingTurboModule::triggerTimers(std::vector<double> const& timerIds) {
   assertJSThread();
-  auto instance = m_ctx.instance.lock();
+  auto instance = m_ctx.safeInstance.lock();
   auto now = getMillisSinceEpoch();
   if (instance) {
     instance->callJSFunction(
