@@ -330,6 +330,7 @@ export interface RNInstance {
    * @example registerFont("Pacifico-Regular", "/data/storage/el2/base/files/Pacifico-Regular.ttf")
    */
   registerFont(fontFamily: string, fontResource: Resource | string)
+
   /**
    * @returns The RNWindow associated with this RNInstance.
    */
@@ -464,7 +465,6 @@ export class RNInstanceImpl implements RNInstance {
   };
   private uiCtx: UIContext;
   private uiAbilityContext: common.UIAbilityContext = undefined;
-  private rnWindow: window.Window = undefined;
 
   /**
    * @deprecated
@@ -1057,22 +1057,14 @@ export class RNInstanceImpl implements RNInstance {
     }
   }
 
-  public setRNWindow(rnWindow: window.Window): void {
-    if (rnWindow != undefined) {
-      this.rnWindow = rnWindow;
-      return;
-    }
-
-    if (this.uiAbilityContext != undefined) {
-      this.rnWindow = this.uiAbilityContext.windowStage.getMainWindowSync();
-    }
-  }
-
   public async getRNWindow(): Promise<window.Window> {
-    if (this.rnWindow != undefined) {
-      return this.rnWindow;
+    try {
+      return window.findWindow(this.uiCtx.getWindowName());
+    } catch (exception) {
+      this.logger.warn(`Failed to get the window where RN is located., falling back to main window.
+      This is usually not a problem and the application should continue to work normally.`, exception);
+      return this.uiAbilityContext.windowStage.getMainWindowSync();
     }
-    return await window.getLastWindow(this.uiAbilityContext);
   }
 }
 
