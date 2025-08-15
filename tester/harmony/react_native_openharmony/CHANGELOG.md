@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.72.86
+- fix: type mismatch between SafeWeak and weak_ptr,([16c5c965f](https://gitcode.com/openharmony-sig/ohos_react_native/commit/16c5c965f2ae4e7e76f79ed6d2d7a0932dfc5f54))
+- fix：Modifying some scenes to obtain rnWindow failed,([daceb90c1](https://gitcode.com/openharmony-sig/ohos_react_native/commit/daceb90c1bcafc82e560256fc71fc045719451b0))
+- fix: ensure atomic jsvm code cache writes with read-only files,([bea45d674](https://gitcode.com/openharmony-sig/ohos_react_native/commit/bea45d6747f79a10987e36c92b14094b661a0aa5))
+- The information obtained by the onTextLayout of the Text component is incomplete, and the unrendered text information cannot be retrieved.,([96478acc8](https://gitcode.com/openharmony-sig/ohos_react_native/commit/96478acc8061a6afaed7db528a283c55e85acf8f))
+- fix: an occasional crash when the component is removed.​,([2dc5424b8](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2dc5424b899fd718a78fc4d5246648c43e601a55))
+- [chore]: updated to version 6.0.0.503(0.72.85),([3598ab491](https://gitcode.com/openharmony-sig/ohos_react_native/commit/3598ab491a3e851d1415d396c07ab9464b12d556))
+
 ## 0.72.85
 - fix: the click response position offset in nested text scenarios.​,([ef378c368](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ef378c3689a026b06dc0a811352ce7db5b274048))
 - fix: The text content abnormally breaks lines on mate 70 pro,([2ba6b3bd3](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2ba6b3bd35f6f26e41468835efc91c1ec90e0486))

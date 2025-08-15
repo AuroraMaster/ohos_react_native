@@ -1,5 +1,16 @@
 # Changelog
 
+## 6.0.0.504
+- fix: type mismatch between SafeWeak and weak_ptr,([16c5c965f](https://gitcode.com/openharmony-sig/ohos_react_native/commit/16c5c965f2ae4e7e76f79ed6d2d7a0932dfc5f54))
+- Automatic Test Case of Incomplete Information Obtained by onTextLayout,([e93ab7454](https://gitcode.com/openharmony-sig/ohos_react_native/commit/e93ab74549366a1acd26a8e5dc756bfcf405f52d))
+- feat: support automatic selection of high-density image variants.,([3062d7fbc](https://gitcode.com/openharmony-sig/ohos_react_native/commit/3062d7fbcfa8c755bd76355d9f6cf9920dd1885e))
+- fix：Modifying some scenes to obtain rnWindow failed,([daceb90c1](https://gitcode.com/openharmony-sig/ohos_react_native/commit/daceb90c1bcafc82e560256fc71fc045719451b0))
+- fix: ensure atomic jsvm code cache writes with read-only files,([bea45d674](https://gitcode.com/openharmony-sig/ohos_react_native/commit/bea45d6747f79a10987e36c92b14094b661a0aa5))
+- The information obtained by the onTextLayout of the Text component is incomplete, and the unrendered text information cannot be retrieved.,([96478acc8](https://gitcode.com/openharmony-sig/ohos_react_native/commit/96478acc8061a6afaed7db528a283c55e85acf8f))
+- fix: an occasional crash when the component is removed.​,([2dc5424b8](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2dc5424b899fd718a78fc4d5246648c43e601a55))
+- [chore]: updated to version 6.0.0.503(0.72.85),([3598ab491](https://gitcode.com/openharmony-sig/ohos_react_native/commit/3598ab491a3e851d1415d396c07ab9464b12d556))
+- doc: Provide a solution for the error: unknown command 'codegen-lib-harmony'.,([47ad78f40](https://gitcode.com/openharmony-sig/ohos_react_native/commit/47ad78f4010946ad8eaa9e0a79e3cedbd2d677c0))
+
 ## 6.0.0.503
 - fix: the click response position offset in nested text scenarios.​,([ef378c368](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ef378c3689a026b06dc0a811352ce7db5b274048))
 - fix: The text content abnormally breaks lines on mate 70 pro,([2ba6b3bd3](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2ba6b3bd35f6f26e41468835efc91c1ec90e0486))
