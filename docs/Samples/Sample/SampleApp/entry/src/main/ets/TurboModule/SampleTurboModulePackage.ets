@@ -5,28 +5,27 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import { RNPackage, TurboModulesFactory } from '@rnoh/react-native-openharmony/ts';
-import { TurboModule, TurboModuleContext } from '@rnoh/react-native-openharmony/ts';
+import {
+  RNOHPackage,
+  UITurboModule,
+  UITurboModuleContext
+} from '@rnoh/react-native-openharmony';
+
 import { SampleTurboModule } from './SampleTurboModule';
 import { SampleTurboModule2 } from './SampleTurboModule2';
 
-class SampleTurboModulesFactory extends TurboModulesFactory {
-  createTurboModule(name: string): TurboModule | null {
-    if (name === 'SampleTurboModule') {
-      return new SampleTurboModule(this.ctx);
-    } else if (name === 'SampleTurboModule2') {
-      return new SampleTurboModule2(this.ctx);
-    }
-    return null;
+export class SampleTurboModulePackage extends RNOHPackage {
+  override getUITurboModuleFactoryByNameMap(): Map<string, (ctx: UITurboModuleContext) => UITurboModule | null> {
+    return new Map<string, ((ctx: UITurboModuleContext) => UITurboModule)>()
+      .set('SampleTurboModule', (ctx) => new SampleTurboModule(ctx))
+      .set('SampleTurboModule2',(ctx) => new SampleTurboModule2(ctx))
   }
 
-  hasTurboModule(name: string): boolean {
-    return name === 'SampleTurboModule' || name === 'SampleTurboModule2';
-  }
-}
-
-export class SampleTurboModulePackage extends RNPackage {
-  createTurboModulesFactory(ctx: TurboModuleContext): TurboModulesFactory {
-    return new SampleTurboModulesFactory(ctx);
+  override async createEagerUITurboModuleByNameMap(ctx: UITurboModuleContext): Promise<Map<string, UITurboModule>> {
+    const sampleTurboModule = new SampleTurboModule(ctx);
+    const sampleTurboModule2 = new SampleTurboModule2(ctx);
+    return new Map()
+      .set('SampleTurboModule', sampleTurboModule)
+      .set('SampleTurboModule2', sampleTurboModule2)
   }
 }

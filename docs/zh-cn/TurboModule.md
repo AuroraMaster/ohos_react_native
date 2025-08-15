@@ -150,10 +150,10 @@ Codegen 的详细使用方法，可以参考[Codegen](Codegen.md)文档。
 
     ```typescript
     // entry/src/main/ets/turbomodule/CalculatorModule.ts
-    import { TurboModule } from '@rnoh/react-native-openharmony/ts';
+    import { AnyThreadTurboModule, UITurboModule } from '@rnoh/react-native-openharmony/ts';
     import { TM } from '@rnoh/react-native-openharmony/generated/ts';
 
-    export class CalculatorModule extends TurboModule implements TM.RTNCalculator.Spec {
+    export class CalculatorModule extends UITurboModule implements TM.RTNCalculator.Spec {
       add(a: number, b: number): Promise<number>{
         return Promise.resolve(a+b);
       }
@@ -163,10 +163,10 @@ Codegen 的详细使用方法，可以参考[Codegen](Codegen.md)文档。
 
     ```typescript
     // entry/src/main/ets/turbomodule/CalculatorModule.ts
-    import { TurboModule } from '@rnoh/react-native-openharmony/ts';
+    import { AnyThreadTurboModule, UITurboModule } from '@rnoh/react-native-openharmony/ts';
     import { TM } from '@rnoh/react-native-openharmony/generated/ts';
 
-    export class CalculatorModule extends TurboModule implements TM.RTNCalculator.Spec {
+    export class CalculatorModule extends UITurboModule implements TM.RTNCalculator.Spec {
       add(a: number, b: number): Promise<number>{
         return Promise.resolve(123456);
       }
@@ -177,49 +177,44 @@ Codegen 的详细使用方法，可以参考[Codegen](Codegen.md)文档。
     在 `entry/src/main/ets` 路径下新建 `GeneratedPackage.ets`，并添加对应的实现代码：
     ```typescript
     // entry/src/main/ets/GeneratedPackage.ets
-    import { RNPackage, TurboModulesFactory } from '@rnoh/react-native-openharmony/ts';
-    import type {
-      TurboModule,
-      TurboModuleContext
-    } from '@rnoh/react-native-openharmony/ts';
-    import { TM } from "@rnoh/react-native-openharmony/generated/ts"
+    import {
+      RNOHPackage,
+      AnyThreadTurboModule,
+      AnyThreadTurboModuleContext,
+      UITurboModule,
+      UITurboModuleContext
+    } from '@rnoh/react-native-openharmony';
+
+    import { TM } from "@rnoh/react-native-openharmony/generated"
     import { CalculatorModule } from './turbomodule/CalculatorModule';
-    class GeneratedTurboModulesFactory extends TurboModulesFactory {
-      createTurboModule(name: string): TurboModule | null {
-        if (name === TM.RTNCalculator.NAME) {
-          return new CalculatorModule(this.ctx);
-        }
-        return null;
+
+    export default class GeneratedPackage extends RNOHPackage {
+      override getUITurboModuleFactoryByNameMap(): Map<string, (ctx: UITurboModuleContext) => UITurboModule | null> {
+        return new Map<string, ((ctx: UITurboModuleContext) => UITurboModule)>()
+          .set(TM.RTNCalculator.NAME, (ctx) => new CalculatorModule(ctx))
       }
-      hasTurboModule(name: string): boolean {
-        return name === TM.RTNCalculator.NAME;
-      }
-    }
-    export class GeneratedPackage extends RNPackage {
-      createTurboModulesFactory(ctx: TurboModuleContext): TurboModulesFactory {
-        return new GeneratedTurboModulesFactory(ctx);
+
+      override async createEagerUITurboModuleByNameMap(ctx: UITurboModuleContext): Promise<Map<string, UITurboModule>> {
+        const calculatorModule = new CalculatorModule(ctx);
+        return new Map()
+          .set(TM.RTNCalculator.NAME, calculatorModule)
       }
     }
     ```
     需要注意的是：
+    - 文件中应该使用 `export default` 导出一个继承了 `RNOHPackage` 的类
+    - 重写父类方法 `getUITurboModuleFactoryByNameMap()` 和 `createEagerUITurboModuleByNameMap()`
+    - 在 `entry/src/main/ets/RNPackagesFactory.ets` 中添加创建该 Package 的方法：
+      ```typescript
+      import { RNOHPackage, RNPackageContext } from '@rnoh/react-native-openharmony';
+      import  GeneratedPackage  from './GeneratedPackage';
 
-    - 文件中应该 export 一个继承了 `RNPackage` 的类，里面实现 `createTurboModulesFactory`，用于创建 TurboModule 的工厂类；
-    - 工程类中应该实现两个方法：
-      - `createTurboModule`：用于根据 name 创建对应的 TurboModule 类；
-      - `hasTurboModule`：用于判断该 name 对应的 TurboModule 是否存在；
-    - 需要在 `entry/src/main/ets/RNPackagesFactory.ets` 中添加创建该 Package 的方法：
-    ```diff
-    import { RNPackageContext, RNPackage } from '@rnoh/react-native-openharmony/ts';
-    import {SamplePackage} from '@rnoh/sample-package/src/main/ets/SamplePackage';
-    + import { GeneratedPackage } from './GeneratedPackage';
-
-    export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
-      return [
-        new SamplePackage(ctx),
-    +    new GeneratedPackage(ctx)
-      ];
-    }
-    ```
+      export function createRNPackages(ctx: RNPackageContext): RNOHPackage[] {
+        return [
+          new GeneratedPackage(ctx)
+        ];
+      }
+      ```
 3. 如果是 CxxTurboModule，需要一些额外步骤：
 
    什么是：CxxTurboModule，请参考[React Native 中文网](https://reactnative.cn/docs/0.72/the-new-architecture/cxx-cxxturbomodules)。
@@ -274,7 +269,7 @@ Codegen 的详细使用方法，可以参考[Codegen](Codegen.md)文档。
 
     ```
 
-4. 后续的步骤根据您所使用的的 Codegen 版本不同，会有不同的操作：
+4. 添加胶水代码。根据您所使用的 Codegen 版本不同，有2种操作方式：
 #### v1版本
 1. 在 `CMakeLists.txt` 中添加新增的胶水代码文件
    
@@ -372,118 +367,106 @@ Codegen 的详细使用方法，可以参考[Codegen](Codegen.md)文档。
     ```
 2. 在 `entry/src/main/cpp/PackageProvider.cpp` 中创建 cpp 侧的 package 对象：
    
-    ```diff
-    #include "RNOH/PackageProvider.h"
-    #include "SamplePackage.h"
-    + #include "generated/rtn_calculator/RNOH/generated/BaseRtnCalculatorPackage.h"
+   ```diff
+   #include "RNOH/PackageProvider.h"
+   #include "SamplePackage.h"
+   + #include "generated/rtn_calculator/RNOH/generated/BaseRtnCalculatorPackage.h"
 
-    using namespace rnoh;
+   using namespace rnoh;
 
-    std::vector<std::shared_ptr<Package>> PackageProvider::getPackages(Package::Context ctx) {
-        return {
-            std::make_shared<SamplePackage>(ctx),
-    +         std::make_shared<BaseRtnCalculatorPackage>(ctx)
-        };
-    }
+   std::vector<std::shared_ptr<Package>> PackageProvider::getPackages(Package::Context ctx) {
+       return {
+           std::make_shared<SamplePackage>(ctx),
+   +         std::make_shared<BaseRtnCalculatorPackage>(ctx)
+       };
+   }
     ```
 
 #### 设置自定义TurboModule运行在worker线程
 
-1. 创建运行在 woker 线程的 TurboModule，需要采用下列方式修改：
+1. 将 `CalculatorModule` 的基类从 `UITurboModule` 改为 `AnyThreadTurboModule`
+   ```typescript
+   // entry/src/main/ets/turbomodule/CalculatorModule.ts
+   import { AnyThreadTurboModule, UITurboModule } from '@rnoh/react-native-openharmony/ts';
+   import { TM } from '@rnoh/react-native-openharmony/generated/ts';
 
-    ```typescript
-    // entry/src/main/ets/GeneratedPackage.ets
-    import { RNPackage, AnyThreadTurboModuleFactory } from '@rnoh/react-native-openharmony/ts';
-    import type {
-      AnyThreadTurboModule,
-      AnyThreadTurboModuleContext
-    } from '@rnoh/react-native-openharmony/ts';
-    import { TM } from "@rnoh/react-native-openharmony/generated/ts"
-    import { CalculatorModule } from './turbomodule/CalculatorModule';
-    class GeneratedTurboModulesFactory extends AnyThreadTurboModuleFactory {
-      createTurboModule(name: string): AnyThreadTurboModule | null {
-        if (name === TM.RTNCalculator.NAME) {
-          return new CalculatorModule(this.ctx);
-        }
-        return null;
-      }
-      hasTurboModule(name: string): boolean {
-        return name === TM.RTNCalculator.NAME;
-      }
-    }
-    export class GeneratedPackage extends RNPackage {
-      createAnyThreadTurboModuleFactory(ctx: AnyThreadTurboModuleContext): AnyThreadTurboModuleFactory {
-        return new GeneratedTurboModulesFactory(ctx);
-      }
-    }
-    ```
-    其中 `CalculatorModule.ets` 的方法如果要能运行在 worker 线程上，需要添加对应的实现代码：
+   export class CalculatorModule extends AnyThreadTurboModule implements TM.RTNCalculator.Spec {
+     add(a: number, b: number): Promise<number>{
+       return Promise.resolve(a+b);
+     }
+   }
+   ```
+2. 将重写的父类方法从 `getUITurboModuleFactoryByNameMap()` 和 `createEagerUITurboModuleByNameMap()` 分别换成 `getAnyThreadTurboModuleFactoryByNameMap()` 和 `createEagerAnyThreadTurboModuleByNameMap()`
+   ```typescript
+   // entry/src/main/ets/GeneratedPackage.ets
+   import {
+     RNOHPackage,
+     AnyThreadTurboModule,
+     AnyThreadTurboModuleContext,
+     UITurboModule,
+     UITurboModuleContext
+   } from '@rnoh/react-native-openharmony';
 
-    ```typescript
-    // entry/src/main/ets/turbomodule/CalculatorModule.ets
-    import { AnyThreadTurboModule } from '@rnoh/react-native-openharmony/ts';
-    import { TM } from '@rnoh/react-native-openharmony/generated/ts';
+   import { TM } from "@rnoh/react-native-openharmony/generated"
+   import { CalculatorModule } from './turbomodule/CalculatorModule';
+   
+   export default class GeneratedPackage extends RNOHPackage {
+     override getAnyThreadTurboModuleFactoryByNameMap(): Map<string, (ctx: AnyThreadTurboModuleContext) => AnyThreadTurboModule | null> {
+       return new Map<string, ((ctx: AnyThreadTurboModuleContext) => AnyThreadTurboModule)>()
+         .set(TM.RTNCalculator.NAME, (ctx) => new CalculatorModule(ctx))
+     }
 
-    export class CalculatorModule extends AnyThreadTurboModule implements TM.RTNCalculator.Spec {
-      add(a: number, b: number): Promise<number>{
-        return Promise.resolve(a+b);
-      }
-      ...
-    }
-    ```
-    需要注意的是：
+     override async createEagerAnyThreadTurboModuleByNameMap(ctx: AnyThreadTurboModuleContext): Promise<Map<string, AnyThreadTurboModule>> {
+       const calculatorModule = new CalculatorModule(ctx);
+       return new Map()
+         .set(TM.RTNCalculator.NAME, calculatorModule)
+     }
+   }
+   ```
+3. 配置TurboModule运行在worker线程,需要继承RNability后重载 `getRNOHWorkerScriptUrl` ，代码修改方式如下所示：
+   ```typescript
+   // entry/src/main/ets/entryability/EntryAbility.ets
+   import {RNAbility} from '@rnoh/react-native-openharmony';
 
-   - `GeneratedPackage` 中应该继承 `RNPackage` 的类，里面实现 `createAnyThreadTurboModuleFactory`，用于创建 `AnyThreadTurboModuleFactory` 的工厂类；
-      - `createAnyThreadTurboModuleFactory` 方法的参数 ctx 的类型应该设为 `AnyThreadTurboModuleContext`,返回值类型为 `AnyThreadTurboModuleFactory`;
-   - 工程类 `GeneratedTurboModulesFactory` 应该继承 `AnyThreadTurboModuleFactory`;
-   - 工程类 `GeneratedTurboModulesFactory` 中应该实现两个方法：
-      - `createTurboModule`：用于根据 name 创建对应的 `AnyThreadTurboModule` 类，或者返回`null`
-      - `hasTurboModule`：用于判断该 name 对应的 TurboModule 是否存在；
-   - TurboModule 类 `CalculatorModule` 应该继承 `AnyThreadTurboModule`；
+   export default class EntryAbility extends RNAbility {
+   +  override getRNOHWorkerScriptUrl() {
+   +    return "entry/ets/workers/RNOHWorker.ets"
+   +  }
+   ...
+   }
+   ```
+  在ets路径下右击，选择 `New` 选项，右侧展开菜单选择 `Woker` 选项：
 
-2. 配置TurboModule运行在worker线程,需要继承RNability后重载 `getRNOHWorkerScriptUrl` ，代码修改方式如下所示：
-    ```typescript
-    // entry/src/main/ets/entryability/EntryAbility.ets
-    import {RNAbility} from '@rnoh/react-native-openharmony';
+  ![create_worker](./figures/create-worker.png)  
+  选择后在弹出的窗口中取名 `RNOHWorker.ets`：
 
-    export default class EntryAbility extends RNAbility {
-    +  override getRNOHWorkerScriptUrl() {
-    +    return "entry/ets/workers/RNOHWorker.ets"
-    +  }
-    ...
-    }
-    ```
-   在ets路径下右击，选择 `New` 选项，右侧展开菜单选择 `Woker` 选项：
+  ![christen_RNOHWorker](./figures/christen-RNOHWorker.png)   
+  此时目录结构为:
+   ```
+   └── ets
+       ├── entryability
+       ├── page
+       ├── rn
+       └── workers
+           └── RNOHWorker.ets         
+   ```
+   修改 `RNOHWorker.ets` 为下列代码：
+   ```typescript
+   // entry/src/main/ets/worker/RNOHWorker.ets
+   import { setupRNOHWorker } from "@rnoh/react-native-openharmony/src/main/ets/setupRNOHWorker";
+   import { createRNPackages } from '../RNPackagesFactory';
 
-   ![create_worker](./figures/create-worker.png)  
-   选择后在弹出的窗口中取名 `RNOHWorker.ets`：
+   setupRNOHWorker({
+     createWorkerRNInstanceConfig: (_rnInstanceName) => {
+       return { thirdPartyPackagesFactory: createRNPackages }
+     }
+   })
+   ```
 
-   ![christen_RNOHWorker](./figures/christen-RNOHWorker.png)   
-   此时目录结构为:
-    ```
-    └── ets
-        ├── entryability
-        ├── page
-        ├── rn
-        └── workers
-            └── RNOHWorker.ets         
-    ```
-    修改 `RNOHWorker.ets` 为下列代码：
-    ```typescript
-    // entry/src/main/ets/worker/RNOHWorker.ets
-    import { setupRNOHWorker } from "@rnoh/react-native-openharmony/src/main/ets/setupRNOHWorker";
-    import { createRNPackages } from '../RNPackagesFactory';
-
-    setupRNOHWorker({
-      createWorkerRNInstanceConfig: (_rnInstanceName) => {
-        return { thirdPartyPackagesFactory: createRNPackages }
-      }
-    })
-    ```
 
 ### 使用TurboModule
 
-现在就可以在您的 App 中使用 TurboModule 了，下面是一个使用的例子：
+参照 [环境搭建](./环境搭建.md#安装鸿蒙依赖包并生成bundle) 文档的方法生成 `bundle` 后，即可在您的 App 中使用 `TurboModule` 了，下面是一个使用的例子：
 ```javascript
 /**
  * Sample React Native App

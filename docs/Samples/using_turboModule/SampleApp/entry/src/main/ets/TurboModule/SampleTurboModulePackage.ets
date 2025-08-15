@@ -5,46 +5,41 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import { RNPackage, TurboModulesFactory, AnyThreadTurboModuleFactory } from '@rnoh/react-native-openharmony/ts';
-import { TurboModule, TurboModuleContext, AnyThreadTurboModuleContext } from '@rnoh/react-native-openharmony/ts';
+import {
+  RNOHPackage,
+  AnyThreadTurboModule,
+  AnyThreadTurboModuleContext,
+  UITurboModule,
+  UITurboModuleContext
+} from '@rnoh/react-native-openharmony';
+
 import { SampleTurboModule } from './SampleTurboModule';
 import { SampleTurboModule2 } from './SampleTurboModule2';
 import { SampleWorkerTurboModule } from './SampleWorkerTurboModule';
 
-class SampleTurboModulesFactory extends TurboModulesFactory {
-  createTurboModule(name: string): TurboModule | null {
-    if (name === 'SampleTurboModule') {
-      return new SampleTurboModule(this.ctx);
-    } else if (name === 'SampleTurboModule2') {
-      return new SampleTurboModule2(this.ctx);
-    }
-    return null;
+export class SampleTurboModulePackage extends RNOHPackage {
+  override getUITurboModuleFactoryByNameMap(): Map<string, (ctx: UITurboModuleContext) => UITurboModule | null> {
+    return new Map<string, ((ctx: UITurboModuleContext) => UITurboModule)>()
+      .set('SampleTurboModule', (ctx) => new SampleTurboModule(ctx))
+      .set('SampleTurboModule2',(ctx) => new SampleTurboModule2(ctx))
   }
 
-  hasTurboModule(name: string): boolean {
-    return name === 'SampleTurboModule' || name === 'SampleTurboModule2';
-  }
-}
-
-class SampleWorkerTurboModulesFactory extends AnyThreadTurboModuleFactory {
-  createTurboModule(name: string) {
-    if (name === "SampleWorkerTurboModule") {
-      return new SampleWorkerTurboModule(this.ctx);
-    }
-    return null;
+  override async createEagerUITurboModuleByNameMap(ctx: UITurboModuleContext): Promise<Map<string, UITurboModule>> {
+    const sampleTurboModule = new SampleTurboModule(ctx);
+    const sampleTurboModule2 = new SampleTurboModule2(ctx);
+    return new Map()
+      .set('SampleTurboModule', sampleTurboModule)
+      .set('SampleTurboModule2', sampleTurboModule2)
   }
 
-  hasTurboModule(name: string): boolean {
-    return name === "SampleWorkerTurboModule";
-  }
-}
-
-export class SampleTurboModulePackage extends RNPackage {
-  createTurboModulesFactory(ctx: TurboModuleContext): TurboModulesFactory {
-    return new SampleTurboModulesFactory(ctx);
+  override getAnyThreadTurboModuleFactoryByNameMap(): Map<string, (ctx: AnyThreadTurboModuleContext) => AnyThreadTurboModule | null> {
+    return new Map<string, ((ctx: AnyThreadTurboModuleContext) => AnyThreadTurboModule)>()
+      .set('SampleWorkerTurboModule', (ctx) => new SampleWorkerTurboModule(ctx))
   }
 
-  createAnyThreadTurboModuleFactory(ctx: AnyThreadTurboModuleContext) {
-    return new SampleWorkerTurboModulesFactory(ctx);
+  override async createEagerAnyThreadTurboModuleByNameMap(ctx: AnyThreadTurboModuleContext): Promise<Map<string, AnyThreadTurboModule>> {
+    const sampleWorkerTurboModule = new SampleWorkerTurboModule(ctx);
+    return new Map()
+      .set('SampleWorkerTurboModule', sampleWorkerTurboModule)
   }
 }

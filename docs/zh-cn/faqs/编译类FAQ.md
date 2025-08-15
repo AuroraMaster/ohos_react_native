@@ -273,10 +273,12 @@ target_link_libraries(xxx PUBLIC ${folly_compile_options})
         }
         ```
 
-## RN前端工程编译打包时提示错误信息："error: unknown command 'codegen-lib-harmony'"
+## RN前端工程编译打包时提示错误信息："error: unknown command 'codegen-lib-harmony' 或 'error: unknown command 'bundle-harmony'"
 - 错误提示
 ```
  error: unknown command 'codegen-lib-harmony'
+ 或者
+ error: unknown command 'bundle-harmony'
 ```
 
 - 原因

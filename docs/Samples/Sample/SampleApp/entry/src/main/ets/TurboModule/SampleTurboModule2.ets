@@ -5,7 +5,7 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import { TurboModule } from '@rnoh/react-native-openharmony/ts';
+import { UITurboModule } from '@rnoh/react-native-openharmony/ts';
 import promptAction from '@ohos.promptAction';
 import axios, { AxiosResponse, AxiosError } from '@ohos/axios';
 
@@ -30,7 +30,7 @@ export interface ResultModel {
   msg: string
 }
 
-export class SampleTurboModule2 extends TurboModule {
+export class SampleTurboModule2 extends UITurboModule {
   getObject(obj: VoidStruct) {
     this.showToast(JSON.stringify(obj));
   }

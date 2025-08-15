@@ -5,8 +5,8 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import { TurboModule } from '@rnoh/react-native-openharmony/ts';
-import type { TurboModuleContext } from '@rnoh/react-native-openharmony/ts';
+import { UITurboModule } from '@rnoh/react-native-openharmony/ts';
+import type { UITurboModuleContext } from '@rnoh/react-native-openharmony/ts';
 import emitter from '@ohos.events.emitter';
 import dataPreferences from '@ohos.data.preferences';
 import { BusinessError } from '@ohos.base';
@@ -16,11 +16,11 @@ export interface TurboModuleEventData {
   param: string;
 }
 
-export class SampleTurboModule extends TurboModule {
+export class SampleTurboModule extends UITurboModule {
   public static readonly NAME = 'SampleTurboModule';
   public static preferences: dataPreferences.Preferences | null = null;
 
-  constructor(protected ctx: TurboModuleContext) {
+  constructor(protected ctx: UITurboModuleContext) {
     super(ctx);
     this.initPreferences(ctx.uiAbilityContext);
   }

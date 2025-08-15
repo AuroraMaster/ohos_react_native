@@ -5,7 +5,7 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import { TurboModule } from '@rnoh/react-native-openharmony/ts';
+import { UITurboModule } from '@rnoh/react-native-openharmony/ts';
 import emitter from '@ohos.events.emitter';
 import { preferences } from '../entryability/EntryAbility';
 import { BusinessError } from '@ohos.base';
@@ -14,7 +14,7 @@ export interface TurboModuleEventData {
   param: string;
 }
 
-export class SampleTurboModule extends TurboModule {
+export class SampleTurboModule extends UITurboModule {
   pushStringToHarmony(arg: string, id?: number): string {
     if (id) {
       let data: TurboModuleEventData = { param: arg };

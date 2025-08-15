@@ -610,6 +610,92 @@ getTurboModule<T extends TurboModule>(name: string): T
 | ------ | ------ | ---- | ------------------- |
 | name   | string | 是   | TurboModule对应名称。 |
 
+#### createTurboModulesFactory(ctx)<sup>(deprecated)<sup> 
+
+```typescript
+createTurboModulesFactory(ctx: UITurboModuleContext): TurboModulesFactory
+```
+
+创建TurboModule工厂，从 RNOHVersion 0.72.38 开始废弃，使用[createUITurboModuleFactory](#createuiturbomodulefactorydeprecated)代替。
+
+##### 参数
+
+| 参数名 | 类型                  | 必填 | 说明                |
+| ------ | -------------------- | ---- | ------------------- |
+|  ctx   | UITurboModuleContext | 是   | UITurboModule上下文对象 |
+
+#### createUITurboModuleFactory<sup>(deprecated)<sup>
+
+```typescript
+createUITurboModuleFactory(ctx: UITurboModuleContext): UITurboModuleFactory
+```
+
+创建TurboModule工厂，从 RNOHVersion 0.72.38 开始废弃，使用[getUITurboModuleFactoryByNameMap](#getuiturbomodulefactorybynamemap) 和 [createEagerUITurboModuleByNameMap](#createeageruiturbomodulebynamemap)代替。
+
+##### 参数
+
+| 参数名 | 类型                  | 必填 | 说明                |
+| ------ | -------------------- | ---- | ------------------- |
+|  ctx   | UITurboModuleContext | 是   | UITurboModule上下文对象 |
+
+#### createWorkerTurboModuleFactory<sup>(deprecated)<sup>
+
+```typescript
+createWorkerTurboModuleFactory(ctx: WorkerTurboModuleContext): WorkerTurboModuleFactory | null
+```
+
+创建[worker线程](架构介绍.md#worker线程)TurboModule工厂，从 RNOHVersion 0.72.38 开始废弃，使用[getAnyThreadTurboModuleFactoryByNameMap](#getanythreadturbomodulefactorybynamemap) 和 [createEagerAnyThreadTurboModuleByNameMap](#createeageranythreadturbomodulebynamemap)代替。
+
+##### 参数
+
+| 参数名 | 类型                      | 必填 | 说明                     |
+| ------ | -------------------------| ---- | ------------------------- |
+|  ctx   | WorkerTurboModuleContext | 是   | WorkerTurboModule上下文对象 |
+
+#### getUITurboModuleFactoryByNameMap
+
+```typescript
+getUITurboModuleFactoryByNameMap(): Map<string, (ctx: UITurboModuleContext) => UITurboModule | null>
+```
+
+通过此方法获取Factory工厂类，返回一个模块工厂映射表，此方法在[UI线程](架构介绍.md#mainui线程)中使用。
+
+#### getAnyThreadTurboModuleFactoryByNameMap
+
+```typescript
+getAnyThreadTurboModuleFactoryByNameMap(): Map<string, (ctx: AnyThreadTurboModuleContext) => AnyThreadTurboModule | null>
+```
+
+通过此方法获取Factory工厂类，返回一个模块工厂映射表，此方法在[worker线程](架构介绍.md#worker线程)中使用。
+
+#### createEagerUITurboModuleByNameMap
+
+```typescript
+createEagerUITurboModuleByNameMap(ctx: UITurboModuleContext): Promise<Map<string, UITurboModule>>
+```
+
+创建TurboModule 映射表，注册需要在应用启动时立即创建的[UI线程](架构介绍.md#mainui线程)TurboModule。
+
+##### 参数
+
+| 参数名 | 类型                  | 必填 | 说明                |
+| ------ | -------------------- | ---- | ------------------- |
+|  ctx   | UITurboModuleContext | 是   | UITurboModule上下文对象 |
+
+#### createEagerAnyThreadTurboModuleByNameMap
+
+```typescript
+createEagerAnyThreadTurboModuleByNameMap(ctx: AnyThreadTurboModuleContext): Promise<Map<string, AnyThreadTurboModule>>
+```
+
+创建TurboModule 映射表，注册需要在应用启动时立即创建的[worker线程](架构介绍.md#worker线程)TurboModule。
+
+##### 参数
+
+| 参数名 | 类型    | 必填  | 说明                |
+| ------| ------ | ---- | ----------------------------- |
+| ctx   | string | 是   | AnyThreadTurboModule上下文对象 |
+
 #### createSurface
 
 ```typescript
