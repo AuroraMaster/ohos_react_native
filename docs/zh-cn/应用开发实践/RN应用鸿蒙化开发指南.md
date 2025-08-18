@@ -234,7 +234,7 @@ npm run harmony
 
 ![](figures/image-nativeproject.png)
 
-推荐鸿蒙工程路径选择为上文创建的 harmony 文件夹。若创建 Empty Ability 工程时出现 `The folder "harmony" is not empty` 的提示，需先清空 harmony 文件夹再进行创建，随后重新执行 `npm run harmony` 命令生成 bundle 文件。
+推荐应用工程路径选择为上文创建好的文件夹。若创建 Empty Ability 工程时出现 `The folder "harmony" is not empty` 的提示，需先清空文件夹再进行创建，随后重新执行 `npm run harmony` 命令生成 bundle 文件。
 
 ![](figures/folder_harmony_is_not_empty.png)
 
