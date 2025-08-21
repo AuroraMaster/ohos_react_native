@@ -82,12 +82,12 @@ class ValueAnimatedNode : public AnimatedNode {
 
   void flattenOffset() {
     m_value = this->getOutputAsDouble();
-    m_offset = 0;
+    this->setOffset(0.0);
   }
 
   void extractOffset() {
     m_offset += this->getValueAsDouble();
-    m_value = 0;
+    this->setValue(0.0);
   }
 
   void onValueUpdate() {
@@ -115,12 +115,12 @@ class ValueAnimatedNode : public AnimatedNode {
       // Special case for diffClamp
       return 0;
     }
-    if (!m_value.isDouble()) {
-      LOG(ERROR) << "Unexpected value type: " << m_value.typeName();
-      RNOH_ASSERT(false);
-      return 0;
+    if (m_value.isNumber()) {
+      return m_value.asDouble();
     }
-    return m_value.getDouble();
+    LOG(ERROR) << "Unexpected value type: " << m_value.typeName();
+    RNOH_ASSERT(false);
+    return 0;
   }
 
  protected:
