@@ -365,6 +365,14 @@ void TextInputComponentInstance::onPropsChanged(
         m_textInputNode.setAutoFocus(props->autoFocus);
     }
   }
+  if (!m_props || props->selection->start != m_props->selection->start ||
+    props->selection->end != m_props->selection->end) {
+    if (m_multiline == true){
+        m_textAreaNode.setTextSelection(props->selection->start, props->selection->end);
+    } else {
+        m_textInputNode.setTextSelection(props->selection->start, props->selection->end);
+    }
+  }
   if (!m_props || *(props->selectionColor) != *(m_props->selectionColor)) {
     if (props->selectionColor) {
       m_textInputNode.setSelectedBackgroundColor(props->selectionColor);
