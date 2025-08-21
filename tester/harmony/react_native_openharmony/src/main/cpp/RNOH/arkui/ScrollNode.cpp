@@ -8,6 +8,7 @@
 #include "ScrollNode.h"
 #include <glog/logging.h>
 #include "RNOH/ArkTSBridge.h"
+#include "RNOH/ApiVersionCheck.h"
 
 static constexpr std::array SCROLL_NODE_EVENT_TYPES{
     NODE_SCROLL_EVENT_ON_DID_SCROLL,
@@ -232,8 +233,7 @@ ScrollNode& ScrollNode::setCenterContent(bool centerContent) {
 ScrollNode& ScrollNode::setFadingEdge(float length) {
   ArkUI_NumberValue value[] = {{.i32 = length > 0}, {.f32 = length}};
   ArkUI_AttributeItem item = {value, sizeof(value) / sizeof(ArkUI_NumberValue)};
-  float sdkVersion  = ArkTSBridge::getInstance()->getSDKApiVersion();
-  if (sdkVersion >= OH_SDK_API_LEVEL_14) {
+  if (IsAtLeastApi14()) {
     m_nodeApi->setAttribute(m_nodeHandle, NODE_SCROLL_FADING_EDGE, &item);
   }
   return *this;
