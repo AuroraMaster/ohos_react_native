@@ -495,6 +495,10 @@ int32_t TextInputComponentInstance::getTextSize(const std::string &content){
   return length;
 }
 void TextInputComponentInstance::setTextContentAndSelection(std::string const &content, size_t selectionStart, size_t selectionEnd) {
+   if (selectionStart > selectionEnd) {
+      // swap to match behavior on Android
+      std::swap(selectionStart, selectionEnd);
+    }
     m_textInputNode.setTextContent(content);      
     m_textAreaNode.setTextContent(content);
     m_textInputNode.setTextSelection(selectionStart, selectionEnd);
