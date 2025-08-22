@@ -7,6 +7,7 @@
 
 #include "ArkUIDialogHandler.h"
 #include "RNOH/ArkTSBridge.h"
+#include "RNOH/ApiVersionCheck.h"
 
 namespace rnoh {
 
@@ -80,8 +81,7 @@ void ArkUIDialogHandler::initDialogProperties() {
   NativeDialogApi::getInstance()->enableCustomStyle(handler_, true);
   NativeDialogApi::getInstance()->enableCustomAnimation(handler_, true);
   NativeDialogApi::getInstance()->setMask(handler_, 0, nullptr);
-  float sdkVersion = ArkTSBridge::getInstance()->getSDKApiVersion();
-  if (sdkVersion >= OH_SDK_API_LEVEL_15) {
+  if (IsAtLeastApi15()) {
     NativeDialogApi::getInstance2()->setKeyboardAvoidDistance(
       handler_, 0, ArkUI_LengthMetricUnit::ARKUI_LENGTH_METRIC_UNIT_DEFAULT);
   }

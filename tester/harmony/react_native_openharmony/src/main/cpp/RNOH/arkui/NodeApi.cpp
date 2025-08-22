@@ -10,6 +10,7 @@
 #include "DynamicArkUILoader.h"
 #include "NativeNodeApi.h"
 #include "RNOH/ArkTSBridge.h"
+#include "RNOH/ApiVersionCheck.h"
 
 namespace rnoh {
 
@@ -44,7 +45,7 @@ struct NodeChildData {
 
 // OH_ArkUI_RunTaskInScope is only supported in API Level 20 and above versions
 bool IsNewAPIVersion() {
-  auto result = ArkTSBridge::getInstance()->getSDKApiVersion() >= 20;
+  auto result = IsAtLeastApi20();
   if (result) {
     DynamicArkUILoader::init();
   }
