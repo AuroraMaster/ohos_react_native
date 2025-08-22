@@ -12,6 +12,7 @@
 #include <native_display_soloist/native_display_soloist.h>
 #include <react/renderer/core/EventListener.h>
 #include <react/renderer/core/ReactPrimitives.h>
+#include <functional>
 #include <mutex>
 
 #include "AnimatedNodesManager.h"
@@ -19,15 +20,45 @@
 #include "RNOH/ApiVersionCheck.h"
 #include "RNOH/NativeVsyncHandle.h"
 #include "RNOH/VSyncListener.h"
+#include "RNOH/SchedulerDelegate.h"
+#include "RNOH/RNInstance.h"
 
 namespace rnoh {
+
+/**
+* @internal
+* @ThreadSafe
+*/
+class BatchedOperations {
+ public:
+  using Operation = std::function<void(AnimatedNodesManager&)>;
+
+  void addOperation(Operation operation) {
+    auto lock = std::unique_lock(m_operationsMutex);
+    m_operations.push_back(std::move(operation));
+  }
+
+  void flushOperations(AnimatedNodesManager& animatedNodesManager) {
+    auto lock = std::unique_lock(m_operationsMutex);
+    for (auto& operation : m_operations) {
+      operation(animatedNodesManager);
+    }
+    m_operations.clear();
+  }
+
+ private:
+  std::vector<Operation> m_operations;
+  std::mutex m_operationsMutex;
+};
 
 class NativeAnimatedTurboModule
     : public rnoh::ArkTSTurboModule,
       public rnoh::EventEmitRequestHandler,
-      public std::enable_shared_from_this<NativeAnimatedTurboModule> {
+      public std::enable_shared_from_this<NativeAnimatedTurboModule>,
+      public rnoh::MountingComponentsListener {
  public:
   using Context = rnoh::ArkTSTurboModule::Context;
+  using EndCallback = AnimatedNodesManager::EndCallback;
 
   NativeAnimatedTurboModule(
       const ArkTSTurboModule::Context ctx,
@@ -46,7 +77,10 @@ class NativeAnimatedTurboModule
       facebook::react::Tag tag,
       facebook::jsi::Value const& config);
 
-  double getValue(facebook::react::Tag tag);
+  void getValue(
+      facebook::jsi::Runtime& rt,
+      facebook::react::Tag tag,
+      std::weak_ptr<facebook::react::CallbackWrapper> saveCallback);
 
   void startListeningToAnimatedNodeValue(
       facebook::jsi::Runtime& rt,
@@ -66,7 +100,7 @@ class NativeAnimatedTurboModule
       facebook::react::Tag animationId,
       facebook::react::Tag nodeTag,
       folly::dynamic const& config,
-      std::function<void(bool)>&& endCallback);
+      EndCallback&& endCallback);
 
   void stopAnimation(facebook::react::Tag animationId);
 
@@ -122,6 +156,14 @@ class NativeAnimatedTurboModule
       std::string const& eventName,
       folly::dynamic payload);
 
+  std::weak_ptr<facebook::react::CallbackWrapper> createCallbackWrapper(
+      facebook::jsi::Function&& callback,
+      facebook::jsi::Runtime& runtime);
+
+  EndCallback wrapEndCallbackWithJSInvoker(EndCallback&& callback);
+
+  void onWillMountComponents() override;
+
  private:
   std::unique_lock<std::mutex> acquireLock() {
     return std::unique_lock(m_nodesManagerLock);
@@ -151,6 +193,7 @@ class NativeAnimatedTurboModule
   AnimatedNodesManager m_animatedNodesManager;
   std::mutex m_nodesManagerLock;
   bool m_initializedEventListener = false;
+  BatchedOperations m_operations;
 };
 
 } // namespace rnoh
