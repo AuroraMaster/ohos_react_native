@@ -86,6 +86,12 @@ void NodeApi::resetAttribute(
   maybeThrow(NativeNodeApi::getInstance()->resetAttribute(node, attribute));
 }
 
+const ArkUI_AttributeItem* NodeApi::getAttribute(
+    ArkUI_NodeHandle node,
+    ArkUI_NodeAttributeType attribute) {
+  return NativeNodeApi::getInstance()->getAttribute(node, attribute);
+}
+
 void NodeApi::setMeasuredSize(
     ArkUI_NodeHandle node,
     int32_t width,

@@ -111,6 +111,9 @@ class TextInputNode : public TextInputNodeBase {
 
   void setSelectAll(bool selectAll);
 
+  /**
+   * @Deprecated: use isFocused.
+   */
   bool getTextFocusStatus();
 
   std::string getTextContent() override;

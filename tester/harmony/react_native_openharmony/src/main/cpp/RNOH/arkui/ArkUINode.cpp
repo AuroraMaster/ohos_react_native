@@ -685,6 +685,10 @@ void ArkUINode::onTouchIntercept(const ArkUI_UIInputEvent* event) {
   }
 }
 
+bool ArkUINode::isFocused() {
+  return m_nodeApi->getAttribute(m_nodeHandle, NODE_FOCUS_STATUS)->value[0].i32;
+}
+
 void ArkUINode::onNodeEvent(
     ArkUI_NodeEventType eventType,
     EventArgs& eventArgs) {

@@ -21,8 +21,7 @@ static constexpr std::array TEXT_INPUT_NODE_EVENT_TYPES = {
     NODE_TEXT_INPUT_ON_CONTENT_SCROLL,
     NODE_TEXT_INPUT_ON_CONTENT_SIZE_CHANGE,
     NODE_TEXT_INPUT_ON_WILL_DELETE,
-    NODE_EVENT_ON_APPEAR,
-    NODE_EVENT_ON_DISAPPEAR};
+    NODE_EVENT_ON_APPEAR};
 
 namespace rnoh {
 
@@ -81,16 +80,8 @@ void TextInputNode::onNodeEvent(
       m_textInputNodeDelegate->onContentSizeChange(width, height, false);
     }
  } else if (eventType == ArkUI_NodeEventType::NODE_EVENT_ON_APPEAR) {
-    if (m_autofocus == true){
-      ArkUI_NumberValue value = {.i32 = static_cast<int32_t>(1)};
-      ArkUI_AttributeItem item = {&value, 1};
-      m_nodeApi->setAttribute(m_nodeHandle, NODE_FOCUS_STATUS, &item);
-    }
-  } else if (eventType == ArkUI_NodeEventType::NODE_EVENT_ON_DISAPPEAR) {
-    if (getTextFocusStatus() == true){
-      ArkUI_NumberValue value = {.i32 = static_cast<int32_t>(0)};
-      ArkUI_AttributeItem item = {&value, 1};
-      m_nodeApi->setAttribute(m_nodeHandle, NODE_FOCUS_STATUS, &item);
+    if (m_autofocus == true) {
+      setFocusStatus(1);
     }
   }
 }
@@ -404,9 +395,8 @@ void TextInputNode::setAutoFocus(bool const &autoFocus){
     m_autofocus = autoFocus;
 }
 
-bool TextInputNode::getTextFocusStatus(){
-    return NativeNodeApi::getInstance()->getAttribute(
-      m_nodeHandle, NODE_FOCUS_STATUS)->value[0].i32;
+bool TextInputNode::getTextFocusStatus() {
+  return isFocused();
 }
 
 } // namespace rnoh

@@ -20,7 +20,7 @@ import {
   ScrollView
 } from 'react-native';
 import {TestSuite} from '@rnoh/testerino';
-import {useState, useRef} from 'react';
+import {useState, useRef, useEffect} from 'react';
 import {Button, Effect, StateKeeper, TestCase} from '../components';
 
 const KEYBOARD_TYPES: KeyboardTypeOptions[] = [
@@ -179,6 +179,15 @@ export function TextInputTest() {
           arrange={({setState}) => <FocusTextInputTest setState={setState} />}
           assert={({state, expect}) => {
             expect(state).to.be.true;
+          }}
+        />
+        <TestCase.Manual
+          modal
+          itShould="When the TextInput is unmounted, other components will not gain focus passively.​"
+          initialState={'init'}
+          arrange={({setState}) => <DisableFocusPassivelyTest setState={setState} />}
+          assert={({state, expect}) => {
+            expect(state).to.be.eq('pass');
           }}
         />
       </TestSuite>
@@ -718,6 +727,63 @@ const FocusTextInputTest = (props: {
     <View>
       <Button label="focus text input" onPress={() => ref.current?.focus()} />
       <TextInput onFocus={() => props.setState(true)} ref={ref} />
+    </View>
+  );
+};
+
+const DisableFocusPassivelyTest = (props: {
+  setState: React.Dispatch<React.SetStateAction<string>>;
+}) => {
+  const ref = useRef<TextInput>(null);
+  const [show, setShow] = useState(true);
+  const [firstFocus, setFirstFocus] = useState(false);
+  const [secondFocus, setSecondFocus] = useState(false);
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    setTimeout(() => {
+      setShow(false);
+    }, 300);
+    setTimeout(() => {
+      setShow(true);
+    }, 400);
+    setTimeout(() => {
+      setShow(false);
+      ref.current?.focus();
+    }, 500);
+    setTimeout(() => {
+      setDone(true)
+    }, 600);
+  }, [])
+  useEffect(() => {
+    if (done) {
+      props.setState((firstFocus && !secondFocus) ? 'pass' : 'fail');
+    }
+  }, [done])
+
+  return (
+    <View collapsable={false} style={{gap: 10}}>
+      <TextInput
+        ref={ref}
+        placeholder="TextInput1"
+        style={{backgroundColor: 'pink', height: 40}}
+        onFocus={() => {
+          setFirstFocus(true);
+        }}
+      />
+      <TextInput
+        placeholder="TextInput2"
+        style={{backgroundColor: 'orange', height: 40}}
+        onFocus={() => {
+          setSecondFocus(true);
+        }}
+      />
+      {show ? (
+        <TextInput
+          placeholder="TextInput3"
+          autoFocus={true}
+          style={{backgroundColor: 'blue', height: 40}}
+        />
+      ) : null}
     </View>
   );
 };

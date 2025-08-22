@@ -61,6 +61,17 @@ class NodeApi {
    * @throws std::runtime_error if the operation fails
    */
   void resetAttribute(ArkUI_NodeHandle node, ArkUI_NodeAttributeType attribute);
+  
+  /**
+   * @brief Obtains an attribute of a node.
+   * @param node Indicates the node whose attribute needs to be obtained.
+   * @param attribute Indicates the type of attribute to obtain.
+   * @return Returns the attribute value. If the operation fails, a null pointer
+   * is returned.
+   */
+  const ArkUI_AttributeItem* getAttribute(
+      ArkUI_NodeHandle node,
+      ArkUI_NodeAttributeType attribute);
 
   /**
    * @brief Sets the width and height for a component after the measurement.
