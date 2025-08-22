@@ -19,7 +19,7 @@ class ScrollViewComponentInstance
     : public CppComponentInstance<facebook::react::ScrollViewShadowNode>,
       public ScrollNodeDelegate {
  private:
-  enum ScrollState : int32_t { IDLE, SCROLL, FLING };
+  enum ScrollState : int32_t { IDLE, SCROLL, FLING, CANCELING };
   struct ChildTagWithOffset {
     facebook::react::Tag tag;
     facebook::react::Float offset;
@@ -160,6 +160,7 @@ class ScrollViewComponentInstance
   ComponentInstance::Weak m_keyboardAvoider;
   bool isNestedScroll();
   bool isEnableScrollInteraction(bool scrollEnabled);
+  bool shouldDisableScrollInteraction();
   std::optional<facebook::react::Point> m_targetOffsetOfScrollToCommand = std::nullopt;
 };
 

@@ -278,6 +278,18 @@ bool rnoh::ScrollViewComponentInstance::isEnableScrollInteraction(bool scrollEna
   return true;
 }
 
+bool ScrollViewComponentInstance::shouldDisableScrollInteraction() {
+  auto ancestorTouchTarget = getTouchTargetParent();
+  while (ancestorTouchTarget) {
+    if (ancestorTouchTarget->isJSResponder()) {
+      return true;
+    }
+    ancestorTouchTarget =
+        ancestorTouchTarget->getTouchTargetParent();
+  }
+  return false;
+}
+
 bool rnoh::ScrollViewComponentInstance::isNestedScroll() {
     auto parent = m_parent.lock();
     while(parent) {
@@ -323,7 +335,7 @@ ScrollViewComponentInstance::getScrollViewMetrics() {
 }
 
 bool ScrollViewComponentInstance::isHandlingTouches() const {
-  return m_scrollState != IDLE;
+  return m_scrollState == SCROLL || m_scrollState == FLING;
 }
 
 void ScrollViewComponentInstance::setNestedScrollMode(
@@ -380,6 +392,8 @@ void ScrollViewComponentInstance::onScrollStop() {
     emitOnMomentumScrollEndEvent();
   } else if (m_scrollState == ScrollState::SCROLL) {
     emitOnScrollEndDragEvent();
+  } else if (m_scrollState == ScrollState::CANCELING) {
+    m_scrollNode.setEnableScrollInteraction(m_enableScrollInteraction);
   }
   m_scrollState = ScrollState::IDLE;
   if (!isContentSmallerThanContainer(m_props) && !m_allowScrollPropagation &&
@@ -400,8 +414,10 @@ void ScrollViewComponentInstance::onScrollStop() {
 float ScrollViewComponentInstance::onScrollFrameBegin(
     float offset,
     int32_t scrollState) {
-  if (!m_props->scrollEnabled) {
+  if (!m_props->scrollEnabled || shouldDisableScrollInteraction()) {
     m_recentScrollFrameOffset = 0;
+    m_scrollState = ScrollState::CANCELING;
+    m_scrollNode.setEnableScrollInteraction(false);
     return 0;
   }
   m_recentScrollFrameOffset = offset;

@@ -61,20 +61,23 @@ export const TouchableOpacityTest = () => {
         </TouchableOpacity>
       </TestCase.Example>
       <TestCase.Manual
-        itShould="Pressing and dragging on the gray square does not trigger the onPress event."
+        itShould="Gray square does not trigger onPress when pressed and dragged; yellow square does not trigger onScroll."
         initialState={{
-          pressed: false,
-          drag: false
+          pressIn: 0,
+          pressed: 0,
+          scrolled: 0,
         }}
         arrange={({ setState }) => {
           return (
             <TouchableOpacity
-              onPress={() => setState((prev: any) => ({...prev, pressed: true}))}>
+              onPress={() => {
+                setState(prev => ({...prev, pressed: prev.pressed + 1}));
+              }}>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 onScrollEndDrag={() => {
-                  setState((prev: any) => ({...prev, drag: true}));
+                  setState(prev => ({...prev, scrolled: prev.scrolled + 1}));
                 }}>
                 <View
                   style={{
@@ -84,9 +87,23 @@ export const TouchableOpacityTest = () => {
                     paddingHorizontal: 8,
                   }}>
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(value => {
-                    return (
+                    return value % 2 ? (
+                      <View
+                        key={value}
+                        style={{
+                          width: 88,
+                          height: 88,
+                          marginRight: 8,
+                          backgroundColor: '#dddd0' + value,
+                        }}>
+                        <Text>{value}</Text>
+                      </View>
+                    ) : (
                       <TouchableOpacity
                         key={value}
+                        onPressIn={() => {
+                          setState(prev => ({...prev, pressIn: prev.pressIn + 1}));
+                        }}
                         style={{
                           width: 88,
                           height: 88,
@@ -103,7 +120,9 @@ export const TouchableOpacityTest = () => {
           );
         }}
         assert={({expect, state}) => {
-          expect(state.pressed).to.be.false;
+          expect(state.pressIn).to.be.eq(1);
+          expect(state.pressed).to.be.eq(1);
+          expect(state.scrolled).to.be.eq(1);
         }}
       />
     </TestSuite>

@@ -53,6 +53,14 @@ void CustomNodeComponentInstance::onHoverOut() {
     }
 }
 
+void CustomNodeComponentInstance::setIsJSResponder(bool isJSResponder) {
+  m_isJSResponder = isJSResponder;
+}
+
+bool CustomNodeComponentInstance::isJSResponder() const {
+  return m_isJSResponder;
+}
+
 void CustomNodeComponentInstance::onPropsChanged(SharedConcreteProps const& props) {
   CppComponentInstance::onPropsChanged(props);
   if (!props->removeClippedSubviews && !m_childrenClippedState.empty()) {

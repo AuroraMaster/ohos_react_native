@@ -37,15 +37,12 @@ class ComponentInstance
  private:
   std::string m_componentName;
   std::unordered_set<std::string> m_nativeResponderBlockOrigins;
-  bool m_isJSResponder = false;
-
+  
   /**
    * @brief Mark whether the current component is a JS responder.
    * @param isJSResponder
    */
-  void setIsJSResponder(bool isJSResponder) {
-    m_isJSResponder = isJSResponder;
-  };
+  virtual void setIsJSResponder(bool isJSResponder){};
 
  protected:
   using Tag = facebook::react::Tag;
@@ -243,7 +240,7 @@ class ComponentInstance
    * @return bool
    */
   bool isJSResponder() const override {
-    return m_isJSResponder;
+    return false;
   };
   
   // TouchTarget implementation

@@ -17,6 +17,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   ActivityIndicator,
+  Pressable,
 } from 'react-native';
 
 const handleClick = () => {
@@ -148,9 +149,9 @@ export const ScrollViewNestedInGesturesExample = () => {
             }}
             overScrollMode={'never'}
           >
-            <View style={{ backgroundColor: 'lightgreen', height: 1000, alignItems: 'center', justifyContent: 'center' }}>
+            <Pressable style={{ backgroundColor: 'lightgreen', height: 1000, alignItems: 'center', justifyContent: 'center' }}>
               <Text>onTouchStart: {time}</Text>
-            </View>
+            </Pressable>
           </Animated.ScrollView>
       </Animated.View>
     </View>

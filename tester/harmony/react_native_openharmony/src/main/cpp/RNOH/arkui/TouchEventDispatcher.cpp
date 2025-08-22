@@ -223,26 +223,8 @@ void TouchEventDispatcher::dispatchTouchEvent(
         continue;
       }
       if (isAncestorHandlingTouches(touchTarget, rootTarget)) {
-        auto ancestorJSResponderTouchTarget =
-            touchTarget->getTouchTargetParent();
-        while (ancestorJSResponderTouchTarget &&
-               ancestorJSResponderTouchTarget != rootTarget &&
-               !ancestorJSResponderTouchTarget->isJSResponder()) {
-          ancestorJSResponderTouchTarget =
-              ancestorJSResponderTouchTarget->getTouchTargetParent();
-        }
         cancelPreviousTouchEvent(timestampSeconds, touchTarget);
-        if (ancestorJSResponderTouchTarget &&
-            ancestorJSResponderTouchTarget != rootTarget &&
-            (ancestorJSResponderTouchTarget->getTouchEventEmitter() != nullptr)) {
-          m_touchTargetByTouchId.insert_or_assign(
-              activeTouch.id, ancestorJSResponderTouchTarget);
-          DLOG(INFO) << "TOUCH::DOWN";
-          ancestorJSResponderTouchTarget->getTouchEventEmitter()->onTouchStart(
-              m_previousEvent);
-        } else {
-          m_touchTargetByTouchId.erase(activeTouch.id);
-        }
+        m_touchTargetByTouchId.erase(activeTouch.id);
         continue;
       }
     }
