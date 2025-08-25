@@ -546,11 +546,8 @@ target_compile_options(rnoh PUBLIC
 )
 target_compile_features(rnoh PUBLIC cxx_std_17)
 
-if("$ENV{RNOH_C_API_ARCH}" STREQUAL "1")
-    message("Experimental C-API architecture enabled")
-    target_link_libraries(rnoh PUBLIC libqos.so)
-    target_compile_definitions(rnoh PUBLIC C_API_ARCH)
-endif()
+target_link_libraries(rnoh PUBLIC libqos.so)
+target_compile_definitions(rnoh PUBLIC C_API_ARCH)
 
 if(DEFINED LOG_VERBOSITY_LEVEL)
   message("LOG_VERBOSITY_LEVEL is set to: ${LOG_VERBOSITY_LEVEL}")
