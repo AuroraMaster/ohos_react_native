@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.72.87
+- fix:Supplementary submission for replacing the interface getSDKApiVersion(),([3b500ca1a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/3b500ca1ab2f2a0cb8baa2695f49b2bf628fd082))
+- fix: an issue where unmounting a TextInput component causes another TextInput component to gain focus passively.​,([85784668c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/85784668c0f76d703e33a7c48ed4868bbdca429b))
+- fix: Sticky Header Update Issue with Tabs and Animated ScrollView,([f03459fbd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f03459fbd3516ff72a893a22c2976cf31258e787))
+- fix: the touch interaction issue between ScrollView and its parent component.,([53f0dcd44](https://gitcode.com/openharmony-sig/ohos_react_native/commit/53f0dcd449c2688261e65c79701de3e63112c263))
+- fix: support selecting text input if selection end is smaller than selection start,([f0588a255](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f0588a25559907d5f04904da398d4fccb8485b63))
+- fix:Fix the issue where the selection prop in the TextInput component does not take effect under certain conditions.,([a4591bac4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a4591bac4f6d197b1f5489ce9af6609aa4caea82))
+- fix: assigning `int` inside flattenOffset and extractOffset,([e7c486797](https://gitcode.com/openharmony-sig/ohos_react_native/commit/e7c48679719c1e4b8a83f4b5e6919c3bea73328b))
+- fix:Resolve the crash issue caused by the getSDKApiVersion() interface not supporting multi-threaded operations.,([153005e69](https://gitcode.com/openharmony-sig/ohos_react_native/commit/153005e695284923e5a46b05f19b873c9443e3ad))
+- [chore]: updated to version 6.0.0.504(0.72.86),([5c4eab816](https://gitcode.com/openharmony-sig/ohos_react_native/commit/5c4eab8164c23d5150e6b00a42b3dd5a9eda6b5c))
+
 ## 0.72.86
 - fix: type mismatch between SafeWeak and weak_ptr,([16c5c965f](https://gitcode.com/openharmony-sig/ohos_react_native/commit/16c5c965f2ae4e7e76f79ed6d2d7a0932dfc5f54))
 - fix：Modifying some scenes to obtain rnWindow failed,([daceb90c1](https://gitcode.com/openharmony-sig/ohos_react_native/commit/daceb90c1bcafc82e560256fc71fc045719451b0))
