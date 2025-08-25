@@ -241,15 +241,25 @@ ArkUINode& ArkUINode::setHeight(float height) {
   return *this;
 }
 
-ArkUINode& ArkUINode::setLayoutRect(
-  facebook::react::Point const& position, facebook::react::Size const& size,
-  facebook::react::Float pointScaleFactor) {
+inline int32_t roundToInt(double value) {
+  constexpr double HALF = 0.5;
+  if (value >= 0) {
+    return static_cast<int32_t>(value + HALF);
+  } else {
+    return -static_cast<int32_t>(-value + HALF);
+  }
+}
+
+ArkUINode&
+ArkUINode::setLayoutRect(
+    facebook::react::Point const& position,
+    facebook::react::Size const& size,
+    facebook::react::Float pointScaleFactor) {
   ArkUI_NumberValue value[] = {
-    {.i32 = static_cast<int32_t>(position.x * pointScaleFactor + 0.5)},
-    {.i32 = static_cast<int32_t>(position.y * pointScaleFactor + 0.5)},
-    {.i32 = static_cast<int32_t>(size.width * pointScaleFactor + 0.5)},
-    {.i32 = static_cast<int32_t>(size.height * pointScaleFactor + 0.5)}
-  };
+      {.i32 = roundToInt(position.x * pointScaleFactor)},
+      {.i32 = roundToInt(position.y * pointScaleFactor)},
+      {.i32 = roundToInt(size.width * pointScaleFactor)},
+      {.i32 = roundToInt(size.height * pointScaleFactor)}};
   saveSize(value[2].i32, value[3].i32);
   ArkUI_AttributeItem item = {value, sizeof(value) / sizeof(ArkUI_NumberValue)};
   m_nodeApi->setAttribute(m_nodeHandle, NODE_LAYOUT_RECT, &item);
@@ -770,8 +780,9 @@ ArkUI_IntOffset ArkUINode::getLayoutPosition() {
 }
 
 void ArkUINode::registerNodeEvent(ArkUI_NodeEventType eventType) {
-  maybeThrow(NativeNodeApi::getInstance()->registerNodeEvent(
-      m_nodeHandle, eventType, eventType, this));
+  maybeThrow(
+      NativeNodeApi::getInstance()->registerNodeEvent(
+          m_nodeHandle, eventType, eventType, this));
 }
 
 void ArkUINode::unregisterNodeEvent(ArkUI_NodeEventType eventType) {
@@ -787,7 +798,7 @@ const ArkUI_AttributeItem& ArkUINode::getAttribute(
         std::to_string((attribute));
     LOG(ERROR) << message;
     throw std::runtime_error(std::move(message));
-    }
+  }
   return *item;
 }
 
@@ -806,11 +817,10 @@ void ArkUINode::setAttribute(
 
 void ArkUINode::setAttribute(
     ArkUI_NodeAttributeType attribute,
-    std::initializer_list<ArkUI_NumberValue> values) 
-{
-    int32_t size = values.size();
-    ArkUI_AttributeItem item{.value = std::data(values), .size = size};
-    setAttribute(attribute, item);
+    std::initializer_list<ArkUI_NumberValue> values) {
+  int32_t size = values.size();
+  ArkUI_AttributeItem item{.value = std::data(values), .size = size};
+  setAttribute(attribute, item);
 }
 
 } // namespace rnoh
