@@ -29,7 +29,6 @@ import { SurfaceHandle, SurfaceProps } from './RNOH/SurfaceHandle';
 import { I18nManagerTurboModule } from './RNOHCorePackage/turboModules';
 import type { SurfaceContext } from './RNOH/RNInstance';
 import { NodeContent } from '@ohos.arkui.node'
-import { window } from '@kit.ArkUI';
 
 interface RootViewState {}
 
@@ -114,10 +113,8 @@ struct ContentAdaptiveSurface {
   private logger!: RNOHLogger
   private rootViewNodeContent: NodeContent = new NodeContent();
   private timerId: undefined | number = undefined;
-  private lastChangeTime: number = 0;
   private isWindowRectDrag: boolean = false;
   private currentMeasuredSize: Size | undefined = undefined;
-  private lastChangeFlag: boolean = false;
   /**
   * Note: You may need to change this delay along with RNInstancesCoordinator's 
   * onWindowSizeChange delay, as both have an effect on window changes. 
@@ -221,38 +218,25 @@ struct ContentAdaptiveSurface {
     if (this.surfaceHandle.isDestroyed()) {
       return {width: 0, height: 0};
     }
-    const currentTime = Date.now(); 
-    if (!this.isWindowRectDrag || (currentTime - this.lastChangeTime > this.delayTime) || this.lastChangeFlag) {
-      if (this.timerId) {
-        clearTimeout(this.timerId);
-        this.timerId = undefined;
-      }
+    if (!this.isWindowRectDrag) {
       this.currentMeasuredSize =
         this.updateSurfaceConstraints({
           minWidth: constraint.maxWidth as number, // NOTE: width: 100% doesn't work on the root component hence maxWidth is used here
           minHeight: constraint.minHeight as number,
           maxWidth: constraint.maxWidth as number,
           maxHeight: constraint.maxHeight as number,
-        })
-      this.lastChangeFlag = false;
-      this.lastChangeTime = currentTime;
+        });
     } else {
-      if (this.timerId) {
-        clearTimeout(this.timerId)
-        this.timerId = undefined;
-      }
+      clearTimeout(this.timerId);
       this.timerId = setTimeout(() =>{
         this.currentMeasuredSize =
-        this.updateSurfaceConstraints({
-          minWidth: constraint.maxWidth as number, // NOTE: width: 100% doesn't work on the root component hence maxWidth is used here
-          minHeight: constraint.minHeight as number,
-          maxWidth: constraint.maxWidth as number,
-          maxHeight: constraint.maxHeight as number,
-        })
-        this.timerId = undefined;
-        this.lastChangeFlag = true;
-        this.lastChangeTime = Date.now();
-      }, this.delayTime)
+          this.updateSurfaceConstraints({
+            minWidth: constraint.maxWidth as number, // NOTE: width: 100% doesn't work on the root component hence maxWidth is used here
+            minHeight: constraint.minHeight as number,
+            maxWidth: constraint.maxWidth as number,
+            maxHeight: constraint.maxHeight as number,
+          });
+      }, this.delayTime);
     }
     const measuredSize = this.currentMeasuredSize;
     const newSize: Size =
@@ -263,8 +247,8 @@ struct ContentAdaptiveSurface {
         minWidth: newSize.width,
         maxWidth: newSize.width,
         maxHeight: newSize.height
-      })
-    })
+      });
+    });
     return newSize;
   }
 
@@ -355,10 +339,6 @@ struct ParentBoundSurface {
   private logger!: RNOHLogger
   private rootViewNodeContent: NodeContent = new NodeContent();
   private timerId: undefined | number = undefined;
-  private lastChangeTime: number = 0;
-  private isWindowRectDrag: boolean = false;
-  private currentMeasuredSize: Size | undefined = undefined;
-  private lastChangeFlag: boolean = false;
   /**
   * Note: You may need to change this delay along with RNInstancesCoordinator's 
   * onWindowSizeChange delay, as both have an effect on window changes. 
@@ -396,12 +376,6 @@ struct ParentBoundSurface {
       tag,	
       (newDescriptor) => this.onUpdateComponent(newDescriptor)	
     ))
-    this.cleanUpCallbacks.push(
-      this.ctx.rnInstance.subscribeToLifecycleEvents("WINDOW_REACT_DRAG", 
-      (isWindowRectDrag: boolean) => {
-        this.isWindowRectDrag = isWindowRectDrag;
-      })
-    )
     this.surfaceHandle.attachRootView(this.ctx.rnInstance.getId(), this.surfaceHandle.getTag(),
       this.rootViewNodeContent);
     stopTracing()

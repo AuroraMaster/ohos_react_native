@@ -208,6 +208,7 @@ export class RNInstancesCoordinator {
   private onDestroyCallbacks: Function[];
   private timerId: number = 0;
   private lastChangeTime: number = 0;
+  private isWindowRectDrag: boolean = false;
   /**
   * Note: You may need to change this delay along with RNSurface's onMeasuredSize delay, 
   * as both have an effect on window changes. 
@@ -341,19 +342,17 @@ export class RNInstancesCoordinator {
   }
 
   public onWindowRectChange(data: window.RectChangeOptions) {
-    if (data.reason === window.RectChangeReason.DRAG_START) {
+    const isWindowRectDrag = data.reason === window.RectChangeReason.DRAG;
+    if (this.isWindowRectDrag !== isWindowRectDrag) {
       this.rnInstanceRegistry.forEach((rnInstance) => {
-        rnInstance.onWindowReactChange(true)
-      })
-    } else if(data.reason === window.RectChangeReason.DRAG_END) {
-      this.rnInstanceRegistry.forEach((rnInstance) => {
-        rnInstance.onWindowReactChange(false)
-      })
+        rnInstance.onWindowReactChange(isWindowRectDrag);
+      });
+      this.isWindowRectDrag = isWindowRectDrag;
     }
   }
 
   public onWindowSizeChange(windowSize: window.Size | window.Rect) {
-    const currentTime = Date.now(); 
+    const currentTime = Date.now();
     if (currentTime - this.lastChangeTime > this.delayTime) {
       this.displayMetricsManager.updateWindowSize(windowSize);
       this.rnInstanceRegistry.forEach((rnInstance) => {

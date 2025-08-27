@@ -7,7 +7,7 @@
 
 import {TestSuite} from '@rnoh/testerino';
 import React, {useState, useEffect} from 'react';
-import {Text, StyleSheet, Dimensions} from 'react-native';
+import {Text, StyleSheet, Dimensions, View} from 'react-native';
 import {TestCase} from '../components';
 
 export function DimensionsTest() {
@@ -64,9 +64,26 @@ export function DimensionsTest() {
           Screen dimensions: {JSON.stringify(screenDimensions)}
         </Text>
       </TestCase.Example>
+      <TestCase.Example itShould="prevent continuous triggering of onLayout during window drag.">
+        <DragingWindowExample />
+      </TestCase.Example>
     </TestSuite>
   );
 }
+
+const DragingWindowExample = () => {
+  const [time, setTime] = useState(0);
+  return (
+    <View
+      style={{width: '100%', height: 20}}
+      onLayout={() => {
+        setTime(prev => prev + 1);
+      }}>
+      <Text>onLayout: {time}</Text>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   text: {
     fontSize: 14,
