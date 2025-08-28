@@ -205,10 +205,11 @@ export class MetroJSBundleProvider extends JSBundleProvider {
     try {
       const response = await fetchDataFromUrl(this.bundleUrl, { headers: { 'Content-Type': 'text/javascript' } }, onProgress);
       /**
-       * When the responseCode is 500, instead of building a bundle, Metro will report an error which should be thrown and displayed on the phone.
+       * When the responseCode is not 200 (including 4xx client errors or 5xx server errors),
+       * instead of building a bundle, Metro will report an error which should be thrown and displayed on the phone.
        */
-      if (response.responseCode === 500) {
-        this.throwMetroError(response.result)
+      if (response.responseCode !== 200) {
+        this.throwMetroError(response.result, response.responseCode)
       }
       return response.result;
     } catch (err) {
@@ -239,7 +240,7 @@ export class MetroJSBundleProvider extends JSBundleProvider {
     return `${hotReloadConfig.host}:${hotReloadConfig.port}`
   }
 
-  throwMetroError(result: ArrayBuffer) {
+  throwMetroError(result: ArrayBuffer, statusCode: number) {
     const processChunk = (text: string | undefined) => {
       let content = text ?? ""
       const matches = text?.match(/^([!\x3c-\x3f]*)([\d;]*)([\x20-\x2c]*[\x40-\x7e])([\s\S]*)/m)
@@ -253,10 +254,20 @@ export class MetroJSBundleProvider extends JSBundleProvider {
       return colorChunks.join("");
     }
     const textDecoder = util.TextDecoder.create();
-    const err: { message: string, stack: string } = JSON.parse(textDecoder.decodeWithStream(new Uint8Array(result)));
+    const bodyString = textDecoder.decodeWithStream(new Uint8Array(result));
+    let whatHappened = "";
+    let customStack = "";
+    try {
+      const err: { message: string, stack: string } = JSON.parse(bodyString);
+      whatHappened = ansiToText(err.message);
+      customStack = err.stack?.replace(err.message, "");
+    } catch (err) {
+      whatHappened =
+        `The development server returned response error code: ${statusCode}\n\nURL: ${this.bundleUrl}\n\nBody:\n${bodyString}`;
+    }
     throw new MetroJSBundleProviderError({
-      whatHappened: ansiToText(err.message),
-      customStack: err.stack.replace(err.message, ""),
+      whatHappened,
+      customStack,
       howCanItBeFixed: []
     })
   }
