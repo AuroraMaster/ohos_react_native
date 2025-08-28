@@ -52,6 +52,33 @@ export function TextTest() {
           </Text>
         </View>
       </TestCase.Example>
+      <TestCase.Example itShould="Text bind touch">
+      <View>
+                <Text>
+                    <Text>🎁 亲爱的hank：{'\n'}</Text>
+                    <Text>🎉 请查收新一期活动邀约 👉 评论转想法，轻松赚盐粒{'\n'}</Text>
+                    <Text>
+                        💎「写评论同时发布到想法」即可参与盐粒瓜分，最高奖池 1200 万盐粒！{'\n'}
+                    </Text>
+                    <Text>
+                        🌟 专属邀请通道已为你开启，马上报名了解详情{'>'}
+                        {'>'}
+                    </Text>
+                    <Text
+                        style={{
+                            backgroundColor: 'green',
+                        }}
+                        onPress={() => {
+                            console.log("点击了链接")
+                        }}
+                    >
+                        评论区开麦计划
+                    </Text>
+                    <Text>{'\n'}</Text>,<Text>爱你的创作者小助手{'\n'}</Text>
+                    <Text>gggggggg{'\n'}</Text>
+                </Text>
+            </View>
+      </TestCase.Example>
       <TestCase.Example itShould="render text in one line">
         <View style={{flexDirection: 'row'}}>
           <Text style={{fontSize: 10}}>/ {'100'}</Text>
