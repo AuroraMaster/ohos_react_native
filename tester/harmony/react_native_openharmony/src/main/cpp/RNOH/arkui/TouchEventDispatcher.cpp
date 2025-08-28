@@ -14,6 +14,10 @@ namespace rnoh {
 
 using Point = facebook::react::Point;
 
+constexpr int32_t ARKUI_MOUSE_POINTER_ID = 1001;
+constexpr int32_t RN_MOUSE_POINTER_ID = 0;
+constexpr int32_t TOUCH_IDENTIFIER_POOL_OFFSET = 1;
+
 static std::pair<TouchTarget::Shared, Point> findTargetForTouchPoint(
     Point const& point,
     TouchTarget::Shared const& target) {
@@ -110,6 +114,17 @@ bool isAncestorHandlingTouches(
   return false;
 }
 
+int32_t generatedTouchPointIdentifier(
+    const ArkUI_UIInputEvent* event,
+    uint32_t idx) {
+  auto pointerId = OH_ArkUI_PointerEvent_GetPointerId(event, idx);
+  if (pointerId == ARKUI_MOUSE_POINTER_ID) {
+    return RN_MOUSE_POINTER_ID;
+  } else {
+    return pointerId + TOUCH_IDENTIFIER_POOL_OFFSET;
+  }
+}
+
 bool TouchEventDispatcher::canIgnoreMoveEvent(
     facebook::react::TouchEvent currentEvent) {
   if (m_previousEvent.touches.empty()) {
@@ -144,7 +159,7 @@ TouchPoint getActiveTouchFromEvent(ArkUI_UIInputEvent* event) {
         screenY ==
             int32_t(OH_ArkUI_PointerEvent_GetDisplayYByIndex(event, idx))) {
       actionTouch = TouchPoint{
-          .id = OH_ArkUI_PointerEvent_GetPointerId(event, idx),
+          .id = generatedTouchPointIdentifier(event, idx),
           .force = OH_ArkUI_PointerEvent_GetPressure(event, idx),
           .nodeX = int32_t(OH_ArkUI_PointerEvent_GetX(event)),
           .nodeY = int32_t(OH_ArkUI_PointerEvent_GetY(event)),
@@ -164,7 +179,7 @@ std::vector<TouchPoint> getTouchesFromEvent(ArkUI_UIInputEvent* event) {
   result.reserve(touchPointCount);
   for (auto idx = 0; idx < touchPointCount; idx++) {
     result.emplace_back(TouchPoint{
-        .id = OH_ArkUI_PointerEvent_GetPointerId(event, idx),
+        .id = generatedTouchPointIdentifier(event, idx),
         .force = OH_ArkUI_PointerEvent_GetPressure(event, idx),
         .nodeX = int32_t(OH_ArkUI_PointerEvent_GetXByIndex(event, idx)),
         .nodeY = int32_t(OH_ArkUI_PointerEvent_GetYByIndex(event, idx)),
