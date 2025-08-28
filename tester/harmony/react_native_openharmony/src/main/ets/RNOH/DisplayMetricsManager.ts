@@ -19,6 +19,7 @@ const defaultDisplayMetrics: DisplayMetrics = {
     left: 0,
     width: 0,
     height: 0,
+    decorHeight: 0,
     scale: 1,
     fontScale: 1,
     densityDpi: 480,
@@ -75,6 +76,18 @@ export class DisplayMetricsManager {
     this.displayMetrics.windowPhysicalPixels.width = windowSize.width;
     this.displayMetrics.windowPhysicalPixels.top = (windowSize as window.Rect).top || 0;
     this.displayMetrics.windowPhysicalPixels.left = (windowSize as window.Rect).left || 0;
+    try {
+      if (this.mainWindow.getWindowDecorVisible()) {
+        this.displayMetrics.windowPhysicalPixels.decorHeight =
+          this.mainWindow.getWindowDecorHeight() * this.displayMetrics.windowPhysicalPixels.scale;
+        this.logger.debug(`Window decor height: ${this.displayMetrics.windowPhysicalPixels.decorHeight}`);
+      } else {
+        this.displayMetrics.windowPhysicalPixels.decorHeight = 0;
+      }
+    } catch (err) {
+      this.displayMetrics.windowPhysicalPixels.decorHeight = 0;
+      this.logger.error(`Failed to get window decor height: ${JSON.stringify(err)}`);
+    }
     this.updateDisplayMetrics()
   }
 
@@ -124,6 +137,7 @@ export class DisplayMetricsManager {
           left: this.displayMetrics.windowPhysicalPixels.left,
           width: this.displayMetrics.windowPhysicalPixels.width,
           height: this.displayMetrics.windowPhysicalPixels.height,
+          decorHeight: this.displayMetrics.windowPhysicalPixels.decorHeight,
           scale: customDensity,
           fontScale: this.displayMetrics.windowPhysicalPixels.fontScale,
           densityDpi: customDensityDpi,

@@ -136,6 +136,9 @@ auto PhysicalPixels::fromNapiValue(napi_env env, napi_value value)
   auto left = arkJs.hasProperty(value, "left") ?
       static_cast<float>(arkJs.getDouble(arkJs.getObjectProperty(value, "left"))) :
       0.0f;
+  auto decorHeight = arkJs.hasProperty(value, "decorHeight") ?
+      static_cast<float>(arkJs.getDouble(arkJs.getObjectProperty(value, "decorHeight"))) :
+      0.0f;
   return {
       top,
       left,
@@ -143,6 +146,7 @@ auto PhysicalPixels::fromNapiValue(napi_env env, napi_value value)
           arkJs.getDouble(arkJs.getObjectProperty(value, "width"))),
       static_cast<float>(
           arkJs.getDouble(arkJs.getObjectProperty(value, "height"))),
+      decorHeight,
       static_cast<float>(
           arkJs.getDouble(arkJs.getObjectProperty(value, "scale"))),
       static_cast<float>(

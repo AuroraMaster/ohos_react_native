@@ -56,6 +56,7 @@ export type PhysicalPixels = {
   left?: number,
   width: number,
   height: number,
+  decorHeight?: number,
   scale: number,
   fontScale: number,
   densityDpi: number,

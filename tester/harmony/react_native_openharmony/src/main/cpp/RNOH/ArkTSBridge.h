@@ -16,6 +16,7 @@ struct PhysicalPixels {
   float left;
   float width;
   float height;
+  float decorHeight;
   float scale;
   float fontScale;
   float densityDpi;

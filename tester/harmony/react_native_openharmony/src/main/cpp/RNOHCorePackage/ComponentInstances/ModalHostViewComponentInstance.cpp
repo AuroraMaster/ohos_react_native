@@ -50,13 +50,14 @@ void ModalHostViewComponentInstance::updateDisplaySize(
 
   if (m_screenOrientation != screenOrientation) {
     m_screenOrientation = screenOrientation;
-     if( m_eventEmitter != nullptr ){
-          m_eventEmitter->onOrientationChange({.orientation = screenOrientation});  
-     }
+    if (m_eventEmitter != nullptr) {
+      m_eventEmitter->onOrientationChange({.orientation = screenOrientation});
+    }
   }
   facebook::react::Size screenSize = {
       .width = windowMetrics.width / windowMetrics.scale,
-      .height = windowMetrics.height / windowMetrics.scale};
+      .height = (windowMetrics.height - windowMetrics.decorHeight) /
+          windowMetrics.scale};
   state->updateState({screenSize});
   if (m_props != nullptr &&
       m_props->animationType ==
@@ -69,16 +70,26 @@ void ModalHostViewComponentInstance::resetModalPosition(
     DisplayMetrics const& displayMetrics,
     SharedConcreteState const& state) {
   auto windowMetrics = displayMetrics.windowPhysicalPixels;
-  FoldStatus foldStatus  = static_cast<FoldStatus>(ArkTSBridge::getInstance()->getFoldStatus());
+  FoldStatus foldStatus =
+      static_cast<FoldStatus>(ArkTSBridge::getInstance()->getFoldStatus());
   auto isSplitScreenMode = ArkTSBridge::getInstance()->getIsSplitScreenMode();
-  if ((foldStatus == FOLD_STATUS_EXPANDED || foldStatus == FOLD_STATUS_HALF_FOLDED) && isSplitScreenMode) {
+  if ((foldStatus == FOLD_STATUS_EXPANDED ||
+       foldStatus == FOLD_STATUS_HALF_FOLDED) &&
+      isSplitScreenMode) {
     m_rootCustomNode.setPosition(
         {displayMetrics.screenPhysicalPixels.width / windowMetrics.scale, 0});
-    } else {
-        auto x = windowMetrics.left / windowMetrics.scale;
-        auto y = windowMetrics.top / windowMetrics.scale;
-        m_rootCustomNode.setPosition({x, y});
-    }
+  } else {
+    auto x = windowMetrics.left / windowMetrics.scale;
+    auto y = windowMetrics.top / windowMetrics.scale;
+    m_rootCustomNode.setPosition({x, y});
+  }
+  auto width = (displayMetrics.windowPhysicalPixels.width +
+                displayMetrics.windowPhysicalPixels.left) /
+      displayMetrics.windowPhysicalPixels.scale;
+  auto height = (displayMetrics.windowPhysicalPixels.height +
+                 displayMetrics.windowPhysicalPixels.top) /
+      displayMetrics.windowPhysicalPixels.scale;
+  m_rootStackNode.setSize(facebook::react::Size{width, height});
 }
 
 void ModalHostViewComponentInstance::updateSlideTransition(
@@ -95,29 +106,41 @@ ModalHostViewComponentInstance::ModalHostViewComponentInstance(Context context)
       m_virtualNode(m_arkUINodeCtx),
       m_rootStackNode(m_arkUINodeCtx),
       m_rootCustomNode(m_arkUINodeCtx) {
-    getLocalRootArkUINode().setSize(facebook::react::Size{0, 0});
-    m_dialogHandler.setDialogDelegate(this);
-    FoldStatus foldStatus  = static_cast<FoldStatus>(ArkTSBridge::getInstance()->getFoldStatus());
-    auto isSplitScreenMode = ArkTSBridge::getInstance()->getIsSplitScreenMode();
-    auto displayMetrics = ArkTSBridge::getInstance()->getDisplayMetrics();
-    if (foldStatus == FOLD_STATUS_EXPANDED && isSplitScreenMode) {
-        m_rootCustomNode.setPosition(
-          {displayMetrics.screenPhysicalPixels.width / displayMetrics.windowPhysicalPixels.scale, 0});
-    } else {
-        auto x = displayMetrics.windowPhysicalPixels.left / displayMetrics.windowPhysicalPixels.scale;
-        auto y = displayMetrics.windowPhysicalPixels.top / displayMetrics.windowPhysicalPixels.scale;
-        m_rootCustomNode.setPosition({x, y});
-    }
-    auto width = displayMetrics.screenPhysicalPixels.width / displayMetrics.windowPhysicalPixels.scale;
-    auto height = displayMetrics.screenPhysicalPixels.height / displayMetrics.windowPhysicalPixels.scale;
-    m_rootStackNode.setSize(facebook::react::Size{width, height});
-    m_rootStackNode.insertChild(m_rootCustomNode, 0);
+  getLocalRootArkUINode().setSize(facebook::react::Size{0, 0});
+  m_dialogHandler.setDialogDelegate(this);
+  FoldStatus foldStatus =
+      static_cast<FoldStatus>(ArkTSBridge::getInstance()->getFoldStatus());
+  auto isSplitScreenMode = ArkTSBridge::getInstance()->getIsSplitScreenMode();
+  auto displayMetrics = ArkTSBridge::getInstance()->getDisplayMetrics();
+  if (foldStatus == FOLD_STATUS_EXPANDED && isSplitScreenMode) {
+    m_rootCustomNode.setPosition(
+        {displayMetrics.screenPhysicalPixels.width /
+             displayMetrics.windowPhysicalPixels.scale,
+         0});
+  } else {
+    auto x = displayMetrics.windowPhysicalPixels.left /
+        displayMetrics.windowPhysicalPixels.scale;
+    auto y = displayMetrics.windowPhysicalPixels.top /
+        displayMetrics.windowPhysicalPixels.scale;
+    m_rootCustomNode.setPosition({x, y});
+  }
+  auto width = (displayMetrics.windowPhysicalPixels.width +
+                displayMetrics.windowPhysicalPixels.left) /
+      displayMetrics.windowPhysicalPixels.scale;
+  auto height = (displayMetrics.windowPhysicalPixels.height +
+                 displayMetrics.windowPhysicalPixels.top) /
+      displayMetrics.windowPhysicalPixels.scale;
+  m_rootStackNode.setSize(facebook::react::Size{width, height});
+  m_rootStackNode.insertChild(m_rootCustomNode, 0);
 }
 
-void ModalHostViewComponentInstance::setLayout(facebook::react::LayoutMetrics layoutMetrics) {
+void ModalHostViewComponentInstance::setLayout(
+    facebook::react::LayoutMetrics layoutMetrics) {
   CppComponentInstance::setLayout(layoutMetrics);
-  int32_t width = static_cast<int32_t>(layoutMetrics.frame.size.width * layoutMetrics.pointScaleFactor + 0.5);
-  int32_t height = static_cast<int32_t>(layoutMetrics.frame.size.height * layoutMetrics.pointScaleFactor + 0.5);
+  int32_t width = static_cast<int32_t>(
+      layoutMetrics.frame.size.width * layoutMetrics.pointScaleFactor + 0.5);
+  int32_t height = static_cast<int32_t>(
+      layoutMetrics.frame.size.height * layoutMetrics.pointScaleFactor + 0.5);
   m_rootCustomNode.saveSize(width, height);
   m_rootCustomNode.setSize(layoutMetrics.frame.size);
 }
@@ -205,8 +228,8 @@ void ModalHostViewComponentInstance::onMessageReceived(
   if (message.name == "WINDOW_SIZE_CHANGE") {
     auto displayMetrics = ArkTSBridge::getInstance()->getDisplayMetrics();
     if (m_state) {
-        updateDisplaySize(displayMetrics, m_state);
-        resetModalPosition(displayMetrics, m_state);
+      updateDisplaySize(displayMetrics, m_state);
+      resetModalPosition(displayMetrics, m_state);
     }
   }
 }
