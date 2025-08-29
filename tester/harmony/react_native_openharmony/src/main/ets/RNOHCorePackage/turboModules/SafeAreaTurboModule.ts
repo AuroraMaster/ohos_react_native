@@ -17,6 +17,7 @@ export interface StatusBarStatusProvider {
 export class SafeAreaTurboModule extends UITurboModule {
   public static readonly NAME = 'SafeAreaTurboModule';
 
+  private cleanUpCallbacks: (() => void)[] = [];
   private initialInsets: SafeAreaInsets
 
   static async create(ctx: UITurboModuleContext, statusBarTurboModule: StatusBarTurboModule) {
@@ -26,9 +27,9 @@ export class SafeAreaTurboModule extends UITurboModule {
   constructor(ctx: UITurboModuleContext, statusBarTurboModule: StatusBarTurboModule) {
     super(ctx)
     this.initialInsets = ctx.safeAreaInsetsProvider.safeAreaInsets;
-    ctx.safeAreaInsetsProvider.eventEmitter.subscribe("SAFE_AREA_INSETS_CHANGE", this.onSafeAreaChange.bind(this))
+    this.cleanUpCallbacks.push(ctx.safeAreaInsetsProvider.eventEmitter.subscribe("SAFE_AREA_INSETS_CHANGE", this.onSafeAreaChange.bind(this)));
     // Hiding/Showing StatusBar is reflected immediately in SafeAreaView
-    statusBarTurboModule.subscribe("SYSTEM_BAR_VISIBILITY_CHANGE", () => ctx.safeAreaInsetsProvider.onSafeAreaChange())
+    this.cleanUpCallbacks.push(statusBarTurboModule.subscribe("SYSTEM_BAR_VISIBILITY_CHANGE", () => ctx.safeAreaInsetsProvider.onSafeAreaChange()));
   }
 
   private onSafeAreaChange(insets: SafeAreaInsets) {
@@ -37,5 +38,11 @@ export class SafeAreaTurboModule extends UITurboModule {
 
   public getInitialInsets(): SafeAreaInsets {
     return this.initialInsets
+  }
+
+  __onDestroy__() {
+    super.__onDestroy__();
+    this.cleanUpCallbacks.forEach(cb => cb());
+    this.cleanUpCallbacks = [];
   }
 }

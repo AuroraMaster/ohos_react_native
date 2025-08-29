@@ -232,6 +232,16 @@ void ArkJS::deleteReference(napi_ref reference) {
   this->maybeThrowFromStatus(status, "Couldn't delete a reference");
 }
 
+napi_value ArkJS::getReferenceValue(NapiRef const& ref) {
+  RNOH_ASSERT(ref.m_env == m_env);
+  return getReferenceValue(ref.m_ref.get());
+}
+
+NapiRef ArkJS::createNapiRef(napi_value value) {
+  return {m_env, createReference(value)};
+}
+
+
 std::function<napi_value(napi_env, std::vector<napi_value>)>*
 createNapiCallback(
     std::function<void(std::vector<folly::dynamic>)>&& callback) {
@@ -318,6 +328,10 @@ RNOHNapiObject ArkJS::getObject(napi_ref objectRef) {
 
 bool ArkJS::hasProperty(napi_value object, std::string const& key) {
   return hasProperty(object, this->createString(key));
+}
+
+RNOHNapiObject ArkJS::getObject(NapiRef const& objectRef) {
+  return getObject(getReferenceValue(objectRef));
 }
 
 bool ArkJS::hasProperty(napi_value object, napi_value key) {

@@ -35,10 +35,10 @@ class CustomComponentArkUINodeHandleFactory final {
 
   CustomComponentArkUINodeHandleFactory(
       napi_env env,
-      napi_ref customRNComponentFrameNodeFactoryRef)
+      NapiRef customRNComponentFrameNodeFactoryRef)
       : m_env(env),
         m_customRNComponentFrameNodeFactoryRef(
-            customRNComponentFrameNodeFactoryRef) {}
+            std::move(customRNComponentFrameNodeFactoryRef)) {}
 
   std::optional<CustomComponentArkUINodeHandle> create(
       facebook::react::Tag tag,
@@ -56,7 +56,7 @@ class CustomComponentArkUINodeHandleFactory final {
                 {arkJs.createInt(tag), arkJs.createString(componentName)});
     auto n_arkTsNodeHandle = arkJs.getObjectProperty(n_result, "frameNode");
     auto n_disposeCallback = arkJs.getObjectProperty(n_result, "dispose");
-    auto n_disposeRef = arkJs.createReference(n_disposeCallback);
+    auto n_disposeRef = arkJs.createNapiRef(n_disposeCallback);
     ArkUI_NodeHandle arkTsNodeHandle = nullptr;
     auto errorCode = OH_ArkUI_GetNodeHandleFromNapiValue(
         m_env, n_arkTsNodeHandle, &arkTsNodeHandle);
@@ -73,7 +73,6 @@ class CustomComponentArkUINodeHandleFactory final {
           ArkJS arkJs(env);
           auto disposeCallback = arkJs.getReferenceValue(disposeRef);
           arkJs.call(disposeCallback, {});
-          arkJs.deleteReference(disposeRef);
         }};
 #else
     return std::nullopt;
@@ -82,7 +81,7 @@ class CustomComponentArkUINodeHandleFactory final {
 
  private:
   napi_env m_env;
-  napi_ref m_customRNComponentFrameNodeFactoryRef;
+  NapiRef m_customRNComponentFrameNodeFactoryRef;
   ThreadGuard m_threadGuard{};
 };
 } // namespace rnoh

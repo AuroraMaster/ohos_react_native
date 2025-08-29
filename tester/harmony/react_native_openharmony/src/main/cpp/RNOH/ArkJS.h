@@ -26,6 +26,7 @@
 
 class RNOHNapiObjectBuilder;
 class RNOHNapiObject;
+class NapiRef;
 
 class ArkJS {
  public:
@@ -65,6 +66,8 @@ class ArkJS {
 
   void deleteReference(napi_ref reference);
 
+  NapiRef createNapiRef(napi_value value);
+
   napi_value createSingleUseCallback(
       std::function<void(std::vector<folly::dynamic>)>&& callback);
 
@@ -102,6 +105,8 @@ class ArkJS {
 
   napi_value getReferenceValue(napi_ref ref);
 
+  napi_value getReferenceValue(NapiRef const& ref);
+
   std::vector<napi_value> getCallbackArgs(napi_callback_info info);
 
   std::vector<napi_value> getCallbackArgs(
@@ -111,6 +116,8 @@ class ArkJS {
   RNOHNapiObject getObject(napi_value object);
 
   RNOHNapiObject getObject(napi_ref objectRef);
+
+  RNOHNapiObject getObject(NapiRef const& objectRef);
 
   napi_value getObjectProperty(napi_value object, std::string const& key);
 
@@ -246,6 +253,43 @@ class Promise {
  private:
   ArkJS m_arkJS;
   napi_value m_value;
+};
+
+class NapiRef final {
+ public:
+  NapiRef() = default;
+
+  // rule of five constructors
+  NapiRef(NapiRef const&) = default;
+  NapiRef& operator=(NapiRef const&) = default;
+
+  NapiRef(NapiRef&&) = default;
+  NapiRef& operator=(NapiRef&&) = default;
+
+  ~NapiRef() = default;
+
+  operator bool() const {
+    return m_ref != nullptr;
+  }
+
+ private:
+  class Deleter {
+   public:
+    void operator()(napi_ref ref) const {
+      m_threadGuard.assertThread();
+      napi_delete_reference(m_env, ref);
+    }
+
+    napi_env m_env;
+    rnoh::ThreadGuard m_threadGuard;
+  };
+
+  NapiRef(napi_env env, napi_ref ref) : m_env(env), m_ref(ref, Deleter{env}) {}
+
+  napi_env m_env{};
+  std::shared_ptr<napi_ref__> m_ref{nullptr};
+
+  friend class ArkJS;
 };
 
 #endif // native_ArkJS_H

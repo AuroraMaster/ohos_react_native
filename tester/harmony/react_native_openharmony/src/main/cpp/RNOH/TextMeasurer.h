@@ -11,6 +11,7 @@
 #include <native_drawing/drawing_font_collection.h>
 #include <native_drawing/drawing_text_typography.h>
 #include <string>
+#include "ArkJS.h"
 #include "ArkUITypography.h"
 #include <rawfile/raw_file_manager.h>
 #include "RNOH/FeatureFlagRegistry.h"
@@ -24,12 +25,10 @@ class TextMeasurer : public facebook::react::TextLayoutManagerDelegate {
  public:
   TextMeasurer(
       napi_env env,
-      napi_ref measureTextFnRef,
       std::shared_ptr<TaskExecutor> taskExecutor,
       FeatureFlagRegistry::Shared featureFlagManager,
       int id)
       : m_env(env),
-        m_measureTextFnRef(measureTextFnRef),
         m_taskExecutor(taskExecutor),
         m_featureFlagRegistry(featureFlagManager),
         m_rnInstanceId(id) {}
@@ -79,7 +78,6 @@ class TextMeasurer : public facebook::react::TextLayoutManagerDelegate {
   void updateDefaultFont();
   
   napi_env m_env;
-  napi_ref m_measureTextFnRef;
   std::shared_ptr<TaskExecutor> m_taskExecutor;
   FeatureFlagRegistry::Shared m_featureFlagRegistry;
   int32_t getOHDrawingTextAlign(

@@ -65,13 +65,12 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
     napi_env workerEnv,
     std::unique_ptr<NapiTaskRunner> workerTaskRunner,
     ArkTSBridge::Shared arkTSBridge,
-    napi_ref mainArkTSTurboModuleProviderRef,
-    napi_ref workerArkTSTurboModuleProviderRef,
-    napi_ref frameNodeFactoryRef,
+    NapiRef mainArkTSTurboModuleProviderRef,
+    NapiRef workerArkTSTurboModuleProviderRef,
+    NapiRef frameNodeFactoryRef,
     MutationsListener mutationsListener,
     MountingManagerArkTS::CommandDispatcher commandDispatcher,
-    napi_ref measureTextFnRef,
-    napi_ref napiEventDispatcherRef,
+    NapiRef napiEventDispatcherRef,
     FeatureFlagRegistry::Shared featureFlagRegistry,
     UITicker::Shared uiTicker,
     napi_value jsResourceManager,
@@ -107,7 +106,7 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
 
   auto contextContainer = std::make_shared<facebook::react::ContextContainer>();
   auto textMeasurer = std::make_shared<TextMeasurer>(
-      env, measureTextFnRef, taskExecutor, featureFlagRegistry, id);
+      env, taskExecutor, featureFlagRegistry, id);
   auto shadowViewRegistry = std::make_shared<ShadowViewRegistry>();
   contextContainer->insert("textLayoutManagerDelegate", textMeasurer);
   HarmonyReactMarker::logMarker(

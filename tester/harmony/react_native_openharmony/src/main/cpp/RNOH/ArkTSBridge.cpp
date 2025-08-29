@@ -18,16 +18,16 @@ namespace rnoh {
 std::shared_ptr<ArkTSBridge> ArkTSBridge::instance = nullptr;
 std::once_flag ArkTSBridge::initFlag;
 
-ArkTSBridge::ArkTSBridge(napi_env env, napi_ref napiBridgeRef)
-    : m_arkJs(ArkJS(env)), m_arkTSBridgeRef(napiBridgeRef) {
+ArkTSBridge::ArkTSBridge(napi_env env, NapiRef napiBridgeRef)
+    : m_arkJs(ArkJS(env)), m_arkTSBridgeRef(std::move(napiBridgeRef)) {
   DLOG(INFO) << "ArkTSBridge::ArkTSBridge";
 }
 
 void ArkTSBridge::initializeInstance(
     napi_env env,
-    napi_ref arkTSBridgeHandler) {
+    NapiRef napiBridgeRef) {
    std::call_once(initFlag, [&] {
-        instance = std::shared_ptr<ArkTSBridge>(new ArkTSBridge(env, arkTSBridgeHandler));
+        instance = std::make_shared<ArkTSBridge>(env, napiBridgeRef);
     });
 }
 
@@ -37,7 +37,7 @@ ArkTSBridge::Shared ArkTSBridge::getInstance() {
 }
 
 ArkTSBridge::~ArkTSBridge() {
-  m_arkJs.deleteReference(m_arkTSBridgeRef);
+  LOG(INFO) << "ArkTSBridge::~ArkTSBridge";
 }
 
 void ArkTSBridge::handleError(std::exception_ptr ex) {

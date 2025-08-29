@@ -14,6 +14,7 @@ import type {
 } from './TurboModule';
 import type {DescriptorWrapperFactory} from './DescriptorRegistry';
 import {AnyThreadTurboModuleContext} from './RNOHContext';
+import { RNOHError } from "./RNOHError"
 
 /**
  * @internal
@@ -33,12 +34,16 @@ export abstract class TurboModulesFactory<
   }
 
   abstract hasTurboModule(name: string): boolean;
+
+  onDestroy(): void {}
 }
 
 class TurboModulesFactoryFromPackageAdapter<
-  TTurboModule,
+  TTurboModule extends UITurboModule | AnyThreadTurboModule,
   TTurboModuleContext,
 > extends TurboModulesFactory<TTurboModule, TTurboModuleContext> {
+  private eagerTurboModules: Map<string, TTurboModule> = new Map();
+
   constructor(
     ctx: TTurboModuleContext,
     private factoriesByName: Map<
@@ -64,7 +69,32 @@ class TurboModulesFactoryFromPackageAdapter<
   async prepareEagerTurboModules(): Promise<void> {
     const turboModules = await this.prepareEagerTurboModulesImpl();
     for (const [name, turboModule] of turboModules.entries()) {
+      this.eagerTurboModules.set(name, turboModule);
       this.factoriesByName.set(name, () => turboModule);
+    }
+  }
+
+  onDestroy(): void {
+    const errors: RNOHError[] = [];
+    for (const [name, turboModule] of this.eagerTurboModules.entries()) {
+      try {
+        turboModule.__onDestroy__();
+      } catch (error) {
+        if (error instanceof RNOHError) {
+          errors.push(error);
+        } else {
+          errors.push(new RNOHError({
+            whatHappened: error?.message || String(error),
+            howCanItBeFixed: ['Check __onDestroy__ of ', name],
+            extraData: error
+          }));
+        }
+      }
+    }
+    this.eagerTurboModules.clear();
+    
+    if (errors.length > 0) {
+      throw RNOHError.fromMultipleRNOHErrors(errors);
     }
   }
 }

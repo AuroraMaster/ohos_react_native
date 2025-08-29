@@ -39,6 +39,13 @@ TurboModule::~TurboModule() {};
 ArkTSTurboModule::ArkTSTurboModule(Context ctx, std::string name)
     : m_ctx(ctx), TurboModule(ctx, name) {}
 
+ArkTSTurboModule::~ArkTSTurboModule() noexcept {
+  auto taskExecutor = m_ctx.taskExecutor;
+  taskExecutor->runTask(
+      m_ctx.turboModuleThread,
+      [ref = std::move(m_ctx.arkTSTurboModuleInstanceRef)] {});
+}
+
 // calls a TurboModule method and blocks until it returns, returning its result
 jsi::Value ArkTSTurboModule::call(
     jsi::Runtime& runtime,

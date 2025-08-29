@@ -52,5 +52,8 @@ export class TurboModuleProvider<TTurboModule extends UITurboModule | WorkerTurb
         this.logger.error("Error while cleaning up TurboModule " + name);
       }
     })
+    for (const factory of this.turboModulesFactories) {
+      factory.onDestroy();
+    }
   }
 }

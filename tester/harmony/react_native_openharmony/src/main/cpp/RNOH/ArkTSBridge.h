@@ -36,15 +36,15 @@ struct DisplayMetrics {
 class ArkTSBridge final {
   static std::shared_ptr<ArkTSBridge> instance;
   static std::once_flag initFlag;
-  ArkTSBridge(napi_env env, napi_ref napiBridgeRef);
 
  public:
   using Shared = std::shared_ptr<ArkTSBridge>;
 
-  static void initializeInstance(napi_env env, napi_ref arkTSBridgeHandlerRef);
+  static void initializeInstance(napi_env env, NapiRef napiBridgeRef);
 
   static ArkTSBridge::Shared getInstance();
 
+  ArkTSBridge(napi_env env, NapiRef napiBridgeRef);
   ArkTSBridge(ArkTSBridge const&) = delete;
   ArkTSBridge& operator=(ArkTSBridge const&) = delete;
 
@@ -63,7 +63,7 @@ class ArkTSBridge final {
 
  protected:
   ArkJS m_arkJs;
-  napi_ref m_arkTSBridgeRef;
+  NapiRef m_arkTSBridgeRef;
 
  private:
   mutable std::mutex m_mutex;

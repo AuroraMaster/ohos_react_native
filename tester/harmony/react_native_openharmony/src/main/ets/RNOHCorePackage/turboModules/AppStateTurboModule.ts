@@ -13,6 +13,8 @@ import { AbilityConstant } from '@kit.AbilityKit';
 export class AppStateTurboModule extends TurboModule {
   public static readonly NAME = 'AppState';
 
+  private cleanUpCallbacks: (() => void)[] = [];
+
   constructor(protected ctx: TurboModuleContext) {
     super(ctx);
     this.subscribeListeners();
@@ -43,7 +45,10 @@ export class AppStateTurboModule extends TurboModule {
     };
 
     const applicationContext = this.ctx.uiAbilityContext.getApplicationContext();
-    applicationContext.on('environment', envCallback);
+    const envCallbackID = applicationContext.on('environment', envCallback);
+    this.cleanUpCallbacks.push(() => {
+      applicationContext.off("environment", envCallbackID);
+    });
   }
 
   private getAppState() {
@@ -59,5 +64,11 @@ export class AppStateTurboModule extends TurboModule {
   getCurrentAppState(success: (appState: { app_state: string }) => void, error: (error: Error) => void) {
     success({ app_state: this.getAppState() });
   };
+
+  __onDestroy__() {
+    super.__onDestroy__();
+    this.cleanUpCallbacks.forEach(cb => cb());
+    this.cleanUpCallbacks = [];
+  }
 }
 

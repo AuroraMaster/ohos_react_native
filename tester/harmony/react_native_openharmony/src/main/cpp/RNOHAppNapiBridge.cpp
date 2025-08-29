@@ -79,7 +79,7 @@ std::unordered_map<size_t, std::shared_ptr<RNInstanceInternal>>
 
 std::unordered_map<int, ArkTSBridge::Shared> ARK_TS_BRIDGE_BY_ENV_ID;
 
-std::unordered_map<int, std::pair<napi_ref, napi_env>>
+std::unordered_map<int, std::pair<NapiRef, napi_env>>
     WORKER_TURBO_MODULE_PROVIDER_REF_AND_ENV_BY_RN_INSTANCE_ID;
 std::unordered_map<int, std::unique_ptr<NapiTaskRunner>>
     WORKER_TASK_RUNNER_BY_RN_INSTANCE_ID;
@@ -153,7 +153,7 @@ static napi_value onInit(napi_env env, napi_callback_info info) {
 napi_value initializeArkTSBridge(napi_env env, napi_callback_info info) {
   ArkJS arkJs(env);
   auto args = arkJs.getCallbackArgs(info, 1);
-  auto bridgeHandlerRef = arkJs.createReference(args[0]);
+  auto bridgeHandlerRef = arkJs.createNapiRef(args[0]);
   ArkTSBridge::initializeInstance(env, bridgeHandlerRef);
 #ifdef C_API_ARCH
   ArkUINodeRegistry::initialize(ArkTSBridge::getInstance());
@@ -171,7 +171,7 @@ static napi_value registerWorkerTurboModuleProvider(
     DLOG(INFO) << "registerWorkerTurboModuleProvider";
     ArkJS arkJS(env);
     auto args = arkJS.getCallbackArgs(info, 2);
-    auto workerTurboModuleProviderRef = arkJS.createReference(args[0]);
+    auto workerTurboModuleProviderRef = arkJS.createNapiRef(args[0]);
     auto rnInstanceId = arkJS.getDouble(args[1]);
     auto lock = std::lock_guard(WORKER_DATA_MTX);
     WORKER_TURBO_MODULE_PROVIDER_REF_AND_ENV_BY_RN_INSTANCE_ID.emplace(
@@ -212,12 +212,10 @@ static napi_value onCreateRNInstance(
         facebook::react::JSExecutor::performanceNow());
     auto args = arkJs.getCallbackArgs(info, 15);
     size_t instanceId = arkJs.getDouble(args[0]);
-    auto mainArkTSTurboModuleProviderRef = arkJs.createReference(args[1]);
-    auto arkTsTurboModuleProviderRef = arkJs.createReference(args[1]);
-    auto mutationsListenerRef = arkJs.createReference(args[2]);
-    auto commandDispatcherRef = arkJs.createReference(args[3]);
-    auto eventDispatcherRef = arkJs.createReference(args[4]);
-    auto measureTextFnRef = arkJs.createReference(args[5]);
+    auto mainArkTSTurboModuleProviderRef = arkJs.createNapiRef(args[1]);
+    auto mutationsListenerRef = arkJs.createNapiRef(args[2]);
+    auto commandDispatcherRef = arkJs.createNapiRef(args[3]);
+    auto eventDispatcherRef = arkJs.createNapiRef(args[4]);
     auto shouldEnableDebugger = arkJs.getBoolean(args[6]);
     auto shouldEnableBackgroundExecutor = arkJs.getBoolean(args[7]);
     auto featureFlagRegistry = std::make_shared<FeatureFlagRegistry>();
@@ -226,7 +224,7 @@ static napi_value onCreateRNInstance(
           arkJs.getString(featureFlagNameAndStatus.first),
           arkJs.getBoolean(featureFlagNameAndStatus.second));
     }
-    auto frameNodeFactoryRef = arkJs.createReference(args[9]);
+    auto frameNodeFactoryRef = arkJs.createNapiRef(args[9]);
     auto jsResourceManager = args[10];
     auto arkTsComponentNamesDynamic = arkJs.getDynamic(args[11]);
     std::unordered_set<std::string> arkTsComponentNames = {};
@@ -256,7 +254,7 @@ static napi_value onCreateRNInstance(
     auto workerTurboModuleProviderRefAndEnv = extractOrDefault(
         WORKER_TURBO_MODULE_PROVIDER_REF_AND_ENV_BY_RN_INSTANCE_ID,
         instanceId,
-        std::make_pair(nullptr, nullptr));
+        std::make_pair(NapiRef{}, nullptr));
     auto rnInstance = createRNInstance(
         instanceId,
         env,
@@ -302,7 +300,6 @@ static napi_value onCreateRNInstance(
               arkJs.getReferenceValue(commandDispatcherRef);
           arkJs.call<3>(commandDispatcher, napiArgsArray);
         },
-        measureTextFnRef,
         eventDispatcherRef,
         featureFlagRegistry,
         UI_TICKER,
@@ -368,7 +365,7 @@ static napi_value loadScript(napi_env env, napi_callback_info info) {
         if (!rnInstance) {
             return arkJS.getUndefined();
         }
-        auto onFinishRef = arkJS.createReference(args[3]);
+        auto onFinishRef = arkJS.createNapiRef(args[3]);
 
         auto callback = [env, onFinishRef = std::move(onFinishRef), rnInstance](
                             const std::string& errorMsg) mutable {
@@ -519,13 +516,12 @@ static napi_value stopSurface(napi_env env, napi_callback_info info) {
       return arkJs.getUndefined();
     }
     facebook::react::Tag surfaceId = arkJs.getDouble(args[1]);
-    auto n_onStopRef = arkJs.createReference(args[2]);
+    auto n_onStopRef = arkJs.createNapiRef(args[2]);
     DLOG(INFO) << "stopSurface: surfaceId=" << surfaceId << "\n";
     rnInstance->stopSurface(
         surfaceId, [env, n_onStopRef = std::move(n_onStopRef)]() {
           ArkJS arkJS(env);
           arkJS.call(arkJS.getReferenceValue(n_onStopRef), {});
-          arkJS.deleteReference(n_onStopRef);
         });
   } catch (...) {
     ArkTSBridge::getInstance()->handleError(std::current_exception());

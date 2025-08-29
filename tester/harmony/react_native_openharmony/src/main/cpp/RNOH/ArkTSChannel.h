@@ -15,7 +15,7 @@
 namespace rnoh {
 class ArkTSChannel {
   ArkJS m_arkJs;
-  napi_ref m_napi_event_dispatcher_ref;
+  NapiRef m_napi_event_dispatcher_ref;
   TaskExecutor::Weak m_taskExecutor;
 
  public:
@@ -24,10 +24,22 @@ class ArkTSChannel {
   ArkTSChannel(
       TaskExecutor::Shared taskExecutor,
       ArkJS arkJs,
-      napi_ref napiEventDispatcherRef)
+      NapiRef napiEventDispatcherRef)
       : m_arkJs(arkJs),
-        m_napi_event_dispatcher_ref(napiEventDispatcherRef),
+        m_napi_event_dispatcher_ref(std::move(napiEventDispatcherRef)),
         m_taskExecutor(taskExecutor) {}
+
+  ~ArkTSChannel() {
+    if (auto taskExecutor = m_taskExecutor.lock()) {
+      taskExecutor->runTask(
+          TaskThread::MAIN,
+          [ref = std::move(m_napi_event_dispatcher_ref)] {});
+    } else {
+      // Since m_taskRunner is not valid reference, we can't schedule cleanup of
+      // the event dispatcher ref, it's safest to just leak the reference
+      new NapiRef(std::move(m_napi_event_dispatcher_ref));
+    }
+  }
 
   void postMessage(std::string type, folly::dynamic payload) {
     auto executor = m_taskExecutor.lock();
