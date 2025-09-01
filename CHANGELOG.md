@@ -1,5 +1,18 @@
 # Changelog
 
+## 6.0.0.506
+- fix: rnInstance leak due to listeners and napi references,([f91656681](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f91656681d462c9fbbe63cddb82ad8cad61c36a7))
+- fix: ​​Adjusted Metro Service Error Judgment Logic to Support More Status Codes​.,([a4ecd17dd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a4ecd17dd8d850331996aef85f2a4794c54ae5e2))
+- fix:When emojis are included in the text component, errors may occur,([2748b0daa](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2748b0daaa18225c99a4b0fd4c0850c01368c627))
+- https://gitcode.com/openharmony-sig/ohos_react_native/pull/1472,([6ddd5d831](https://gitcode.com/openharmony-sig/ohos_react_native/commit/6ddd5d831bb0ae40bae8ee9e634af6e34ecb9686))
+- Fix: Modal content overflowing beyond the window visible area on PC,([07cc0e6ef](https://gitcode.com/openharmony-sig/ohos_react_native/commit/07cc0e6ef65684c10a69912948355add44f88211))
+- fix: ScrollView not scrolling when padding is set,([f9ed044b0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f9ed044b095ed39452668654a0ef70ccfa0ebd4d))
+- fix: the warning issue where clicking on PC triggers the message "Touch identifier 1001 is greater than maximum supported 20...",([1e9646af7](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1e9646af7ca37c4fcc099dd53931d70ab1c1ac96))
+- fix: window jitter after dragging.,([0bf005e17](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0bf005e17c3a18b896676f90c8849df7db6e4612))
+- fix: NumberValue conversion for negative x/y coordinates,([bc809dbc0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/bc809dbc02d872ad0ed1ef1e456c3d032bdd32a8))
+- optimization: delete RNOH_C_API_ARCH,([04a876e8d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/04a876e8d2c8e59cbaec9de703823c60d349c8ec))
+- [chore]: updated to version 6.0.0.505(0.72.87),([1de39fa51](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1de39fa51d86a04de1b5924d06fb9dacdf14be82))
+
 ## 6.0.0.505
 - fix:Supplementary submission for replacing the interface getSDKApiVersion(),([3b500ca1a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/3b500ca1ab2f2a0cb8baa2695f49b2bf628fd082))
 - fix: an issue where unmounting a TextInput component causes another TextInput component to gain focus passively.​,([85784668c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/85784668c0f76d703e33a7c48ed4868bbdca429b))
