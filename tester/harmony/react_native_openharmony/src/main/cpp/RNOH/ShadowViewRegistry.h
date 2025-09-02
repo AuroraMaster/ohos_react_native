@@ -44,6 +44,8 @@ class ShadowViewRegistry {
     return nullptr;
   }
 
+  std::string getComponentName(facebook::react::Tag tag);
+
  private:
   using WeakEventEmitter = std::weak_ptr<facebook::react::EventEmitter const>;
   using WeakState = std::weak_ptr<facebook::react::State const>;
@@ -51,6 +53,7 @@ class ShadowViewRegistry {
   struct ShadowViewEntry {
     WeakEventEmitter eventEmitter;
     WeakState state;
+    std::string componentName;
   };
 
   std::unordered_map<facebook::react::Tag, ShadowViewEntry>

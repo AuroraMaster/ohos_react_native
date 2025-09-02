@@ -57,13 +57,13 @@ export class LibGlueCodeGenerator implements CodeGenerator<LibGlueCodeData> {
     });
     arkTSComponents.forEach(({ componentName, eventNames }) => {
       components_indexTS.addReexport({ from: `./${componentName}` });
-      basePackageTemplate.addComponent({ name: componentName, libraryCppName });
+      basePackageTemplate.addComponent({ name: componentName, libraryCppName, isArkTSComponent: true });
       eventNames.forEach((eventName) =>
         basePackageTemplate.addArkTSEvent({ name: eventName })
       );
     });
     cppComponents.forEach(({ componentName }) => {
-      basePackageTemplate.addComponent({ name: componentName, libraryCppName });
+      basePackageTemplate.addComponent({ name: componentName, libraryCppName, isArkTSComponent: false });
     });
     fileContentByPath.set(
       this.cppOutputPath.copyWithNewSegment(

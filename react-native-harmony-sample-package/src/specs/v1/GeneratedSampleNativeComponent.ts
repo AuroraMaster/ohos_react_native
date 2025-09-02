@@ -44,9 +44,13 @@ export interface IncomingData extends OutgoingAndIncomingData {
   readOnlyArrayTest: string[];
   colorTest: string;
 }
+
+export interface MountEvent {}
+
 export interface GeneratedSampleViewNativeProps
   extends ViewProps,
     OutgoingData {
+  onMount: DirectEventHandler<MountEvent>;
   onDirectEvent: DirectEventHandler<IncomingData>;
   onBubblingEvent: BubblingEventHandler<IncomingData>;
 }
