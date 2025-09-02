@@ -70,6 +70,12 @@ class TextInputComponentInstance
    * shouldn't change.
    */
   int32_t m_caretPositionForControlledInput = 0;
+  /**
+   * When a user types two keys quickly (with two fingers), and TextInput value
+   * is hardcoded on JS side, then a cursor can move forward. This property
+   * prevents updating `m_caretPositionForControlledInput` too quickly.
+   */
+  bool m_hasLatestControlledValueChangeBeenProcessed = true;
 
   void focus();
   void blur();
