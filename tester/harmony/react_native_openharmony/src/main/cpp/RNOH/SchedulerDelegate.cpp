@@ -8,7 +8,6 @@
 #include "SchedulerDelegate.h"
 #include <react/renderer/debug/SystraceSection.h>
 #include "RNOH/Performance/HarmonyReactMarker.h"
-#include "RNOH/RNInstance.h"
 
 
 namespace rnoh {
@@ -20,9 +19,7 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
   HarmonyReactMarker::logMarker(HarmonyReactMarker::HarmonyReactMarkerId::
                                     FABRIC_FINISH_TRANSACTION_START);
   mountingCoordinator->getTelemetryController().pullTransaction(
-      [this](auto const& transaction, auto const& surfaceTelemetry) {
-        this->willMountComponents();
-      },
+      [](auto const& transaction, auto const& surfaceTelemetry) {},
       [this](auto const& transaction, auto const& surfaceTelemetry) {
         performOnMainThread(
             [transaction](MountingManager::Shared const& mountingManager) {
@@ -177,12 +174,6 @@ void SchedulerDelegate::schedulerDidSetIsJSResponder(
     mountingManager->setIsJsResponder(
         shadowView, isJSResponder, blockNativeResponder);
   });
-}
-
-void SchedulerDelegate::willMountComponents() {
-    if(auto rnInstance = m_weakRNInstance.lock()) {
-        rnInstance->notifyWillMountComponents();
-    }
 }
 
 } // namespace rnoh

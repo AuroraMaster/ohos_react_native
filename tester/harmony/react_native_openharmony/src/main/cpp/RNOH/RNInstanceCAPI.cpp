@@ -163,8 +163,7 @@ void RNInstanceCAPI::initializeScheduler(
   m_schedulerDelegate = std::make_unique<rnoh::SchedulerDelegate>(
       m_mountingManager,
       this->taskExecutor,
-      m_componentInstancePreallocationRequestQueue,
-      shared_from_this());
+      m_componentInstancePreallocationRequestQueue);
   this->scheduler = std::make_shared<react::Scheduler>(
       schedulerToolbox, m_animationDriver.get(), m_schedulerDelegate.get());
   turboModuleProvider->setScheduler(this->scheduler);

@@ -33,12 +33,6 @@ using MutationsListener = std::function<void(
     facebook::react::ShadowViewMutationList const& mutations)>;
 using SharedNativeResourceManager = std::shared_ptr<NativeResourceManager>;
 
-class MountingComponentsListener {
- public:
-  virtual void onWillMountComponents() = 0;
-  virtual ~MountingComponentsListener() = default;
-};
-
 class Surface {
  public:
   /**
@@ -137,13 +131,10 @@ class RNInstance {
   virtual int getId() {
     return 0;
   };
-    
-  virtual void addMountingComponentsListener(MountingComponentsListener& listener) = 0;
-  virtual void removeMountingComponentsListener(MountingComponentsListener& listener) = 0;
 };
 
 class RNInstanceInternal : public RNInstance,
-                           public std::enable_shared_from_this<RNInstanceInternal> {
+                           public std::enable_shared_from_this<RNInstance> {
  public:
     explicit RNInstanceInternal(
         int id,
@@ -237,10 +228,7 @@ class RNInstanceInternal : public RNInstance,
     NativeResourceManager const *getNativeResourceManager() const;
     void onCreate();
     void markSelfAboutToDestroyed();
-    void addMountingComponentsListener(MountingComponentsListener& listener) override;
-    void removeMountingComponentsListener(MountingComponentsListener& listener) override;
-    void notifyWillMountComponents();
-    
+
     TaskExecutor::Shared taskExecutor;
 
 protected:
@@ -248,7 +236,7 @@ protected:
     std::shared_ptr<std::atomic<bool>> m_isAboutToBeDestroyed;
     RNInstance::SafeWeak m_weakSelf;
     facebook::react::ContextContainer::Shared m_contextContainer;
-    std::unique_ptr<facebook::react::SchedulerDelegate> m_schedulerDelegate;
+    std::unique_ptr<facebook::react::SchedulerDelegate> m_schedulerDelegate = nullptr;
     SharedNativeResourceManager m_nativeResourceManager;
     std::string m_bundlePath;
     /**
@@ -259,7 +247,6 @@ protected:
      */
     std::shared_ptr<facebook::react::Instance> instance;
     std::shared_ptr<facebook::react::Scheduler> scheduler = nullptr;
-    std::vector<MountingComponentsListener*> m_listeners;
 };
 
 } // namespace rnoh

@@ -107,11 +107,8 @@ void RNInstanceArkTS::initializeScheduler(
 
   m_animationDriver = std::make_shared<react::LayoutAnimationDriver>(
       this->instance->getRuntimeExecutor(), m_contextContainer, this);
-  m_schedulerDelegate = std::make_unique<rnoh::SchedulerDelegate>(
-      m_mountingManager,
-      taskExecutor,
-      ComponentInstancePreallocationRequestQueue::Weak(),
-      shared_from_this());
+    m_schedulerDelegate = std::make_unique<rnoh::SchedulerDelegate>(
+      m_mountingManager, taskExecutor, ComponentInstancePreallocationRequestQueue::Weak());
   this->scheduler = std::make_shared<react::Scheduler>(
       schedulerToolbox, m_animationDriver.get(), m_schedulerDelegate.get());
   turboModuleProvider->setScheduler(this->scheduler);

@@ -15,8 +15,6 @@
 
 namespace rnoh {
 
-class RNInstanceInternal;
-
 /**
  * @ThreadSafe
  *
@@ -36,12 +34,10 @@ class SchedulerDelegate final : public facebook::react::SchedulerDelegate {
       MountingManager::Shared mountingManager,
       TaskExecutor::Shared taskExecutor,
       ComponentInstancePreallocationRequestQueue::Weak
-          weakPreallocationRequestQueue,
-      std::weak_ptr<RNInstanceInternal> weakRNInstance)
+          weakPreallocationRequestQueue)
       : m_mountingManager(mountingManager), m_taskExecutor(taskExecutor),
         m_weakPreallocationRequestQueue(
-            std::move(weakPreallocationRequestQueue)),
-        m_weakRNInstance(weakRNInstance){};
+            std::move(weakPreallocationRequestQueue)){};
     
   void schedulerDidRequestPreliminaryViewAllocation(
       SurfaceId /*surfaceId*/,
@@ -80,13 +76,10 @@ class SchedulerDelegate final : public facebook::react::SchedulerDelegate {
   static void logTransactionTelemetryMarkers(
       facebook::react::MountingTransaction const& transaction);
 
-  void willMountComponents();
-
   MountingManager::Weak m_mountingManager;
   TaskExecutor::Shared m_taskExecutor;
   ComponentInstancePreallocationRequestQueue::Weak
       m_weakPreallocationRequestQueue;
-  std::weak_ptr<RNInstanceInternal> m_weakRNInstance;  
 };
 
 }; // namespace rnoh

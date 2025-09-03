@@ -148,20 +148,5 @@ void RNInstanceInternal::onCreate() {
     m_isAboutToBeDestroyed->store(true);
   }
 }
-void RNInstanceInternal::addMountingComponentsListener(MountingComponentsListener& listener) {
-  m_listeners.push_back(&listener);
-}
-
-void RNInstanceInternal::removeMountingComponentsListener(MountingComponentsListener& listener) {
-  m_listeners.erase(
-      std::remove(m_listeners.begin(), m_listeners.end(), &listener),
-      m_listeners.end());
-}
-
-void RNInstanceInternal::notifyWillMountComponents() {
-  for (auto listener : m_listeners) {
-    listener->onWillMountComponents();
-  }
-}    
 
 } // namespace rnoh
