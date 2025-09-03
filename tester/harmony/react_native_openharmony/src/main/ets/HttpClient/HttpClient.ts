@@ -6,7 +6,6 @@
  */
 
 import http from '@ohos.net.http';
-import { process } from '@kit.ArkTS'
 import {
   CancelRequestCallback,
   HttpErrorResponse,
@@ -66,9 +65,6 @@ export class DefaultHttpClient implements HttpClient {
     this.responseInterceptors = responseInterceptors ?? [];
     this.requestInterceptors = requestInterceptors ?? [];
     this.logger = logger?.clone('DefaultHttpClient') ?? undefined;
-    if (process.pid == process.tid) {
-      webview.WebviewController.initializeWebEngine();
-    }
   }
 
 
