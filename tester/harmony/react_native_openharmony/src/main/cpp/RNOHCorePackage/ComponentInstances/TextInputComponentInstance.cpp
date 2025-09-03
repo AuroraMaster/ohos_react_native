@@ -164,6 +164,24 @@ void TextInputComponentInstance::onTextSelectionChange(
   if (m_eventEmitter != NULL) {
     m_eventEmitter->onSelectionChange(getTextInputMetrics());
   }
+  // This addresses the issue where, if the TextInput’s value is hard-coded,
+  // long-pressing the backspace key causes the cursor to jump to the far left
+  // and stop blinking rapidly, leaving the TextInput’s content missing. Here we
+  // handle the case when the cursor reaches position 0 and the TextInput’s
+  // current text no longer matches the text from m_props.
+  if (m_multiline == true) {
+    if (m_props->text.size() != m_textAreaNode.getTextContent().size()
+      && m_selectionStart == 0 && m_selectionEnd == 0) {
+      m_textAreaNode.setTextContent(m_props->text);
+      m_textAreaNode.setTextSelection(m_selectionStart, m_selectionEnd);
+    }
+  } else {
+    if (m_props->text.size() != m_textInputNode.getTextContent().size()
+      && m_selectionStart == 0 && m_selectionEnd == 0) {
+      m_textInputNode.setTextContent(m_props->text);
+      m_textInputNode.setTextSelection(m_selectionStart, m_selectionEnd);
+    }
+  }
 }
 
 facebook::react::TextInputMetrics
