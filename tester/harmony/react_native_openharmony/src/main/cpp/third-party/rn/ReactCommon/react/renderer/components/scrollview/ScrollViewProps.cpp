@@ -17,9 +17,9 @@
 namespace facebook::react {
 
 ScrollViewProps::ScrollViewProps(
-    const PropsParserContext &context,
-    ScrollViewProps const &sourceProps,
-    RawProps const &rawProps)
+    const PropsParserContext& context,
+    ScrollViewProps const& sourceProps,
+    RawProps const& rawProps)
     : ViewProps(context, sourceProps, rawProps),
       alwaysBounceHorizontal(
           CoreFeatures::enablePropIteratorSetter
@@ -30,6 +30,15 @@ ScrollViewProps::ScrollViewProps(
                     "alwaysBounceHorizontal",
                     sourceProps.alwaysBounceHorizontal,
                     {})),
+      // RNC_patch
+      horizontal(
+          CoreFeatures::enablePropIteratorSetter ? sourceProps.horizontal
+                                                 : convertRawProp(
+                                                       context,
+                                                       rawProps,
+                                                       "horizontal",
+                                                       sourceProps.horizontal,
+                                                       {})),
       alwaysBounceVertical(
           CoreFeatures::enablePropIteratorSetter
               ? sourceProps.alwaysBounceVertical
@@ -328,22 +337,22 @@ ScrollViewProps::ScrollViewProps(
                     rawProps,
                     "isInvertedVirtualizedList",
                     sourceProps.isInvertedVirtualizedList,
-                        {})),
-              removeClippedSubviews(
-                  CoreFeatures::enablePropIteratorSetter
-                      ? sourceProps.removeClippedSubviews
-                      : convertRawProp(
-                            context,
-                            rawProps,
-                            "removeClippedSubviews",
-                            sourceProps.removeClippedSubviews,
-                            false)) {}
+                    {})),
+      removeClippedSubviews(
+          CoreFeatures::enablePropIteratorSetter
+              ? sourceProps.removeClippedSubviews
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "removeClippedSubviews",
+                    sourceProps.removeClippedSubviews,
+                    false)) {}
 
 void ScrollViewProps::setProp(
-    const PropsParserContext &context,
+    const PropsParserContext& context,
     RawPropsPropNameHash hash,
-    const char *propName,
-    RawValue const &value) {
+    const char* propName,
+    RawValue const& value) {
   // All Props structs setProp methods must always, unconditionally,
   // call all super::setProp methods, since multiple structs may
   // reuse the same values.
@@ -353,6 +362,8 @@ void ScrollViewProps::setProp(
 
   switch (hash) {
     RAW_SET_PROP_SWITCH_CASE_BASIC(alwaysBounceHorizontal);
+    // RNC_patch
+    RAW_SET_PROP_SWITCH_CASE_BASIC(horizontal);
     RAW_SET_PROP_SWITCH_CASE_BASIC(alwaysBounceVertical);
     RAW_SET_PROP_SWITCH_CASE_BASIC(bounces);
     RAW_SET_PROP_SWITCH_CASE_BASIC(bouncesZoom);
@@ -403,6 +414,9 @@ SharedDebugStringConvertibleList ScrollViewProps::getDebugProps() const {
               "alwaysBounceHorizontal",
               alwaysBounceHorizontal,
               defaultScrollViewProps.alwaysBounceHorizontal),
+          // RNC_patch
+          debugStringConvertibleItem(
+              "horizontal", horizontal, defaultScrollViewProps.horizontal),
           debugStringConvertibleItem(
               "alwaysBounceVertical",
               alwaysBounceVertical,
@@ -516,7 +530,7 @@ SharedDebugStringConvertibleList ScrollViewProps::getDebugProps() const {
           debugStringConvertibleItem(
               "isInvertedVirtualizedList",
               snapToEnd,
-                 defaultScrollViewProps.isInvertedVirtualizedList),
+              defaultScrollViewProps.isInvertedVirtualizedList),
           debugStringConvertibleItem(
               "removeClippedSubviews",
               removeClippedSubviews,

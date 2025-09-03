@@ -16,24 +16,25 @@
 namespace facebook {
 namespace react {
 
-// TODO (T28334063): Consider for codegen.
 class ScrollViewProps final : public ViewProps {
  public:
   ScrollViewProps() = default;
   ScrollViewProps(
-      const PropsParserContext &context,
-      ScrollViewProps const &sourceProps,
-      RawProps const &rawProps);
+      const PropsParserContext& context,
+      ScrollViewProps const& sourceProps,
+      RawProps const& rawProps);
 
   void setProp(
-      const PropsParserContext &context,
+      const PropsParserContext& context,
       RawPropsPropNameHash hash,
-      const char *propName,
-      RawValue const &value);
+      const char* propName,
+      RawValue const& value);
 
 #pragma mark - Props
 
   bool alwaysBounceHorizontal{};
+  // RNC_patch
+  bool horizontal{false};
   bool alwaysBounceVertical{};
   bool bounces{true};
   bool bouncesZoom{true};

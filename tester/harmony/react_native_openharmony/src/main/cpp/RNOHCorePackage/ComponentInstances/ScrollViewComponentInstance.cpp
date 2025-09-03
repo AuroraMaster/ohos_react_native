@@ -679,7 +679,7 @@ bool ScrollViewComponentInstance::isHorizontal(
   if (props == nullptr) {
     return false;
   }
-  return props->alwaysBounceHorizontal;
+  return props->horizontal;
 }
 
 void ScrollViewComponentInstance::disableIntervalMomentum() {
