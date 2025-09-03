@@ -19,8 +19,11 @@ import {
   startServerInNewWindow,
   findDevServerPort,
 } from '@react-native-community/cli-tools';
+import { launchHarmonySimulator } from '../simulator';
 
 const COMMAND_NAME = 'run-harmony';
+const LOOPBACK_IP = '127.0.0.1';
+const DEFAULT_SIMULATOR_NAME = `${LOOPBACK_IP}:5555`;
 
 export const commandRunHarmony: Command = {
   name: COMMAND_NAME,
@@ -108,7 +111,7 @@ export const commandRunHarmony: Command = {
       const buildMode: string = rawArgs.buildMode;
       const moduleName: string = rawArgs.module;
       const abilityName: string = rawArgs.ability;
-      const simulatorName: string = rawArgs.simulator;
+      let simulatorName: string = rawArgs.simulator;
       const defaultPort: number = rawArgs.port;
       const packager: boolean = rawArgs.packager;
       const devEcoStudioToolsPath = new AbsolutePath(
@@ -124,6 +127,32 @@ export const commandRunHarmony: Command = {
           harmonyProjectPath.copyWithNewSegment('AppScope', 'app.json5')
         )
       ).app.bundleName;
+
+      let currentPort: number = defaultPort;
+      if (packager) {
+        const root: string = _config.root || '.';
+        const reactNativePath: string = _config.reactNativePath || path.dirname(
+          require.resolve('react-native', { paths: [root] }),
+        );
+        const { port: newPort, startPackager } = await findDevServerPort(
+          defaultPort,
+          root,
+        );
+
+        if (newPort !== 8081) {
+          await trySetMetroPort(harmonyProjectPath.copyWithNewSegment(
+            'entry', 'src', 'main', 'ets', 'pages', 'Index.ets').toString(), newPort);
+        }
+        if (startPackager) {
+          startServerInNewWindow(
+            newPort,
+            root,
+            reactNativePath,
+            getDefaultUserTerminal(),
+          );
+        }
+        currentPort = newPort;
+      }
 
       const selectDevice = async (deviceAndSimulatorInfos: string) => {
         const lines = deviceAndSimulatorInfos.trim().split('\n');
@@ -150,6 +179,11 @@ export const commandRunHarmony: Command = {
           return simulatorName;
         }
         const connectedDevices = availableDevices.filter((deviceOrSimulator) => deviceOrSimulator.state === 'Connected');
+
+        if (connectedDevices.length === 1) {
+          return connectedDevices[0].name;
+        }
+
         if (connectedDevices.length > 1) {
           const answers = await inquirer.prompt([
             {
@@ -160,14 +194,33 @@ export const commandRunHarmony: Command = {
             }
           ])
           return connectedDevices[parseInt(answers.selectedDeviceIndex) - 1].name;
-        } else if (connectedDevices.length === 1) {
-          return connectedDevices[0].name;
-        } else {
+        }
+
+        try {
+          await launchHarmonySimulator({
+            devEcoStudioToolsPath,
+            sdkToolchainsPath,
+            cli,
+            logger,
+            env: process.env,
+          });
+          simulatorName = DEFAULT_SIMULATOR_NAME;
+          return simulatorName;
+        } catch (e) {
+          if (e instanceof DescriptiveError) {
+            throw new DescriptiveError({
+              whatHappened: `${e.getMessage()} \n No devices are connected. Failed to auto-launch simulator.`,
+              whatCanUserDo: [...e.getSuggestions()],
+              extraData: e.getRawData().extraData,
+            });
+          }
           throw new DescriptiveError({
-            whatHappened: `No devices are connected in the current environment.`,
+            whatHappened: `No devices are connected in the current environment (auto-launch attempt failed).`,
             whatCanUserDo: [
-              'Please connect your HarmonyOS device or open the simulator.',
-            ]
+              'Connect a HarmonyOS device via USB or start the simulator manually.',
+              'Re-run the command after a device is listed by: hdc list targets -v',
+            ],
+            extraData: e,
           });
         }
       };
@@ -180,32 +233,9 @@ export const commandRunHarmony: Command = {
         }
       );
 
-      const deviceOrSimulatorName = await selectDevice(deviceAndSimulatorInfo)
-
-      let currentPort: number = defaultPort;
-      if (packager) {
-        const root: string = _config.root || '.';
-        const reactNativePath: string = _config.reactNativePath || path.dirname(
-          require.resolve('react-native', { paths: [root] }),
-        );
-        const { port: newPort, startPackager } = await findDevServerPort(
-          defaultPort,
-          root,
-        );
-
-        if (newPort !== 8081) {
-          await trySetMetroPort(harmonyProjectPath.copyWithNewSegment(
-            'entry', 'src', 'main', 'ets', 'pages', 'Index.ets').toString(), newPort);
-        }
-        if (startPackager) {
-          startServerInNewWindow(
-            newPort,
-            root,
-            reactNativePath,
-            getDefaultUserTerminal(),
-          );
-        }
-        currentPort = newPort;
+      const deviceOrSimulatorName = await selectDevice(deviceAndSimulatorInfo);
+      if (deviceOrSimulatorName.includes(`${LOOPBACK_IP}:`)) {
+        simulatorName = deviceOrSimulatorName;
       }
 
       const runJob = async (name: string, job: () => Promise<void>) => {
@@ -235,8 +265,7 @@ export const commandRunHarmony: Command = {
             .copyWithNewSegment('ohpm', 'bin', 'ohpm.bat');
         }
         await cli.run(
-          process.platform === 'win32' ? `"${ohpmPath.toString()}"` :
-            ohpmPath.toString(),
+          `"${ohpmPath.toString()}"`,
           {
             args: [
               'install',
@@ -265,10 +294,9 @@ export const commandRunHarmony: Command = {
           nodePath = devEcoStudioToolsPath.copyWithNewSegment('node', 'node');
         }
         let hvigorPathRaw = devEcoStudioToolsPath.copyWithNewSegment('hvigor', 'bin', 'hvigorw.js').toString();
-        const hvigorPath = process.platform === 'win32' ? `"${hvigorPathRaw}"` : hvigorPathRaw;
+        const hvigorPath = `"${hvigorPathRaw}"`;
         await cli.run(
-          process.platform === 'win32' ? `"${nodePath.toString()}"` :
-            nodePath.toString(),
+          `"${nodePath.toString()}"`,
           {
             args: [
               hvigorPath,
@@ -321,7 +349,7 @@ export const commandRunHarmony: Command = {
         const hdcPathStrRaw = sdkToolchainsPath
           .copyWithNewSegment('hdc')
           .toString();
-        const hdcPathStr = process.platform === 'win32' ? `"${hdcPathStrRaw.toString()}"` : hdcPathStrRaw;
+        const hdcPathStr = `"${hdcPathStrRaw.toString()}"`;
 
         const tryRemoveForwardPorting = async () => {
           let fportInfo: string = '';
