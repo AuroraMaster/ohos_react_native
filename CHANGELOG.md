@@ -1,5 +1,18 @@
 # Changelog
 
+## 6.0.0.507
+- revert: the issue where the Web component fails to initialize when an error occurs during hot reload.,([d85defa33](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d85defa3335d8e333d68b3f63fa8e3cb53a5a320))
+- revert: Sticky Header Update Issue with Tabs and Animated ScrollView 2,([92432836c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/92432836ca5a55241779e3d6a1f4fd5c22e85f12))
+- revert: assigning `int` inside flattenOffset and extractOffset,([73042f503](https://gitcode.com/openharmony-sig/ohos_react_native/commit/73042f503f95666c2c101c8119d06036e11982b7))
+- fix: Fix horizontal scrolling disabled when horizontal={true} but alwaysBounceHorizontal={false},([80d3ea358](https://gitcode.com/openharmony-sig/ohos_react_native/commit/80d3ea358f69b675a485d6abaa5dcbf3c555718f))
+- 0.72.x support auto launch simulator,([f078b7b2d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f078b7b2d9f98ab1ddbf500a9e201f60d8b42484))
+- fix:Fixed the issue where the content of textInput would be missing when the delete key is long-pressed in cases where the value is fixed and unchanging.,([b60e76cff](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b60e76cffeb329c9afc7b91f95023d00634958df))
+- Fix: problem of misaligned Justify attribute in textAlign,([be3778107](https://gitcode.com/openharmony-sig/ohos_react_native/commit/be37781077463589381d376415b429f1f18f099c))
+- fix: the issue where the Web component fails to initialize when an error occurs during hot reload.,([ad2a980f3](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ad2a980f387cfdc1b4571660a94ccb74f38d88a8))
+- fix: make TextInput's cursor stay in place for hardcoded value when two keys are pressed quickly,([f8fe69f32](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f8fe69f32445474a95047475ea032ba760c5fb60))
+- Fix: The event is triggered multiple times when custom ArkTS components share the same event name across multiple packages.,([c94f01a1e](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c94f01a1e2d66990c75a7a5819a8bb7a70d98a4a))
+- [chore]: updated to version 6.0.0.506(0.72.88),([150c90dc4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/150c90dc40cc57233210d9f32e26a2e2ce461261))
+
 ## 6.0.0.506
 - fix: rnInstance leak due to listeners and napi references,([f91656681](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f91656681d462c9fbbe63cddb82ad8cad61c36a7))
 - fix: ​​Adjusted Metro Service Error Judgment Logic to Support More Status Codes​.,([a4ecd17dd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a4ecd17dd8d850331996aef85f2a4794c54ae5e2))
