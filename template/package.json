@@ -1,6 +1,6 @@
 {
   "name": "@react-native-oh/template",
-  "version": "0.72.89",
+  "version": "0.72.90",
   "description": "RNOH template",
   "files": [
     "package.json",

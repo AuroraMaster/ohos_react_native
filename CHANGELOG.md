@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.0.0.508
+- revert:fix:Fixed the issue where the content of textInput would be missing when the delete key is long-pressed in cases where the value is fixed and unchanging.,([59aee6a2d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/59aee6a2d643b91295411ed41934b7838c421e42))
+- [chore]: updated to version 6.0.0.507(0.72.89),([772034d0b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/772034d0b83910e2982530dc2ec48af5a97c3bc2))
+
 ## 6.0.0.507
 - revert: the issue where the Web component fails to initialize when an error occurs during hot reload.,([d85defa33](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d85defa3335d8e333d68b3f63fa8e3cb53a5a320))
 - revert: Sticky Header Update Issue with Tabs and Animated ScrollView 2,([92432836c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/92432836ca5a55241779e3d6a1f4fd5c22e85f12))
