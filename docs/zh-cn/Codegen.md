@@ -85,9 +85,13 @@
 
 `codegen-harmony` 后面跟着的是传入该命令的一些参数，下面是参数介绍：
 
-- **--rnoh-module-path \<path\>**：指定 RNOH OHOS 模块的相对路径（如：`--rnoh-module-path ./entry/oh_modules/@rnoh/react-native-openharmony`)，ArkTS 的类型声明文件会生成在这个目录下
+- **--rnoh-module-path \<path\><sup>(deprecated)</sup>**：指定 RNOH OHOS 模块的相对路径（如：`--rnoh-module-path ./entry/oh_modules/@rnoh/react-native-openharmony`)，ArkTS 的类型声明文件会生成在这个目录下；
 
-- **--cpp-output-path \<path\>**：指定 C++ 文件输出目录的相对路径（默认值为`./harmony/entry/src/main/cpp/generated`），C++ 文件会生成在该目录下
+- **--ets-output-path \<path\>**：指定 ArkTS 类型声明文件的输出目录；
+
+> `--rnoh-module-path` 和 `--ets-output-path` 均表示ets文件的输出目录，现不推荐将ets文件生成在 `@rnoh/react-native-openharmony` 目录下，建议改用 `--ets-output-path` 参数将ets文件生成到自己的项目源码目录中；
+
+- **--cpp-output-path \<path\>**：指定 C++ 文件输出目录的相对路径（默认值为`./harmony/entry/src/main/cpp/generated`），C++ 文件会生成在该目录下；
 
 - **--no-safety-check \[boolean\]**：默认情况下 Codegen 无法在工作目录以外进行文件操作，通过配置 `--no-safety-check` 可跳过该检查，如鸿蒙工程不在前端工程目录下时需要传入该参数。
 
