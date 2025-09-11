@@ -20,12 +20,14 @@ RNInstanceInternal::RNInstanceInternal(
     int id,
     std::shared_ptr<facebook::react::ContextContainer> contextContainer,
     std::shared_ptr<TaskExecutor> taskExecutor,
-    SharedNativeResourceManager nativeResourceManager)
+    SharedNativeResourceManager nativeResourceManager,
+    std::string hspModuleName)
     :  m_id(id),
        m_contextContainer(std::move(contextContainer)),
        taskExecutor(std::move(taskExecutor)),
        m_isAboutToBeDestroyed(std::make_shared<std::atomic<bool>>(false)),
-       m_nativeResourceManager(std::move(nativeResourceManager))
+       m_nativeResourceManager(std::move(nativeResourceManager)),
+       m_hspModuleName(hspModuleName)
 {
     instance = std::make_shared<facebook::react::Instance>();
     scheduler = nullptr;
@@ -130,6 +132,10 @@ void RNInstanceInternal::setBundlePath(std::string const &path)
 std::string RNInstanceInternal::getBundlePath()
 {
     return m_bundlePath;
+}
+
+std::string RNInstanceInternal::getHspModuleName() {
+  return m_hspModuleName;
 }
 
 NativeResourceManager const *RNInstanceInternal::getNativeResourceManager()

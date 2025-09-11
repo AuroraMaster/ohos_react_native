@@ -153,6 +153,7 @@ export class NapiBridge {
     arkTsComponentNames: Array<string>,
     fontPathByFontFamily: Record<string, string>,
     jsvmInitOptions: ReadonlyArray<JSVMInitOption>,
+    hspModuleName: string,
   ) {
     const cppFeatureFlagStatusByName = cppFeatureFlags.reduce((acc, cppFeatureFlag) => {
       acc[cppFeatureFlag] = true
@@ -185,6 +186,7 @@ export class NapiBridge {
       fontPathByFontFamily,
       envId,
       jsvmInitOptions,
+      hspModuleName,
     );
   }
 

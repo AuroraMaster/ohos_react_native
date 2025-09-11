@@ -32,6 +32,7 @@ class ImageComponentInstance
   std::string FindLocalCacheByUri(std::string const& uri);
 
   std::string getBundlePath();
+  std::string getHspModuleName();
   std::string getAbsolutePathPrefix(std::string const& bundlePath);
 
  public:

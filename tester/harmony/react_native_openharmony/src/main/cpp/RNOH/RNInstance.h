@@ -140,7 +140,8 @@ class RNInstanceInternal : public RNInstance,
         int id,
         std::shared_ptr<facebook::react::ContextContainer> contextContainer,
         std::shared_ptr<TaskExecutor> taskExecutor,
-        SharedNativeResourceManager nativeResourceManager);
+        SharedNativeResourceManager nativeResourceManager,
+        std::string hspModuleName);
 
   virtual ~RNInstanceInternal() = default;
 
@@ -228,6 +229,7 @@ class RNInstanceInternal : public RNInstance,
     NativeResourceManager const *getNativeResourceManager() const;
     void onCreate();
     void markSelfAboutToDestroyed();
+    std::string getHspModuleName();
 
     TaskExecutor::Shared taskExecutor;
 
@@ -239,6 +241,7 @@ protected:
     std::unique_ptr<facebook::react::SchedulerDelegate> m_schedulerDelegate = nullptr;
     SharedNativeResourceManager m_nativeResourceManager;
     std::string m_bundlePath;
+    std::string m_hspModuleName;
     /**
      * NOTE: Order matters. m_scheduler holds indirectly jsi::Values.
      * These values must be destructed before the runtime.

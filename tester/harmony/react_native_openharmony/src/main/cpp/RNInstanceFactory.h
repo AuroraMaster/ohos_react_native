@@ -77,7 +77,8 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
     bool shouldEnableDebugger,
     bool shouldEnableBackgroundExecutor,
     std::unordered_set<std::string> arkTsComponentNames,
-    std::unordered_map<std::string, std::string> fontPathByFontFamily
+    std::unordered_map<std::string, std::string> fontPathByFontFamily,
+    std::string hspModuleName
     ) {  
   HarmonyReactMarker::logMarker(
       HarmonyReactMarker::HarmonyReactMarkerId::REACT_INSTANCE_INIT_START, id);
@@ -277,7 +278,8 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
         componentInstancePreallocationRequestQueue,
         std::move(nativeResourceManager),
         shouldEnableDebugger,
-        shouldEnableBackgroundExecutor);
+        shouldEnableBackgroundExecutor,
+        hspModuleName);
     rnInstance->onCreate();
     componentInstanceDependencies->rnInstance = rnInstance;
     HarmonyReactMarker::logMarker(

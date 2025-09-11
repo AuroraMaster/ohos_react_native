@@ -75,12 +75,14 @@ class RNInstanceCAPI : public RNInstanceInternal,
           componentInstancePreallocationRequestQueue,
       SharedNativeResourceManager nativeResourceManager,
       bool shouldEnableDebugger,
-      bool shouldEnableBackgroundExecutor)
+      bool shouldEnableBackgroundExecutor,
+      std::string hspModuleName)
       : RNInstanceInternal(
             id,
             contextContainer,
             std::move(taskExecutor),
-            std::move(nativeResourceManager)),
+            std::move(nativeResourceManager),
+            hspModuleName),
         m_shadowViewRegistry(shadowViewRegistry),
         m_turboModuleFactory(std::move(turboModuleFactory)),
         m_componentDescriptorProviderRegistry(
