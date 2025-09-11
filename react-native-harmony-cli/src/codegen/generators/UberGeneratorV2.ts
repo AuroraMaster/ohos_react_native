@@ -5,6 +5,7 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
+import pathUtils from 'path';
 import { AbsolutePath } from '../../core';
 import { CodeGenerator } from '../core';
 import {
@@ -14,6 +15,9 @@ import {
 import { NativeModuleCodeGenerator } from './NativeModuleCodeGenerator';
 import { GlueCodeDataV2 } from './AppBuildTimeGlueCodeGenerator';
 import { SharedComponentCodeGenerator } from './SharedComponentCodeGenerator';
+
+// The name of rnoh OHOS module
+const RNOH_OHOS_NAME = '@rnoh/react-native-openharmony';
 
 /**
  * Generates code for libraries built on top of RNOH's C-API architecture.
@@ -85,6 +89,7 @@ export class UberGeneratorV2 implements CodeGenerator<LibraryData[]> {
         .getSpecSchemaByFilenameMap()
         .entries()) {
         if (specSchema.type === 'NativeModule') {
+          const isRNOHModulePath = this.etsOutputPath.getValue().endsWith(`${RNOH_OHOS_NAME}/generated`.replace(/\//g, pathUtils.sep));
           const nativeModuleCodeGenerator = new NativeModuleCodeGenerator(
             libraryCppOutput.copyWithNewSegment(
               'RNOH',
@@ -93,7 +98,7 @@ export class UberGeneratorV2 implements CodeGenerator<LibraryData[]> {
             ),
             this.etsOutputPath.copyWithNewSegment('turboModules'),
             this.codegenNoticeLines,
-            '../../ts'
+            isRNOHModulePath ? '../../ts' : `${RNOH_OHOS_NAME}/ts`
           );
           nativeModuleCodeGenerator
             .generate(specSchema)

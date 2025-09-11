@@ -34,7 +34,12 @@ export const commandCodegenHarmony: Command = {
   options: [
     {
       name: '--rnoh-module-path <path>',
-      description: 'Specifies the relative path to the rnoh OHOS module',
+      description: '[deprecated] Specifies the relative path to the rnoh OHOS module',
+    },
+    {
+      name: '--ets-output-path <path>',
+      description:
+        'Specifies the relative path to the output directory intended for storing generated ETS files.',
     },
     {
       name: '--cpp-output-path <path>',
@@ -65,9 +70,12 @@ export const commandCodegenHarmony: Command = {
       const MAX_SUPPORTED_CODEGEN_VERSION = 2;
       // prepare the input data
       validateArgs(args);
-      const etsOutputPath = new AbsolutePath(
-        args.rnohModulePath
-      ).copyWithNewSegment('generated');
+      let etsOutputPath = args.etsOutputPath || args.rnohModulePath;
+      const isEndWithGenerated = /\/generated\/?$/.test(etsOutputPath);
+      etsOutputPath = new AbsolutePath(etsOutputPath);
+      if (!isEndWithGenerated) {
+        etsOutputPath = etsOutputPath.copyWithNewSegment('generated');
+      }
       const enableSafetyCheck: boolean = args.safetyCheck;
       const cppOutputPath = new AbsolutePath(args.cppOutputPath);
       const projectRootPath = new AbsolutePath(args.projectRootPath);
@@ -166,11 +174,13 @@ export const commandCodegenHarmony: Command = {
 };
 
 function validateArgs(args: any) {
-  if (!args.rnohModulePath) {
+  if (!args.rnohModulePath && !args.etsOutputPath) {
     throw new DescriptiveError({
-      whatHappened: "--rnoh-module-path argument wasn't provided",
+      whatHappened: '--ets-output-path is required',
       whatCanUserDo: [
-        'Please provide a path to the native React Native for Open Harmony module (rnoh) which is probably located somewhere in "<PROJECT_ROOT>/harmony" directory',
+        'Please provide an output path for the ETS file.',
+        'It is recommended to place it in the same directory as the custom component or TurboModule.',
+        'Do not place it inside @rnoh/react-native-openharmony, otherwise a jscrash may occur when using react_native_openharmony_release2.har.'
       ],
     });
   }
