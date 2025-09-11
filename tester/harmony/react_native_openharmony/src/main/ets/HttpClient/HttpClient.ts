@@ -30,6 +30,8 @@ export interface HttpClient {
   clearCookies(): Promise<boolean>;
 }
 
+export type CAPathProvider = (url: string) => string;
+
 function mergeObjects<T>(baseObject: Partial<T>, overridingObject: Partial<T>): T {
   const mergedObject: Partial<Record<keyof T, any>> = {};
 

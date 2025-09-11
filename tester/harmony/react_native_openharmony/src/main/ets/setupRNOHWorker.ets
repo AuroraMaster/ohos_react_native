@@ -6,7 +6,7 @@
  */
 
 import { lang, worker, MessageEvents } from '@kit.ArkTS';
-import { HttpClient, DefaultHttpClient } from "./HttpClient/HttpClient"
+import { HttpClient, DefaultHttpClient, CAPathProvider } from "./HttpClient/HttpClient"
 import {
   RNPackage,
   StandardRNOHLogger,
@@ -34,7 +34,7 @@ import common from '@ohos.app.ability.common'
 export interface WorkerRNInstanceConfig {
   thirdPartyPackagesFactory: (ctx: RNPackageContext) => RNPackage[]
   httpClient?: HttpClient
-
+  caPathProvider?: CAPathProvider
 }
 
 /**
@@ -183,6 +183,7 @@ export async function setupRNOHWorker(config: RNOHWorkerConfig) {
                   uiAbilityContext,
                   rnInstance,
                   httpClient: rnInstanceConfig.httpClient ?? new DefaultHttpClient({ logger: workerLogger }),
+                  caPathProvider: rnInstanceConfig.caPathProvider ?? ((url: string) => ''),
                   safeAreaInsetsProvider: new SafeAreaInsetsProvider(uiAbilityContext),
                 },
                 uiTaskRunner: uiTaskRunner

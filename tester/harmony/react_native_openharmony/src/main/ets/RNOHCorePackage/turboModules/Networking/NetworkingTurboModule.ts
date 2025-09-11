@@ -206,6 +206,7 @@ export class NetworkingTurboModule extends AnyThreadTurboModule {
 
   async sendRequest(query: Query, onRequestRegistered: (requestId: number) => void) {
     const httpClient = this.ctx.httpClient;
+    const caPath = this.ctx.caPathProvider?.(query.url);
     const requestId = this.createId();
     onRequestRegistered(requestId);
     for (const handler of this.uriHandlers) {
@@ -285,6 +286,7 @@ export class NetworkingTurboModule extends AnyThreadTurboModule {
         onReceiveProgress: onReceiveProgress,
         onSendProgress: onSendProgress,
         handleCookies: query.withCredentials,
+        ...(caPath? {caPath} : {}),
       },)
     this.requestCancellersById.set(requestId, cancel);
 

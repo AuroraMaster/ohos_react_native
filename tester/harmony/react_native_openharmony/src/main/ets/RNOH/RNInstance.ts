@@ -26,7 +26,7 @@ import { DevToolsController } from './DevToolsController'
 import { RNInstanceError, RNInstanceErrorEventEmitter, RNOHError, RNOHErrorEventEmitter } from './RNOHError'
 import window from '@ohos.window'
 import { DevServerHelper } from './DevServerHelper'
-import { HttpClient } from '../HttpClient/HttpClient'
+import { HttpClient, CAPathProvider } from '../HttpClient/HttpClient'
 import type { HttpClientProvider } from './HttpClientProvider'
 import resourceManager from '@ohos.resourceManager'
 import { DisplayMetricsManager } from './DisplayMetricsManager'
@@ -270,6 +270,12 @@ export interface RNInstance {
   get httpClient(): HttpClient,
 
   /**
+   * (Almost) all network requests support a custom caPath callback function, which can be used to define custom caPath rules
+   * in network requests for flexible caCallPath support.
+   */
+  get caPathProvider(): CAPathProvider,
+
+  /**
    * @returns base path specifying where to look for bundled assets
    */
   getAssetsDest(): string
@@ -407,7 +413,11 @@ export type RNInstanceOptions = {
   /**
    * If not provided, the defaultHttpClient created by `RNAbility::onCreateDefaultHttpClient` will be used.
    */
-  httpClient?: HttpClient
+  httpClient?: HttpClient,
+  /**
+   * If not provided, a default value will be used. Typically, an empty string is returned.
+   */
+  caPathProvider?: CAPathProvider,
   /**
    * Disables advanced React 18 features, such as Automatic Batching.
    * Setting this to `true` will revert to the behavior of React 17,
@@ -451,6 +461,7 @@ export class RNInstanceImpl implements RNInstance {
   public stageEventEmitter = new EventEmitter<StageChangeEventArgsByEventName>();
   public cppEventEmitter = new EventEmitter<Record<string, unknown[]>>()
   public httpClient: HttpClient;
+  public caPathProvider: CAPathProvider;
   public backPressHandler: () => void | undefined;
   private componentNameByDescriptorType = new Map<string, string>();
   private logger: RNOHLogger;
@@ -500,11 +511,13 @@ export class RNInstanceImpl implements RNInstance {
     private fontPathByFontFamily: Record<string, string>,
     httpClientProvider: HttpClientProvider,
     httpClient: HttpClient | undefined, // TODO: remove "undefined" when HttpClientProvider is removed
+    caPathProvider: CAPathProvider,
     backPressHandler?: () => void,
     private jsvmInitOptions?: ReadonlyArray<JSVMInitOption>,
   ) {
     this.defaultProps = { concurrentRoot: !disableConcurrentRoot };
     this.httpClient = httpClient ?? httpClientProvider.getInstance(this);
+    this.caPathProvider = caPathProvider ?? ((url: string) => '');
     this.logger = injectedLogger.clone('RNInstance');
     this.frameNodeFactoryRef = { frameNodeFactory: null };
     this.backPressHandler = backPressHandler;
