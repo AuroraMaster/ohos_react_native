@@ -465,18 +465,158 @@ After the execution is successful, copy the generated glue code to your OpenHarm
         └── workers
             └── RNOHWorker.ets         
     ```
-    Change `RNOHWorker.ets` to the following code:
-    ```typescript
-    // entry/src/main/ets/worker/RNOHWorker.ets
-    import { setupRNOHWorker } from "@rnoh/react-native-openharmony/src/main/ets/setupRNOHWorker";
-    import { createRNPackages } from '../RNPackagesFactory';
+when you need to enable Worker threads to optimize the performance of React Native applications, you must configure the core parameters of Worker threads through `RNOHWorker.ets`. Below is the complete configuration code, parameter descriptions (including optional `HttpClient` customization and `caPathProvider` certificate path rule configuration), and a clear explanation of the independence between thread configurations—plus how to use `rnInstanceName` to align logic with the main thread.
 
-    setupRNOHWorker({
-      createWorkerRNInstanceConfig: (_rnInstanceName) => {
-        return { thirdPartyPackagesFactory: createRNPackages }
+
+##### 1. Complete Configuration Code
+```typescript
+// entry/src/main/ets/worker/RNOHWorker.ets
+import { setupRNOHWorker } from "@rnoh/react-native-openharmony/src/main/ets/setupRNOHWorker";
+import { createRNPackages } from '../RNPackagesFactory';
+// (Optional) Import HttpClient and CAPathProvider types/implementations as needed
+import type { HttpClient, CAPathProvider } from "@rnoh/react-native-openharmony/src/main/ets/types";
+
+// --------------------------
+// (Optional) 1. Custom HttpClient Implementation (for extended network capabilities)
+// --------------------------
+const createCustomHttpClient = (rnInstanceName: string): HttpClient => {
+  // Return different HttpClient configurations based on the instance name
+  if (rnInstanceName === "mainInstance") {
+    return {
+      addResponseInterceptor(interceptor) {
+        console.log(`[${rnInstanceName}] Worker Thread - Register main instance response interceptor`);
+      },
+      addRequestInterceptor(interceptor) {
+        console.log(`[${rnInstanceName}] Worker Thread - Register main instance request interceptor`);
+      },
+      sendRequest(url: string, requestOptions) {
+        console.log(`[${rnInstanceName}] Worker Thread - Send main instance request: ${url}`);
+        return {
+          cancel: () => console.log(`[${rnInstanceName}] Cancel request`),
+          promise: Promise.resolve({ statusCode: 200, data: "Main instance response", headers: {} })
+        };
+      },
+      clearCookies: () => Promise.resolve(true)
+    };
+  } else if (rnInstanceName === "secondaryInstance") {
+    return {
+      addResponseInterceptor(interceptor) {
+        console.log(`[${rnInstanceName}] Worker Thread - Register secondary instance response interceptor`);
+      },
+      addRequestInterceptor(interceptor) {
+        console.log(`[${rnInstanceName}] Worker Thread - Register secondary instance request interceptor`);
+      },
+      sendRequest(url: string, requestOptions) {
+        console.log(`[${rnInstanceName}] Worker Thread - Send secondary instance request: ${url}`);
+        return {
+          cancel: () => console.log(`[${rnInstanceName}] Cancel request`),
+          promise: Promise.resolve({ statusCode: 200, data: "Secondary instance response", headers: {} })
+        };
+      },
+      clearCookies: () => Promise.resolve(true)
+    };
+  }
+  // Default configuration
+  return {
+    addResponseInterceptor: () => {},
+    addRequestInterceptor: () => {},
+    sendRequest: () => ({ cancel: () => {}, promise: Promise.resolve({ statusCode: 200, data: "", headers: {} }) }),
+    clearCookies: () => Promise.resolve(true)
+  };
+};
+
+// --------------------------
+// (Optional) 2. Custom caPathProvider (for instance-specific certificate rules)
+// --------------------------
+const createCustomCaPathProvider = (rnInstanceName: string): CAPathProvider => {
+  // Return certificate rules based on the instance name
+  return (url: string) => {
+    if (rnInstanceName === "secureInstance") {
+      // Secure instance: Force dedicated certificate
+      return "/data/haps/secure.cer";
+    } else if (rnInstanceName === "testInstance") {
+      // Test instance: Dynamic switch based on domain
+      return url.includes("test.com") ? "/data/haps/test.cer" : "";
+    }
+    // Default instance: Use system certificate
+    return "";
+  };
+};
+
+// --------------------------
+// 3. Core: Initialize RNOH Worker Thread (use rnInstanceName for aligned configs)
+// --------------------------
+setupRNOHWorker({
+  createWorkerRNInstanceConfig: (rnInstanceName) => {
+    // rnInstanceName matches the instance name from the main thread
+    
+    return { 
+      // Required: Third-party **RN**  package factory (registers custom **RN**  components/modules)
+      thirdPartyPackagesFactory: createRNPackages,
+
+      // Optional: Generate HttpClient based on instance name
+      httpClient: createCustomHttpClient(rnInstanceName),
+
+      // Optional: Generate CA certificate rules based on instance name
+      caPathProvider: createCustomCaPathProvider(rnInstanceName)
+    }
+  }
+})
+```
+
+
+##### 2. Key Parameter Explanations
+`createWorkerRNInstanceConfig` is the core function for configuring Worker threads. Its parameter `rnInstanceName` is critical for aligning configurations with the main thread. Below is a detailed breakdown:
+
+| Parameter/Function               | Type/Role                                                                 | Key Notes                                                                 |
+|-----------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| `createWorkerRNInstanceConfig`    | Callback function that receives `rnInstanceName` and returns a `WorkerRNInstanceConfig` object | Dynamically generates Worker thread configurations. **`rnInstanceName` matches the corresponding **RN**  instance name from the main thread**, enabling "instance-specific customization". |
+| `rnInstanceName`                  | `string` (name of the **RN**  instance associated with the current Worker)     | 1. Matches the instance name used in the main thread’s `RNInstanceConfig` (e.g., "main", "moduleA"); <br>2. Enables differentiation between multiple instances, ensuring Worker configurations align with the main thread’s logic for each instance. |
+| `thirdPartyPackagesFactory`       | `(ctx: RNPackageContext) => RNPackage[]`                                 | Required. A factory function for registering custom **RN**  components/modules—Worker threads need this to load third-party **RN**  capabilities. |
+| `httpClient`                      | `HttpClient` (optional)                                                  | Only takes effect in the Worker thread. Use `rnInstanceName` to generate network configurations that match the main thread’s corresponding instance (e.g., different interceptors for different instances). |
+| `caPathProvider`                  | `(url: string) => string` (optional)                                     | Only takes effect in the Worker thread. Use `rnInstanceName` to generate certificate rules that match the main thread’s corresponding instance (e.g., different certificate paths for different instances). |
+
+
+##### 3. Using `rnInstanceName` to Align Thread Configurations
+In multi-instance scenarios (e.g., apps with multiple **RN**  instances), `rnInstanceName` ensures that Worker thread configurations logically align with the main thread. Here’s its core value:
+
+###### Scenario: Differentiated Configurations for Multi-Instance Apps
+Suppose the main thread has two **RN**  instances:
+- Instance 1: `rnInstanceName = "payment"` (payment module, requiring strict certificate validation)
+- Instance 2: `rnInstanceName = "news"` (news module, using default certificates)
+
+You can use `rnInstanceName` to implement matching configurations in the Worker thread:
+```typescript
+createWorkerRNInstanceConfig: (rnInstanceName) => {
+  return { 
+    thirdPartyPackagesFactory: createRNPackages,
+    // Payment instance uses dedicated certificate; news instance uses default
+    caPathProvider: (url) => {
+      if (rnInstanceName === "payment") {
+        return "/data/haps/payment_cert.cer"; // Aligns with main thread’s payment instance config
       }
-    })
-    ```
+      return ""; // News instance uses default (matches main thread)
+    },
+    // Payment instance adds encryption interceptors; news instance does not
+    httpClient: rnInstanceName === "payment" ? paymentHttpClient : defaultHttpClient
+  }
+}
+```
+
+
+###### Core Value of `rnInstanceName`
+1. **Configuration Alignment**: Ensures `httpClient` and `caPathProvider` in the Worker thread follow the same logic as the main thread’s corresponding instance (via matching `rnInstanceName`).  
+2. **Multi-Instance Isolation**: Prevents cross-interference between configurations of different instances (e.g., strict certificate rules for payment vs. default rules for news).  
+3. **Code Reusability**: Enables reusable configuration factories (based on `rnInstanceName`) that work for both the main thread and Worker threads, reducing redundancy.
+
+
+##### 4. Independence Between Main Thread and Worker Thread Configurations
+While `rnInstanceName` aligns **logical rules** between threads, the actual configurations (e.g., `httpClient` implementations) remain fully independent. No "fallback" or "override" occurs between threads:
+
+| Configuration Item | Main Thread Configuration Location       | Worker Thread Configuration Location       | Independence Rules                                                                 |
+|--------------------|------------------------------------------|--------------------------------------------|--------------------------------------------------------------------------|
+| `HttpClient`       | `RNInstanceConfig` (when initializing main-thread **RN**  instances) | `WorkerRNInstanceConfig` (configured in this file) | 1. After enabling Workers, network requests in the Worker thread **only use its own `httpClient` config**; <br>2. If no `httpClient` is configured for the Worker, it will not use the main thread’s config (even if present)—only default network capabilities are available. |
+| `caPathProvider`   | `RNInstanceConfig` (main-thread **RN**  instance config) | `WorkerRNInstanceConfig` (configured in this file) | 1. After enabling Workers, HTTPS requests in the Worker thread **only use its own `caPathProvider` config**; <br>2. If no `caPathProvider` is configured for the Worker, it will not use the main thread’s config (even if present)—only system default certificates are used. |
 
 ### TurboModule Usage
 

@@ -450,19 +450,160 @@ Codegen 的详细使用方法，可以参考[Codegen](Codegen.md)文档。
        └── workers
            └── RNOHWorker.ets         
    ```
-   修改 `RNOHWorker.ets` 为下列代码：
-   ```typescript
-   // entry/src/main/ets/worker/RNOHWorker.ets
-   import { setupRNOHWorker } from "@rnoh/react-native-openharmony/src/main/ets/setupRNOHWorker";
-   import { createRNPackages } from '../RNPackagesFactory';
+开发中，当需要开启 Worker 线程以优化 React Native 应用性能时，需通过 `RNOHWorker.ets` 配置 Worker 线程的核心参数。以下是完整的配置代码及参数说明，包含可选的 `HttpClient` 自定义与 `caPathProvider` 证书路径规则配置，并明确线程间配置的独立性及 `rnInstanceName` 的使用方式。
 
-   setupRNOHWorker({
-     createWorkerRNInstanceConfig: (_rnInstanceName) => {
-       return { thirdPartyPackagesFactory: createRNPackages }
-     }
-   })
-   ```
 
+##### 1. 完整配置代码
+```typescript
+// entry/src/main/ets/worker/RNOHWorker.ets
+import { setupRNOHWorker } from "@rnoh/react-native-openharmony/src/main/ets/setupRNOHWorker";
+import { createRNPackages } from '../RNPackagesFactory';
+// （可选）按需导入 HttpClient 与 CAPathProvider 相关类型/实现
+import type { HttpClient, CAPathProvider } from "@rnoh/react-native-openharmony/src/main/ets/types";
+
+// --------------------------
+// （可选）1. 自定义 HttpClient 实现（支持按 rnInstanceName 差异化配置）
+// --------------------------
+const createCustomHttpClient = (rnInstanceName: string): HttpClient => {
+  // 根据实例名称返回不同的 HttpClient 配置
+  if (rnInstanceName === "mainInstance") {
+    return {
+      addResponseInterceptor(interceptor) {
+        console.log(`[${rnInstanceName}] Worker线程 - 注册主实例响应拦截器`);
+      },
+      addRequestInterceptor(interceptor) {
+        console.log(`[${rnInstanceName}] Worker线程 - 注册主实例请求拦截器`);
+      },
+      sendRequest(url: string, requestOptions) {
+        console.log(`[${rnInstanceName}] Worker线程 - 发送主实例请求：${url}`);
+        return {
+          cancel: () => console.log(`[${rnInstanceName}] 取消请求`),
+          promise: Promise.resolve({ statusCode: 200, data: "主实例响应", headers: {} })
+        };
+      },
+      clearCookies: () => Promise.resolve(true)
+    };
+  } else if (rnInstanceName === "secondaryInstance") {
+    return {
+      addResponseInterceptor(interceptor) {
+        console.log(`[${rnInstanceName}] Worker线程 - 注册次要实例响应拦截器`);
+      },
+      addRequestInterceptor(interceptor) {
+        console.log(`[${rnInstanceName}] Worker线程 - 注册次要实例请求拦截器`);
+      },
+      sendRequest(url: string, requestOptions) {
+        console.log(`[${rnInstanceName}] Worker线程 - 发送次要实例请求：${url}`);
+        return {
+          cancel: () => console.log(`[${rnInstanceName}] 取消请求`),
+          promise: Promise.resolve({ statusCode: 200, data: "次要实例响应", headers: {} })
+        };
+      },
+      clearCookies: () => Promise.resolve(true)
+    };
+  }
+  // 默认配置
+  return {
+    addResponseInterceptor: () => {},
+    addRequestInterceptor: () => {},
+    sendRequest: () => ({ cancel: () => {}, promise: Promise.resolve({ statusCode: 200, data: "", headers: {} }) }),
+    clearCookies: () => Promise.resolve(true)
+  };
+};
+
+// --------------------------
+// （可选）2. 自定义 caPathProvider（支持按 rnInstanceName 差异化配置）
+// --------------------------
+const createCustomCaPathProvider = (rnInstanceName: string): CAPathProvider => {
+  // 根据实例名称返回不同的证书规则
+  return (url: string) => {
+    if (rnInstanceName === "secureInstance") {
+      // 安全实例：强制使用专用证书
+      return "/data/haps/secure.cer";
+    } else if (rnInstanceName === "testInstance") {
+      // 测试实例：根据域名动态切换
+      return url.includes("test.com") ? "/data/haps/test.cer" : "";
+    }
+    // 默认实例：使用系统证书
+    return "";
+  };
+};
+
+// --------------------------
+// 3. 核心：初始化 RNOH Worker 线程（使用 rnInstanceName 实现差异化配置）
+// --------------------------
+setupRNOHWorker({
+  createWorkerRNInstanceConfig: (rnInstanceName) => {
+    // rnInstanceName 为当前 Worker 关联的实例名称，与主线程实例名一致
+    
+    return { 
+      // 必传：第三方RN包工厂（用于注册自定义RN组件/模块）
+      thirdPartyPackagesFactory: createRNPackages,
+
+      // 可选：按实例名生成对应的 HttpClient
+      httpClient: createCustomHttpClient(rnInstanceName),
+
+      // 可选：按实例名生成对应的 CA 证书规则
+      caPathProvider: createCustomCaPathProvider(rnInstanceName)
+    }
+  }
+})
+```
+
+
+#####  2. 关键参数说明
+`createWorkerRNInstanceConfig` 是配置 Worker 线程的核心函数，其参数 `rnInstanceName` 可用于实现与主线程配置的一致性，以下是详细说明：
+
+| 参数/函数          | 类型/作用                                                                 | 关键说明                                                                 |
+|---------------------|--------------------------------------------------------------------------|------------------------------------------------------------------------|
+| `createWorkerRNInstanceConfig` | 回调函数，接收 `rnInstanceName` 并返回 `WorkerRNInstanceConfig` 对象 | 用于动态生成 Worker 线程配置，**`rnInstanceName` 与主线程对应的 **RN**  实例名称一致**，可通过该参数实现“按实例差异化配置”。 |
+| `rnInstanceName`    | `string`，表示当前 Worker 关联的 **RN**  实例名称                            | 1. 与主线程中 `RNInstanceConfig` 对应的实例名一致（如 "main"、"moduleA" 等）；<br>2. 可用于区分多实例场景，确保 Worker 配置与主线程对应实例的配置逻辑一致。 |
+| `thirdPartyPackagesFactory` | `(ctx: RNPackageContext) => RNPackage[]`                            | 必传，注册 React Native 自定义组件/模块的工厂函数，Worker 线程需通过此加载第三方 **RN**  能力。 |
+| `httpClient`        | `HttpClient`（可选）                                                  | 仅 Worker 线程生效，可通过 `rnInstanceName` 生成与主线程对应实例匹配的网络配置（如不同实例使用不同拦截器）。 |
+| `caPathProvider`    | `(url: string) => string`（可选）                                    | 仅 Worker 线程生效，可通过 `rnInstanceName` 生成与主线程对应实例匹配的证书规则（如不同实例使用不同证书路径）。 |
+
+
+#####  3. 利用 `rnInstanceName` 实现线程配置一致性
+在多实例场景中（如应用包含多个 **RN**  实例），`rnInstanceName` 是保证 Worker 线程与主线程配置逻辑一致的关键，具体价值如下：
+
+###### 场景：多实例应用的差异化配置
+假设主线程中存在两个 **RN**  实例：
+- 实例1：`rnInstanceName = "payment"`（支付模块，需严格的证书校验）
+- 实例2：`rnInstanceName = "news"`（新闻模块，使用默认CA证书）
+
+通过 `rnInstanceName` 可在 Worker 中实现对应配置：
+```typescript
+createWorkerRNInstanceConfig: (rnInstanceName) => {
+  return { 
+    thirdPartyPackagesFactory: createRNPackages,
+    // 支付实例使用专用证书，新闻实例使用默认CA证书
+    caPathProvider: (url) => {
+      if (rnInstanceName === "payment") {
+        return "/data/haps/payment_cert.cer"; // 与主线程支付实例配置一致
+      }
+      return ""; // 新闻实例使用默认，与主线程一致
+    },
+    // 支付实例添加加密拦截器，新闻实例无需加密
+    httpClient: rnInstanceName === "payment" ? paymentHttpClient : defaultHttpClient
+  }
+}
+```
+
+######  核心价值
+- **配置对齐**：通过 `rnInstanceName` 确保 Worker 线程的 `httpClient` 和 `caPathProvider` 与主线程对应实例的配置逻辑一致（如相同的实例名使用相同的证书规则）。
+- **多实例隔离**：在多 **RN**  实例场景中，避免不同实例的网络配置相互干扰（如支付实例和普通实例的证书规则严格区分）。
+- **逻辑复用**：可基于 `rnInstanceName` 封装通用配置工厂函数，同时服务于主线程和 Worker 线程，减少代码冗余。
+
+
+##### 4. 线程间配置独立性说明（核心）
+`HttpClient` 与 `caPathProvider` 的配置在 **主线程** 和 **Worker 线程** 中完全独立，但 `rnInstanceName` 可确保两者的**配置逻辑一致**：
+
+| 配置项          | 主线程配置位置                          | Worker 线程配置位置                          | 关键规则                                                                 |
+|-----------------|-----------------------------------------|--------------------------------------------|--------------------------------------------------------------------------|
+| `HttpClient`    | `RNInstanceConfig`（按实例名配置）       | `WorkerRNInstanceConfig`（通过 `rnInstanceName` 匹配配置） | 1. 配置内容独立，但可通过 `rnInstanceName` 保证“相同实例名使用相同逻辑”；<br>2. Worker 仅使用自身配置，与主线程无依赖。 |
+| `caPathProvider`| `RNInstanceConfig`（按实例名配置）       | `WorkerRNInstanceConfig`（通过 `rnInstanceName` 匹配配置） | 1. 证书规则独立，但可通过 `rnInstanceName` 保证“相同实例名使用相同规则”；<br>2. Worker 仅使用自身配置，与主线程无依赖。 |
+
+
+通过 `rnInstanceName` 实现的差异化配置，既能保证 Worker 线程与主线程的逻辑一致性，又能维持线程间的配置独立性，是多实例场景下的最佳实践。
 
 ### 使用TurboModule
 

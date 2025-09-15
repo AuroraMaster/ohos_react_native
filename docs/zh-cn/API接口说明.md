@@ -412,7 +412,8 @@ const styles = StyleSheet.create({
 | arkTsComponentNames      | Array<string>  | 是   | ArkTS自定义组件的名称。                           |
 | hspModuleName      | string  | 否   | 存放图片资源的HSP模块名称。                           |
 | backPressHandler         | () => void  | 否   | 当RN JS端不处理侧滑返回事件时的自定义处理逻辑。   |
-| httpClient               | [HttpClient](https://developer.huawei.com/consumer/cn/doc/system-References/network-httpclient-0000001073658008)  | 否  | 指定Http客户端处理类。    |
+| httpClient               | [HttpClient](https://developer.huawei.com/consumer/cn/doc/system-References/network-httpclient-0000001073658008)  | 否  | 指定Http客户端处理类。   
+| caPathProvider               | (url: string) => string  | 否  | 指定CA证书路径规则    |
 | fontResourceByFontFamily | Record<string, Resource>  | 否   | 注册自定义字体。 |
 | jsvmInitOptions | ReadonlyArray<JSVMInitOption>  | 否   | JSVM启动项 |
 
@@ -1124,3 +1125,9 @@ rnInstancesCoordinator?.onNewWant(want: Want, launchParam: AbilityConstant.Launc
 | onGetPackagerClientConfig | (buildMode: BuildMode) => JSPackagerClientConfig \| undefined | 否 | 返回Metro配置的函数。 | 
 | defaultHttpClient | [HttpClient](https://developer.huawei.com/consumer/cn/doc/system-References/network-httpclient-0000001073658008) | 否 | 用于在 **RN** 与原生混合的应用中，重用 Cookies 或打印日志。 |
 | disableCleaningRNInstances | boolean | 否 | 是否启用 CleanUP 线程，清理 **RN** 实例。 |
+
+#### setupRNOHWorker
+
+##### 基本介绍
+
+`TurboModule` 可配置为运行在 `Worker` 线程中，配置需通过 `RNOHWorker.ets` 文件调用 `setupRNOHWorker` 方法实现。关于具体操作步骤，可参考 `TurboModule.md` 文档中 “设置自定义 `TurboModule` 运行在 `Worker` 线程” 栏目。

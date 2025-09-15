@@ -368,7 +368,8 @@ Generally, the `createAndRegisterRNInstance` method in `RNOHCoreContext` is used
 | assetsDest               | string  | No  | Path of the destination assets file.                          |
 | arkTsComponentNames      | Array<string>  | Yes  | Name of a ArkTS custom component.                          |
 | backPressHandler         | () => void  | No  | Custom handler logic when RN JS does not handle the back press event.  |
-| httpClient               | [HttpClient](https://developer.huawei.com/consumer/en/doc/system-References/network-httpclient-0000001073658008) | No | HTTP client class.   |
+| httpClient               | [HttpClient](https://developer.huawei.com/consumer/en/doc/system-References/network-httpclient-0000001073658008) | No | HTTP client class.  
+| caPathProvider | (url: string) => string | No | Specifies the CA certificate path rule |
 | fontResourceByFontFamily | Record<string, Resource>  | No  | Registration of a custom font.|
 
 #### Destruction
@@ -940,3 +941,9 @@ Starts a new UIAbility instance after it has been started and running in the for
 | onGetPackagerClientConfig | (buildMode: BuildMode) => JSPackagerClientConfig \| undefined | No| Function with Metro configuration.| 
 | defaultHttpClient | [HttpClient](https://developer.huawei.com/consumer/en/doc/system-References/network-httpclient-0000001073658008)| No| Used to reuse cookies or print logs in RN and native applications.|
 | disableCleaningRNInstances | boolean | No| Whether to enable the CleanUP thread to clear RN instances.| 
+
+#### setupRNOHWorker
+
+##### Basic Introduction
+
+`TurboModule` can be configured to run on `Worker` threads. This configuration is implemented by calling the `setupRNOHWorker` method in the `RRNOHWorker.ets` file. For detailed operation steps, please refer to the section "Configuring Custom TurboModules to Run on `Worker` Threads" in the `TurboModule.md` document.
