@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.72.91
+- fix: tintColor implementation,([6f9f81068](https://gitcode.com/openharmony-sig/ohos_react_native/commit/6f9f810688199a5ae5ed7940a61c9849e832424c))
+- feat: Support placing assets in the resfile of hsp resource directory,([5f402f05d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/5f402f05d189e6f370fa0546eff07cd779dac00c))
+- feat: Support custom caPath,([a323bda30](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a323bda300871865d2babe906a9ab378ef71c369))
+- [chore]: updated to version 6.0.0.508(0.72.90),([8ace24763](https://gitcode.com/openharmony-sig/ohos_react_native/commit/8ace247639e658f7f481835ae5c8879a167b9cd0))
+
 ## 0.72.90
 - revert:fix:Fixed the issue where the content of textInput would be missing when the delete key is long-pressed in cases where the value is fixed and unchanging.,([59aee6a2d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/59aee6a2d643b91295411ed41934b7838c421e42))
 - [chore]: updated to version 6.0.0.507(0.72.89),([772034d0b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/772034d0b83910e2982530dc2ec48af5a97c3bc2))
