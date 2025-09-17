@@ -534,6 +534,11 @@ void TextInputComponentInstance::onCommandReceived(
     std::string const& commandName,
     folly::dynamic const& args) {
   if (commandName == "focus") {
+    // When showSoftInputOnFocus is set to false, the keyboard opened by the
+    // previous TextInput will be dismissed.
+    if (m_props->traits.showSoftInputOnFocus == false) {
+      blur();
+    }
     focus();
     if (m_selectionStart != -1 && m_selectionEnd != -1 &&
         !m_props->traits.selectTextOnFocus) {
@@ -546,15 +551,7 @@ void TextInputComponentInstance::onCommandReceived(
       m_caretPositionForControlledInput = m_selectionStart;
     }
   } else if (commandName == "blur") {
-    if (m_multiline == true){
-      if(m_textAreaNode.getTextFocusStatus() == true) {
-        blur();
-      } 
-    } else {
-      if (m_textInputNode.getTextFocusStatus() == true) {
-        blur();
-      }
-    }
+    blur();
   } else if (
       commandName == "setTextAndSelection" && args.isArray() &&
       args.size() == 4 && args[0].asInt() >= m_nativeEventCount) {
