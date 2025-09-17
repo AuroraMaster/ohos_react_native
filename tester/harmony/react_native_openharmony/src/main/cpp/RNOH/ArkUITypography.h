@@ -227,7 +227,7 @@ class ArkUITypographyBuilder final {
  private:
   float m_scale;
   std::optional<facebook::react::TextAlignment> m_textAlign{};
-  bool m_isInitTextAlign;
+  bool m_isInitTextAlign{};
   bool m_halfleading;
   std::string m_defaultFontFamilyName;
   std::vector<OH_Drawing_PlaceholderSpan> m_placeholderSpan;
