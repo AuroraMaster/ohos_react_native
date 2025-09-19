@@ -17,10 +17,40 @@
 
 namespace rnoh {
 
+class ScrollViewTouchHandler : public UIInputEventHandler {
+ private:
+  ScrollViewComponentInstance* m_scrollViewComponentInstance;
+
+ public:
+  ScrollViewTouchHandler(ScrollViewTouchHandler const& other) = delete;
+  ScrollViewTouchHandler& operator=(ScrollViewTouchHandler const& other) =
+      delete;
+  ScrollViewTouchHandler(ScrollViewTouchHandler&& other) = delete;
+  ScrollViewTouchHandler& operator=(ScrollViewTouchHandler&& other) = delete;
+
+  explicit ScrollViewTouchHandler(ScrollViewComponentInstance* rootView)
+      : UIInputEventHandler(rootView->getLocalRootArkUINode()),
+        m_scrollViewComponentInstance(rootView) {}
+
+  void onTouchEvent(ArkUI_UIInputEvent* event) override {
+    auto action = OH_ArkUI_UIInputEvent_GetAction(event);
+    if (action == UI_TOUCH_EVENT_ACTION_UP) {
+      m_scrollViewComponentInstance->onTouchEventActionUp();
+    }
+  }
+};
+
+void ScrollViewComponentInstance::onTouchEventActionUp() {
+  if (m_scrollState == ScrollState::SCROLL) {
+    wasInScrollStateAtTouchUp = true;
+  }
+}
+
 ScrollViewComponentInstance::ScrollViewComponentInstance(Context context)
     : CppComponentInstance(std::move(context)),
       m_scrollNode(m_arkUINodeCtx),
       m_contentContainerNode(m_arkUINodeCtx) {
+  m_touchHandler = std::make_unique<ScrollViewTouchHandler>(this);
   m_scrollNode.insertChild(m_contentContainerNode);
   // NOTE: perhaps this needs to take rtl into account?
   m_scrollNode.setAlignment(ARKUI_ALIGNMENT_TOP_START);
@@ -346,6 +376,14 @@ void ScrollViewComponentInstance::setNestedScrollMode(
 }
 
 void ScrollViewComponentInstance::onScroll() {
+  if (m_onScrollCallsAfterFrameBeginCallCounter == 1 &&
+      wasInScrollStateAtTouchUp) {
+    wasInInertialScrollingState = true;
+    emitOnScrollEndDragEvent();
+    m_eventEmitter->onMomentumScrollBegin(getScrollViewMetrics());
+    wasInScrollStateAtTouchUp = false;
+  }
+  m_onScrollCallsAfterFrameBeginCallCounter++;
   auto scrollViewMetrics = getScrollViewMetrics();
   sendEventForNativeAnimations(scrollViewMetrics);
   if (!isContentSmallerThanContainer(m_props) && m_allowScrollPropagation &&
@@ -388,8 +426,9 @@ void ScrollViewComponentInstance::onScrollStart() {
 void ScrollViewComponentInstance::onScrollStop() {
   m_allowNextScrollEvent = true;
 
-  if (m_scrollState == ScrollState::FLING) {
+  if (m_scrollState == ScrollState::FLING || wasInInertialScrollingState) {
     emitOnMomentumScrollEndEvent();
+    wasInInertialScrollingState = false;
   } else if (m_scrollState == ScrollState::SCROLL) {
     emitOnScrollEndDragEvent();
   } else if (m_scrollState == ScrollState::CANCELING) {
@@ -414,6 +453,7 @@ void ScrollViewComponentInstance::onScrollStop() {
 float ScrollViewComponentInstance::onScrollFrameBegin(
     float offset,
     int32_t scrollState) {
+  m_onScrollCallsAfterFrameBeginCallCounter = 0;
   if (!m_props->scrollEnabled || shouldDisableScrollInteraction()) {
     m_recentScrollFrameOffset = 0;
     m_scrollState = ScrollState::CANCELING;
@@ -424,6 +464,7 @@ float ScrollViewComponentInstance::onScrollFrameBegin(
   auto newScrollState = static_cast<ScrollState>(scrollState);
   if (m_scrollState != newScrollState) {
     if (m_scrollState == ScrollState::SCROLL) {
+      wasInScrollStateAtTouchUp = false;
       emitOnScrollEndDragEvent();
     } else if (m_scrollState == ScrollState::FLING) {
       if (!m_scrollStartFling) {

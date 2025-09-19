@@ -46,7 +46,8 @@ class ScrollViewComponentInstance
   bool m_shouldAdjustScrollPositionOnNextRender = false;
   std::vector<facebook::react::Float> m_snapToOffsets = {};
   std::optional<ChildTagWithOffset> m_firstVisibleView = std::nullopt;
-  bool m_enableScrollInteraction = true;  
+  bool m_enableScrollInteraction = true;
+  std::unique_ptr<UIInputEventHandler> m_touchHandler;
 
   // Mimics of implementation in ImageComponentInstance.cpp
   struct ScrollViewRawProps {
@@ -90,6 +91,18 @@ class ScrollViewComponentInstance
       int32_t minIndexForVisible);
 
   void updateContentClippedSubviews();
+
+  /**
+   * `onScrollFrameBegin` is not always called but is needed to detect when
+   * the user stops dragging. The properties
+   * `m_onScrollCallsAfterFrameBeginCallCounter` and
+   * `wasInDraggingStateAtTouchUp` are part of a workaround. The fix assumes
+   * `onScrollFrameBegin` follows `onScroll` during active scrolling if not, the
+   * user has either stopped dragging or is overscrolling.
+   */
+  int m_onScrollCallsAfterFrameBeginCallCounter = 0;
+  bool wasInScrollStateAtTouchUp = false;
+  bool wasInInertialScrollingState = false;
 
  public:
   ScrollViewComponentInstance(Context context);
@@ -136,6 +149,8 @@ class ScrollViewComponentInstance
    * @internal
    */
   void setNestedScrollMode(ArkUI_ScrollNestedMode scrollForward, ArkUI_ScrollNestedMode scrollBackward);
+
+  void onTouchEventActionUp();
 
  protected:
   void onNativeResponderBlockChange(bool isBlocked) override;
