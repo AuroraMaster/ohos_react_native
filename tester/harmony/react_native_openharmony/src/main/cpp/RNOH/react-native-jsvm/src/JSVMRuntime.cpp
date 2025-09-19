@@ -124,10 +124,18 @@ std::shared_ptr<const PreparedJavaScript> JSVMRuntime::prepareJavaScript(
     // 编译js代码
     const char* src = reinterpret_cast<const char*>(buffer->data());
     JSVM_Value jsSrc;
-    CALL_JSVM_AND_THROW(OH_JSVM_CreateStringUtf8(env, src, buffer->size(), &jsSrc));
+    CALL_JSVM_AND_THROW(
+        OH_JSVM_CreateStringUtf8(env, src, buffer->size(), &jsSrc));
     bool cacheRejected = true;
     JSVM_Script script;
-    CALL_JSVM_AND_THROW(OH_JSVM_CompileScript(env, jsSrc, nullptr, 0, true, &cacheRejected, &script));
+    JSVM_ScriptOrigin origin{
+        .sourceMapUrl = nullptr,
+        .resourceName = sourceURL.c_str(),
+        .resourceLineOffset = 0,
+        .resourceColumnOffset = 0,
+    };
+    CALL_JSVM_AND_THROW(OH_JSVM_CompileScriptWithOrigin(
+        env, jsSrc, nullptr, 0, true, &cacheRejected, &origin, &script));
 
     // 将js源码编译出的脚本保存到cache
     const uint8_t* dataPtr = nullptr;
@@ -1134,17 +1142,7 @@ void JSVMRuntime::ThrowError() {
   if (JSVM_OK == OH_JSVM_IsExceptionPending((env), &isPending) && isPending) {
     JSVM_Value error;
     if (JSVM_OK == OH_JSVM_GetAndClearLastException((env), &error)) {
-      // 获取异常堆栈
-      JSVM_Value stack = nullptr;
-      CALL_JSVM(env, OH_JSVM_GetNamedProperty((env), error, "stack", &stack));
-
-      JSVM_Value message = nullptr;
-      CALL_JSVM(env, OH_JSVM_GetNamedProperty((env), error, "message", &message));
-
-      std::string stackstr = stack? GetValueString(stack) : "";
-      std::string messagestr = message? GetValueString(message) : "";
-
-      throw JSError(*this, messagestr, stackstr);
+      throw JSError(*this, JSVMConverter::JSVMToJsi(env, error));
     }
   }
 
