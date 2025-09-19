@@ -39,13 +39,20 @@ function isSupportedVersion(versionDir: string): boolean {
 async function getCreatedSimulators(cli: RealCliExecutor, emulator: string): Promise<string[]> {
   try {
     let simulatorInfos = '';
+    let simulatorInfosFromStderr = '';
     await cli.run(`"${emulator}"`, {
       args: ['--list'],
       shell: true,
-      onStderr: (msg) => {
+      onStdout: (msg) => {
         simulatorInfos += msg;
       },
+      onStderr: (msg) => {
+        simulatorInfosFromStderr += msg;
+      },
     });
+    if (simulatorInfos == null || simulatorInfos.trim() === '') {
+      simulatorInfos = simulatorInfosFromStderr;
+    }
     if (!simulatorInfos || simulatorInfos.trim() === '' ||
       simulatorInfos.trim() === '[Empty]' ||
       simulatorInfos.includes('not ')) {
@@ -324,7 +331,7 @@ export async function launchHarmonySimulator(opt: LaunchOptions): Promise<void> 
       process.platform === 'win32' ? `"${p}"` : p;
     const args = [
       '-hvd',
-      simulatorName[0].trim(),
+      quoteIfNeeded(simulatorName[0].trim()),
       '-path',
       quoteIfNeeded(paths.instancePath),
       '-imageRoot',
