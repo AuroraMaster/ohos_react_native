@@ -486,21 +486,48 @@ void TextInputComponentInstance::onLayoutChanged(
   }
 }
 
-int32_t TextInputComponentInstance::getTextSize(const std::string &content){
-  int32_t length = 0;
-  for (int i=0; i<content.size();){//Calculate the number of utf-8 characters in a string
-    if ((content[i] >> 7) == 0){  //0XXX XXXX,1 BYTE
-      i++;
-    } else if ((content[i] >> 5) == 6) { //110X XXXX,2 BYTE
-      i=i+2;
-    } else if ((content[i] >> 4) == 14) { //1110 XXXX,3 BYTE
-      i=i+3;
-    } else if ((content[i] >> 3) == 30) { //1111 0XXX,4 BYTE
-      i=i+4;
+int32_t TextInputComponentInstance::countUtf16Characters(const std::string& content) {
+  int32_t len = 0;
+  const unsigned char* currentByte = reinterpret_cast<const unsigned char*>(content.data());
+  const unsigned char* endOfBytes = currentByte + content.size();
+  // Judge the length of UTF-8 characters based on the number of bits higher
+  // than the first byte, take out the significant bits, and record the number
+  // of continuation bytes that need to be read
+  while (currentByte < endOfBytes) {
+    uint32_t codePoint = 0;
+    int continuationBytes = 0;
+    if (*currentByte < 0x80) {
+      codePoint = *currentByte++;
+    } else if ((*currentByte >> 5) == 0x6) {
+      codePoint = *currentByte & 0x1F;
+      continuationBytes = 1;
+      ++currentByte;
+    } else if ((*currentByte >> 4) == 0xE) {
+      codePoint = *currentByte & 0x0F;
+      continuationBytes = 2;
+      ++currentByte;
+    } else if ((*currentByte >> 3) == 0x1E) {
+      codePoint = *currentByte & 0x07;
+      continuationBytes = 3;
+      ++currentByte;
+    } else {
+      ++currentByte;
+      continue;
     }
-    length++;
+    // The remaining bytes are taken and the length is calculated
+    while (continuationBytes-- && currentByte < endOfBytes &&
+           ((*currentByte & 0xC0) == 0x80)) {
+      codePoint = (codePoint << 6) | (*currentByte++ & 0x3F);
+    }
+    // The number of code elements is calculated according to the hexadecimal
+    // format
+    if (codePoint < 0x10000) {
+      len += 1;
+    } else {
+      len += 2;
+    }
   }
-  return length;
+  return len;
 }
 void TextInputComponentInstance::setTextContentAndSelection(std::string const &content, size_t selectionStart, size_t selectionEnd) {
    if (selectionStart > selectionEnd) {
@@ -520,10 +547,16 @@ void TextInputComponentInstance::setTextContent(std::string const& content) {
   // roughly in the same place, rather than have it move to the end of the
   // input (which is the ArkUI default behaviour)
   //auto selectionFromEnd = m_content.size() - m_selectionLocation;
-
-  int32_t selectionFromEnd = getTextSize(m_content) - m_selectionLocation;
-  int32_t selectionStart = getTextSize(content) - selectionFromEnd;
+  if (m_selectionLocation == 0 && !content.empty())
+  {
+    m_selectionLocation = countUtf16Characters(content);
+  }
+  int32_t contentLength = countUtf16Characters(content);
+  int32_t selectionFromEnd = countUtf16Characters(m_content) - m_selectionLocation;
+  int32_t selectionStart = contentLength - selectionFromEnd;
   int32_t selectionEnd = selectionStart + m_selectionLength;
+  selectionStart = std::max(0, std::min(selectionStart, contentLength));
+  selectionEnd = std::max(selectionStart, std::min(selectionEnd, contentLength));
   if (m_isControlledTextInput) {
     m_caretPositionForControlledInput = selectionStart;
   }
@@ -540,12 +573,9 @@ void TextInputComponentInstance::onCommandReceived(
       blur();
     }
     focus();
-    if (m_selectionStart != -1 && m_selectionEnd != -1 &&
-        !m_props->traits.selectTextOnFocus) {
-      m_textInputNode.setTextSelection(
-          m_selectionStart, m_selectionEnd);
-      m_textAreaNode.setTextSelection(
-          m_selectionStart, m_selectionEnd);
+    if (m_selectionStart != -1 && m_selectionEnd != -1 && !m_props->traits.selectTextOnFocus) {
+      m_textInputNode.setTextSelection(m_selectionStart, m_selectionEnd);
+      m_textAreaNode.setTextSelection(m_selectionStart, m_selectionEnd);
     }
     if (m_isControlledTextInput) {
       m_caretPositionForControlledInput = m_selectionStart;

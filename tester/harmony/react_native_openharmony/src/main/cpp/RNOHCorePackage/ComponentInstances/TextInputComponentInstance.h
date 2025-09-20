@@ -33,7 +33,7 @@ class TextInputComponentInstance
   facebook::react::TextInputMetrics getTextInputMetrics(std::string text);
   facebook::react::OnChangeMetrics getOnChangeMetrics();
   facebook::react::Size getOnContentSizeChangeMetrics();
-  int32_t getTextSize(const std::string &content);
+  int32_t countUtf16Characters(const std::string& content);
 
   bool m_secureInput{false};
 
