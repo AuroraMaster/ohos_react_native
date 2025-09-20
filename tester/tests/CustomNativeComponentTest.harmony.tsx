@@ -410,6 +410,29 @@ function ContainerViewTest() {
           </Blinker>
         </ContainerView>
       </TestCase.Example>
+
+      <TestCase.Example itShould="display a custom component with ArkTS and CAPI children">
+        <ContainerView>
+          <View
+            collapsable={false}
+            style={{backgroundColor: 'blue', padding: 40}}>
+            <GeneratedSampleComponentArkTS
+              testProps={{
+                booleanTest: true,
+                intTest: 42,
+                floatTest: 42.5,
+                doubleTest: 42.5,
+                stringTest: 'foobar',
+                objectTest: {foo: {bar: 'baz'}},
+                colorTest: 'red',
+                arrayTest: ['foo', 'bar'],
+                readOnlyArrayTest: ['foo', 'bar'],
+                intEnumTest: 1,
+              }}
+            />
+          </View>
+        </ContainerView>
+      </TestCase.Example>
     </TestSuite>
   );
 }

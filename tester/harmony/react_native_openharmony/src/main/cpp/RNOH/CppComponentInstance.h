@@ -22,6 +22,7 @@
 #include <react/renderer/components/view/ViewProps.h>
 #include <vector>
 #include <map>
+#include "RNOH/ApiVersionCheck.h"
 #include "RNOH/ComponentInstance.h"
 
 namespace rnoh {
@@ -642,6 +643,8 @@ class CppComponentInstance : public ComponentInstance,
       if (this->canSubtreeHandleTouch({x, y})) {
         mode = HitTestMode::HTM_DEFAULT;
       }
+    } else if (IsAtLeastApi20()) {
+      mode = HitTestMode::HTM_BLOCK_DESCENDANTS;
     }
     OH_ArkUI_PointerEvent_SetInterceptHitTestMode(event, mode);
   }
