@@ -102,6 +102,7 @@ function getMetadata(name: string): string {
  */
 export class RNInstancesCoordinator {
   private static isInitialized = false
+  private isBoldTextEnabled:boolean | undefined = undefined;
 
   static create(dependencies: RNInstancesCoordinatorDependencies,
     options?: RNInstancesCoordinatorOptions): RNInstancesCoordinator {
@@ -375,10 +376,22 @@ export class RNInstancesCoordinator {
   }
 
   public onConfigurationUpdate(systemConfiguration: AbilityConfiguration.Configuration) {
-    this.displayMetricsManager?.setFontSizeScale(systemConfiguration.fontSizeScale)
-    this.rnInstanceRegistry?.forEach((rnInstance) => {
-      rnInstance.onConfigurationUpdate(systemConfiguration)
-    })
+    this.displayMetricsManager?.setFontSizeScale(systemConfiguration.fontSizeScale);
+    
+    const fontWeightScale = systemConfiguration.fontWeightScale;
+    let isEmitBoldTextEvent = false;
+    if (fontWeightScale !== undefined) {
+      if (this.isBoldTextEnabled !== (fontWeightScale > 1)) {
+        isEmitBoldTextEvent = true;
+      }
+      this.isBoldTextEnabled = fontWeightScale > 1;
+    }
+    this.rnInstanceRegistry?.forEach((rnInstance): void => {
+      rnInstance.onConfigurationUpdate(systemConfiguration);
+      if (isEmitBoldTextEvent) {
+        rnInstance.emitDeviceEvent('boldTextChanged', this.isBoldTextEnabled);
+      }
+    });
   }
 
   public onMemoryLevel(memoryLevel: number) {
