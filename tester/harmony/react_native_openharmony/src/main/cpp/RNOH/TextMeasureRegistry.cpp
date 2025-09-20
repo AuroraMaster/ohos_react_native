@@ -68,3 +68,10 @@ void TextMeasureRegistry::eraseTextMeasureInfo(const std::string& key) {
     m_keyToCacheKey.erase(key);
   }
 }
+
+void TextMeasureRegistry::clear() {
+  std::lock_guard<std::mutex> lock(m_mutex);
+  m_keyToMeasureInfo.clear();
+  m_keyToMeasureInfo.clear();
+  m_textMeasureInfoCache.clear();
+}

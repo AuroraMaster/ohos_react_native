@@ -374,6 +374,7 @@ void TextMeasurer::registerFont(std::weak_ptr<NativeResourceManager> weakResourc
   // NOTE: fonts cannot be added to an existing collection, so we need to
   // recreate it the next time `getFontCollection` is called
   m_fontCollection.reset();
+  TextMeasureRegistry::getTextMeasureRegistry().clear();
 }
 
 void TextMeasurer::updateDefaultFont() {
