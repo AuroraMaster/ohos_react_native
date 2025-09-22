@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.72.92
+- fix: Cursor abnormally resets inside TextInput component,([6786df707](https://gitcode.com/openharmony-sig/ohos_react_native/commit/6786df707087f29e9ff7a6b4771558eef9d8cfc9))
+- fix: dynamic font registration sometimes not taking the effect,([e0bd9b30f](https://gitcode.com/openharmony-sig/ohos_react_native/commit/e0bd9b30f6125b23eff96cbb2366069cee345c05))
+- fix: After adjusting the system font to bold, the isBoldTextEnabled method did not receive any callback events.,([cff0b97fe](https://gitcode.com/openharmony-sig/ohos_react_native/commit/cff0b97fe5393c674f9eda7af71f6613cd41ee92))
+- fix: the issue where components inside a custom component can still respond to clicks when pointerEvents is set to none.,([9954153cd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/9954153cd3f625dab3504258f342ffe77fdbe3bd))
+- fix: libv8_shared.so error,([f97a24187](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f97a241870ae850cd9030c4797f292c469450d2f))
+- fix: The onMomentumScrollEnd event cannot be triggered when the ScrollView with inertial scrolling bounces back after exceeding the range.,([dbbfefc7a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/dbbfefc7a291d4276f1910b21588c0f2311d7d77))
+- fix:Fixed an issue where the keyboard could not be dismissed when tapping on a TextInput component with showSoftInputOnFocus set to false.,([f643c8db4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f643c8db435fa9343861864792f39ca3a7f94175))
+- Fix: m_isInitTextAlign is not initialized,([74aa9ea3a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/74aa9ea3a88a3345ede7203fc67fc1b640adb0a6))
+- [chore]: updated to version 6.0.0.601(0.72.91),([7530e4ea7](https://gitcode.com/openharmony-sig/ohos_react_native/commit/7530e4ea7d849ed303a5740af1e0def8ee786113))
+
 ## 0.72.91
 - fix: tintColor implementation,([6f9f81068](https://gitcode.com/openharmony-sig/ohos_react_native/commit/6f9f810688199a5ae5ed7940a61c9849e832424c))
 - feat: Support placing assets in the resfile of hsp resource directory,([5f402f05d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/5f402f05d189e6f370fa0546eff07cd779dac00c))
