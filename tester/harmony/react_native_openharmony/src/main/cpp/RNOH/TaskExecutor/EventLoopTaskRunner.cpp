@@ -33,8 +33,8 @@ void EventLoopTaskRunner::runAsyncTask(Task&& task) {
   {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_asyncTaskQueue.push(std::move(task));
+    m_asyncHandle->send();
   }
-  m_asyncHandle->send();
 }
 
 void EventLoopTaskRunner::runSyncTask(Task&& task) {
@@ -144,8 +144,8 @@ void EventLoopTaskRunner::waitForSyncTask(Task&& task) {
   {
     std::unique_lock<std::mutex> queueLock(m_mutex);
     m_syncTaskQueue.push(std::move(wrappedTask));
+    m_asyncHandle->send();
   }
-  m_asyncHandle->send();
   auto doneLock = std::unique_lock(mtx);
   cv.wait(doneLock, [this, &done] { return done.load(); });
 }
@@ -155,8 +155,8 @@ void EventLoopTaskRunner::cleanup() {
     return;
   }
   runSyncTask([this] {
-    m_running = false;
     std::lock_guard<std::mutex> queueLock(m_mutex);
+    m_running = false;
     m_asyncHandle.reset();
     RNOH_ASSERT_MSG(
         m_syncTaskQueue.empty(),
