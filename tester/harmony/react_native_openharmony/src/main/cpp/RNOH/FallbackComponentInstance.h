@@ -10,6 +10,7 @@
 #include "ComponentInstance.h"
 #include "RNOH/CppComponentInstance.h"
 #include "RNOH/arkui/ArkUINode.h"
+#include "RNOH/arkui/TouchEventDispatcher.h"
 #include "arkui/NodeContentHandle.h"
 #include "arkui/StackNode.h"
 
@@ -19,7 +20,8 @@ namespace rnoh {
  * It is used for backward compatibility reasons with ArkTS-based architecture.
  */
 class FallbackComponentInstance
-    : public CppComponentInstance<facebook::react::ViewShadowNode> {
+    : public CppComponentInstance<facebook::react::ViewShadowNode>,
+      public ArkTSMessageHub::Observer {
  private:
   // NOTE: the order matters. `m_arkUINode` must be deleted before
   // `m_arkUIBuilderNodeDeleter`
@@ -27,6 +29,8 @@ class FallbackComponentInstance
   std::unique_ptr<ArkUINode> m_arkUINode;
   StackNode m_stackNode;
   NodeContentHandle m_contentHandle;
+  TouchEventDispatcher m_touchEventDispatcher;
+  bool m_isRootTouchTarget = false;
 
  public:
   FallbackComponentInstance(
@@ -38,6 +42,7 @@ class FallbackComponentInstance
         m_arkUIBuilderNodeDeleter(std::move(arkUIBuilderNodeDeleter)),
         m_arkUINode(std::move(arkUINode)),
         m_contentHandle(std::move(contentHandle)),
+        ArkTSMessageHub::Observer(m_deps->arkTSMessageHub),
         m_stackNode(ctx.arkUINodeContext) {
     m_arkUINode->setArkUINodeDelegate(this);
     m_stackNode.insertChild(*m_arkUINode, 0);
@@ -74,6 +79,19 @@ class FallbackComponentInstance
       ComponentInstance::Shared const& childComponentInstance) override {
     ComponentInstance::onChildRemoved(childComponentInstance);
     m_contentHandle.removeNode(childComponentInstance->getLocalRootArkUINode());
+  }
+  
+  bool isRootTouchTarget() const override {
+    return m_isRootTouchTarget;
+  }
+
+  void onMessageReceived(ArkTSMessage const& message) override {
+    if (message.name == "RNOH::TOUCH_EVENT" &&
+        message.payload["tag"].asInt() == this->getTag()) {
+      m_isRootTouchTarget = true;
+      TouchEvent touchEvent(message.payload["touchEvent"]);
+      m_touchEventDispatcher.dispatchTouchEvent(touchEvent, shared_from_this());
+    }
   }
 };
 } // namespace rnoh

@@ -10,23 +10,37 @@
 #include <arkui/ui_input_event.h>
 #include <unordered_map>
 #include "RNOH/TouchTarget.h"
+#include "TouchEvent.h"
 
 namespace rnoh {
-struct TouchPoint {
-  int32_t id;
-  float force;
-  int32_t nodeX;
-  int32_t nodeY;
-  int32_t screenX;
-  int32_t screenY;
-};
-
+/**
+ * TouchEventDispatcher handles the dispatching of touch events from root target
+ * components(e.g., ViewComponentInstance, ModalHostViewComponentInstance)
+ * to the JavaScript layer.
+ * @actor RNOH_LIBRARY
+ */
 class TouchEventDispatcher {
  public:
   using TouchId = int;
 
+  /**
+   * @brief Dispatch the touch events to JS.
+   * @param ｛ArkUI_UIInputEvent*｝ event The UI input event.
+   * @param rootTarget The root target that listens to touch (NODE_TOUCH_EVENT)
+   * events.
+   */
   void dispatchTouchEvent(
       ArkUI_UIInputEvent* event,
+      TouchTarget::Shared const& rootTarget);
+
+  /**
+   * @brief Dispatch the touch events to JS.
+   * @param ｛TouchEvent&｝ event The touch event.
+   * @param rootTarget The root target that listens to touch (NODE_TOUCH_EVENT)
+   * events.
+   */
+  void dispatchTouchEvent(
+      const TouchEvent& event,
       TouchTarget::Shared const& rootTarget);
 
   /**
@@ -40,8 +54,12 @@ class TouchEventDispatcher {
    * rnohCoreContext.cancelTouches().
    */
   void cancelActiveTouches();
-    
+
  private:
+  void findTargetAndSendTouchEvent(
+      TouchTarget::Shared const& rootTarget,
+      const TouchEvent& touchEvent);
+
   TouchTarget::Shared registerTargetForTouch(
       TouchPoint touchPoint,
       TouchTarget::Shared const& rootTarget);

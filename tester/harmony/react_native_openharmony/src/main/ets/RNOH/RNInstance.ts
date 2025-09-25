@@ -36,6 +36,11 @@ import { common } from '@kit.AbilityKit'
 
 export type Resource = Exclude<font.FontOptions["familySrc"], string>
 
+/**
+ * TouchEvent is globally available in *.ets files but can't be imported in *.ts.
+ */
+type TouchEvent = unknown
+
 export type SurfaceContext = {
   width: number
   height: number
@@ -336,6 +341,20 @@ export interface RNInstance {
    * @example registerFont("Pacifico-Regular", "/data/storage/el2/base/files/Pacifico-Regular.ttf")
    */
   registerFont(fontFamily: string, fontResource: Resource | string)
+
+  /**
+   * @architecture: C-API
+   * Sends an ArkTS `TouchEvent` to a specific `ComponentInstance` identified by the given tag.
+   * This is necessary when ArkTS touch events need to be propagated to a component instance—
+   * for example, when using ArkTS modal components such as `.bindSheet`.
+   *
+   * @param rootTouchTargetTag - The tag identifying the root touch target component.
+   * @param touchEvent - The touch event to be sent.
+   */
+  postTouchEventMessageToCpp(
+    rootTouchTargetTag: number,
+    touchEvent: TouchEvent,
+  );
 
   /**
    * @returns The RNWindow associated with this RNInstance.
@@ -1073,6 +1092,16 @@ export class RNInstanceImpl implements RNInstance {
     })()
     this.fontPathByFontFamily[fontFamily] = fontPath
     this.napiBridge.registerFont(this.id, fontFamily, fontPath)
+  }
+
+  public postTouchEventMessageToCpp(
+    rootTouchTargetTag: number,
+    touchEvent: TouchEvent,
+  ) {
+    this.postMessageToCpp('RNOH::TOUCH_EVENT', {
+      tag: rootTouchTargetTag,
+      touchEvent: touchEvent,
+    });
   }
 
   public setUIAbilityContext(uiAbilityContext: common.UIAbilityContext): void {

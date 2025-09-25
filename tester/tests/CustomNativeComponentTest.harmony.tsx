@@ -15,6 +15,7 @@ import {
   GeneratedSampleComponentArkTS,
   CodegenLibSampleComponent,
   ContainerView,
+  BindSheetView,
 } from 'react-native-sample-package';
 import {useEffect, useState} from 'react';
 import React from 'react';
@@ -32,6 +33,7 @@ export function CustomNativeComponentTest() {
       <ManualCustomComponentImplementationTest />
       <GeneratedCustomComponentTest />
       <ContainerViewTest />
+      <BindSheetViewTest />
     </TestSuite>
   );
 }
@@ -432,6 +434,24 @@ function ContainerViewTest() {
             />
           </View>
         </ContainerView>
+      </TestCase.Example>
+    </TestSuite>
+  );
+}
+
+function BindSheetViewTest() {
+  const [showSheet, setShowSheet] = useState(false);
+
+  return (
+    <TestSuite name="Custom ArkTS component with bindSheet">
+      <TestCase.Example itShould="display custom ArkTS component with bindSheet">
+        {showSheet ? (
+          <BindSheetView>
+            <Button label="Dismiss Sheet" onPress={() => setShowSheet(false)} />
+          </BindSheetView>
+        ) : (
+          <Button label="Show Sheet" onPress={() => setShowSheet(true)} />
+        )}
       </TestCase.Example>
     </TestSuite>
   );

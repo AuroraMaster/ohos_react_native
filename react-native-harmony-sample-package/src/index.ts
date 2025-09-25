@@ -16,9 +16,11 @@ import NativeSampleTurboModule from "./NativeSampleTurboModule";
 import NativeGeneratedSampleTurboModule from "./specs/v2/NativeGeneratedSampleTurboModule";
 import NativeSampleWorkerTurboModule from "./specs/v2/NativeSampleWorkerTurboModule";
 import NativeCodegenLibSampleTurboModule from "./specs/codegen-lib/NativeCodegenLibSampleModule";
+import NativeBindSheetView from "./specs/v1/NativeBindSheetView"
 
 export const SampleTurboModule = NativeSampleTurboModule;
 export const GeneratedSampleTurboModule = NativeGeneratedSampleTurboModule;
 export const SampleWorkerTurboModule = NativeSampleWorkerTurboModule;
 export const CodegenLibSampleTurboModule = NativeCodegenLibSampleTurboModule;
 export const ContainerView = NativeContainerView;
+export const BindSheetView = NativeBindSheetView;

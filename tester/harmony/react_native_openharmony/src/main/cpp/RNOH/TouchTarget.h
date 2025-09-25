@@ -32,8 +32,10 @@ class TouchTarget {
   virtual bool containsPointInBoundingBox(Point const& point) = 0;
   virtual bool canHandleTouch() const = 0;
   virtual bool canChildrenHandleTouch() const = 0;
-  // TODO: The function should have been designed as a pure virtual function.
   virtual bool canSubtreeHandleTouch(Point const& point) { return false; };
+  virtual bool isRootTouchTarget() const {
+    return false;
+  }
   /**
    If a component is designed to handle touch events (e.g., Scroll), it should
    return true if handling is currently in progress. This is done to prevent

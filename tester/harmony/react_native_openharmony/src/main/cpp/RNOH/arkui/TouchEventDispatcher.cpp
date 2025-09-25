@@ -11,12 +11,7 @@
 #include "RNOH/Assert.h"
 
 namespace rnoh {
-
 using Point = facebook::react::Point;
-
-constexpr int32_t ARKUI_MOUSE_POINTER_ID = 1001;
-constexpr int32_t RN_MOUSE_POINTER_ID = 0;
-constexpr int32_t TOUCH_IDENTIFIER_POOL_OFFSET = 1;
 
 static std::pair<TouchTarget::Shared, Point> findTargetForTouchPoint(
     Point const& point,
@@ -35,6 +30,12 @@ static std::pair<TouchTarget::Shared, Point> findTargetForTouchPoint(
     for (auto const& child : children) {
       if (child == nullptr) {
         RNOH_ASSERT(child != nullptr);
+        continue;
+      }
+      // If the child is used as a root touch target, we shouldn't attempt to
+      // find the touch point there. This prevents detecting unnecessary touches
+      // on components that are intended to receive touches only from ArkTS.
+      if (child->isRootTouchTarget()) {
         continue;
       }
       auto childPoint = target->computeChildPoint(point, child);
@@ -114,23 +115,12 @@ bool isAncestorHandlingTouches(
   return false;
 }
 
-int32_t generatedTouchPointIdentifier(
-    const ArkUI_UIInputEvent* event,
-    uint32_t idx) {
-  auto pointerId = OH_ArkUI_PointerEvent_GetPointerId(event, idx);
-  if (pointerId == ARKUI_MOUSE_POINTER_ID) {
-    return RN_MOUSE_POINTER_ID;
-  } else {
-    return pointerId + TOUCH_IDENTIFIER_POOL_OFFSET;
-  }
-}
-
 bool TouchEventDispatcher::canIgnoreMoveEvent(
     facebook::react::TouchEvent currentEvent) {
   if (m_previousEvent.touches.empty()) {
     return false;
   }
-  for (auto touch : currentEvent.changedTouches) {
+  for (const auto& touch : currentEvent.changedTouches) {
     auto previousTouch = m_previousEvent.touches.find(touch);
     if (previousTouch != m_previousEvent.touches.end()) {
       auto dx = previousTouch->pagePoint.x - touch.pagePoint.x;
@@ -146,78 +136,21 @@ bool TouchEventDispatcher::canIgnoreMoveEvent(
   return true;
 }
 
-TouchPoint getActiveTouchFromEvent(ArkUI_UIInputEvent* event) {
-  TouchPoint actionTouch{};
-#ifdef C_API_ARCH
-  auto screenX = int32_t(OH_ArkUI_PointerEvent_GetDisplayX(event));
-  auto screenY = int32_t(OH_ArkUI_PointerEvent_GetDisplayY(event));
-  auto touchPointCount = OH_ArkUI_PointerEvent_GetPointerCount(event);
-
-  for (auto idx = 0; idx < touchPointCount; idx++) {
-    if (screenX ==
-            int32_t(OH_ArkUI_PointerEvent_GetDisplayXByIndex(event, idx)) &&
-        screenY ==
-            int32_t(OH_ArkUI_PointerEvent_GetDisplayYByIndex(event, idx))) {
-      actionTouch = TouchPoint{
-          .id = generatedTouchPointIdentifier(event, idx),
-          .force = OH_ArkUI_PointerEvent_GetPressure(event, idx),
-          .nodeX = int32_t(OH_ArkUI_PointerEvent_GetX(event)),
-          .nodeY = int32_t(OH_ArkUI_PointerEvent_GetY(event)),
-          .screenX = int32_t(OH_ArkUI_PointerEvent_GetDisplayX(event)),
-          .screenY = int32_t(OH_ArkUI_PointerEvent_GetDisplayY(event))};
-      break;
-    }
-  }
-#endif
-  return actionTouch;
-}
-
-std::vector<TouchPoint> getTouchesFromEvent(ArkUI_UIInputEvent* event) {
-  std::vector<TouchPoint> result;
-#ifdef C_API_ARCH
-  auto touchPointCount = OH_ArkUI_PointerEvent_GetPointerCount(event);
-  result.reserve(touchPointCount);
-  for (auto idx = 0; idx < touchPointCount; idx++) {
-    result.emplace_back(TouchPoint{
-        .id = generatedTouchPointIdentifier(event, idx),
-        .force = OH_ArkUI_PointerEvent_GetPressure(event, idx),
-        .nodeX = int32_t(OH_ArkUI_PointerEvent_GetXByIndex(event, idx)),
-        .nodeY = int32_t(OH_ArkUI_PointerEvent_GetYByIndex(event, idx)),
-        .screenX =
-            int32_t(OH_ArkUI_PointerEvent_GetDisplayXByIndex(event, idx)),
-        .screenY =
-            int32_t(OH_ArkUI_PointerEvent_GetDisplayYByIndex(event, idx))});
-  }
-#endif
-  return result;
-}
-
-void TouchEventDispatcher::dispatchTouchEvent(
-    ArkUI_UIInputEvent* event,
-    TouchTarget::Shared const& rootTarget) {
-#ifdef C_API_ARCH
-  auto action = OH_ArkUI_UIInputEvent_GetAction(event);
-  auto timestamp = OH_ArkUI_UIInputEvent_GetEventTime(event);
-  std::vector<TouchPoint> activeTouchPoints;
-
-  if (action == UI_TOUCH_EVENT_ACTION_MOVE) {
-    activeTouchPoints = getTouchesFromEvent(event);
-  } else {
-    activeTouchPoints = {getActiveTouchFromEvent(event)};
-  }
-
+void TouchEventDispatcher::findTargetAndSendTouchEvent(
+    TouchTarget::Shared const& rootTarget,
+    const TouchEvent& touchEvent) {
   // react-native expects a timestamp in seconds (because rn multiplies the
   // value by 1e3). The timestamp passed by ArkUI is in nanoseconds. We convert
   // it first to miliseconds before casting to lose unnecessary precision. Then
   // we cast it to a double and convert it to seconds.
-  double timestampSeconds = static_cast<double>(timestamp) / 1e9;
+  double timestampSeconds = static_cast<double>(touchEvent.timestamp) / 1e9;
 
   facebook::react::Touches touches(m_previousEvent.touches);
   facebook::react::Touches changedTouches;
   facebook::react::Touches cancelTouches;
 
-  for (auto activeTouch : activeTouchPoints) {
-    if (action == UI_TOUCH_EVENT_ACTION_DOWN) {
+  for (const auto& activeTouch : touchEvent.activeTouchPoints) {
+    if (touchEvent.action == UI_TOUCH_EVENT_ACTION_DOWN) {
       auto [touchTarget, touchPoint] = findTargetForTouchPoint(
           Point{
               .x = static_cast<facebook::react::Float>(activeTouch.nodeX),
@@ -233,7 +166,7 @@ void TouchEventDispatcher::dispatchTouchEvent(
     } else if (auto touchTargetEntry =
                    m_touchTargetByTouchId.find(activeTouch.id);
                touchTargetEntry != m_touchTargetByTouchId.end()) {
-      auto touchTarget = touchTargetEntry->second;
+      const auto& touchTarget = touchTargetEntry->second;
       if (touchTarget == nullptr) {
         continue;
       }
@@ -246,20 +179,21 @@ void TouchEventDispatcher::dispatchTouchEvent(
 
     auto it = m_touchTargetByTouchId.find(activeTouch.id);
     if (it == m_touchTargetByTouchId.end()) {
-      VLOG(2) << "No target for current touch event with id: "
+      LOG(WARNING) << "No target for current touch event with id: "
               << activeTouch.id;
       continue;
     }
-    auto eventTarget = it->second;
+    const auto& eventTarget = it->second;
     if (eventTarget == nullptr) {
-      DLOG(WARNING) << "Target for current touch event has been deleted";
+      LOG(WARNING) << "Target for current touch event has been deleted";
       m_touchTargetByTouchId.erase(it);
       continue;
     }
 
     auto touch = convertTouchPointToReactTouch(
         activeTouch, eventTarget, timestampSeconds, rootTarget);
-    if (!touch.has_value() || action == UI_TOUCH_EVENT_ACTION_CANCEL) {
+    if (!touch.has_value() ||
+        touchEvent.action == UI_TOUCH_EVENT_ACTION_CANCEL) {
       Point rootPoint{
           .x = static_cast<facebook::react::Float>(activeTouch.nodeX),
           .y = static_cast<facebook::react::Float>(activeTouch.nodeY)};
@@ -292,11 +226,11 @@ void TouchEventDispatcher::dispatchTouchEvent(
     return;
   }
 
-  if (action == UI_TOUCH_EVENT_ACTION_MOVE) {
+  if (touchEvent.action == UI_TOUCH_EVENT_ACTION_MOVE) {
     touches = changedTouches;
   } else {
-    auto touch = *(changedTouches.begin());
-    if (action == UI_TOUCH_EVENT_ACTION_UP) {
+    const auto& touch = *(changedTouches.begin());
+    if (touchEvent.action == UI_TOUCH_EVENT_ACTION_UP) {
       touches.erase(touch);
     } else {
       // update touches and targetTouches with the new touch object
@@ -305,8 +239,20 @@ void TouchEventDispatcher::dispatchTouchEvent(
     }
   }
 
-  sendEvent(touches, changedTouches, action);
-#endif
+  sendEvent(touches, changedTouches, touchEvent.action);
+}
+
+void TouchEventDispatcher::dispatchTouchEvent(
+    ArkUI_UIInputEvent* event,
+    TouchTarget::Shared const& rootTarget) {
+  TouchEvent touchEvent(event);
+  findTargetAndSendTouchEvent(rootTarget, touchEvent);
+}
+
+void TouchEventDispatcher::dispatchTouchEvent(
+    const TouchEvent& event,
+    TouchTarget::Shared const& rootTarget) {
+  findTargetAndSendTouchEvent(rootTarget, event);
 }
 
 TouchTarget::Shared TouchEventDispatcher::registerTargetForTouch(
@@ -366,7 +312,7 @@ void TouchEventDispatcher::sendEvent(
       continue;
     }
 
-    auto touchTarget = touchTargetIt->second;
+    const auto& touchTarget = touchTargetIt->second;
     if (touchTarget == nullptr) {
       m_touchTargetByTouchId.erase(touchTargetIt);
       continue;
@@ -388,7 +334,7 @@ void TouchEventDispatcher::sendEvent(
       continue;
     }
 
-    auto touchTarget = touchTargetIt->second;
+    const auto& touchTarget = touchTargetIt->second;
     if (touchTarget == nullptr) {
       m_touchTargetByTouchId.erase(touchTargetIt);
       continue;
@@ -413,28 +359,28 @@ void TouchEventDispatcher::sendEvent(
     m_previousEvent = touchEvent;
     switch (action) {
       case UI_TOUCH_EVENT_ACTION_DOWN:
-          DLOG(INFO) << "TouchEventDispatcher::sendEvent DOWN";
-          eventTarget->getTouchEventEmitter()->onTouchStart(touchEvent);
-          break;
+        DLOG(INFO) << "TouchEventDispatcher::sendEvent DOWN";
+        eventTarget->getTouchEventEmitter()->onTouchStart(touchEvent);
+        break;
       case UI_TOUCH_EVENT_ACTION_MOVE:
-          DLOG(INFO) << "TouchEventDispatcher::sendEvent MOVE";
-          eventTarget->getTouchEventEmitter()->onTouchMove(touchEvent);
-          break;
+        DLOG(INFO) << "TouchEventDispatcher::sendEvent MOVE";
+        eventTarget->getTouchEventEmitter()->onTouchMove(touchEvent);
+        break;
       case UI_TOUCH_EVENT_ACTION_UP:
-          DLOG(INFO) << "TouchEventDispatcher::sendEvent UP";
-          eventTarget->getTouchEventEmitter()->onTouchEnd(touchEvent);
-          break;
+        DLOG(INFO) << "TouchEventDispatcher::sendEvent UP";
+        eventTarget->getTouchEventEmitter()->onTouchEnd(touchEvent);
+        break;
       case UI_TOUCH_EVENT_ACTION_CANCEL:
       default:
-          DLOG(INFO) << "TouchEventDispatcher::sendEvent CANCEL";
-          eventTarget->getTouchEventEmitter()->onTouchCancel(touchEvent);
-          break;
+        DLOG(INFO) << "TouchEventDispatcher::sendEvent CANCEL";
+        eventTarget->getTouchEventEmitter()->onTouchCancel(touchEvent);
+        break;
     }
   }
 }
 
 void TouchEventDispatcher::cancelActiveTouches() {
-  for (auto touch : m_previousEvent.changedTouches) {
+  for (const auto& touch : m_previousEvent.changedTouches) {
     if (m_touchTargetByTouchId.find(touch.identifier) ==
         m_touchTargetByTouchId.end()) {
       continue;
@@ -450,4 +396,5 @@ void TouchEventDispatcher::cancelActiveTouches() {
     }
   }
 }
+
 } // namespace rnoh
