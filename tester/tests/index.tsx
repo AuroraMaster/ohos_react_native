@@ -65,3 +65,4 @@ export * from './VibrationTest';
 export * from './ViewTest';
 export * from './VirtualizedListTest';
 export * from './Accessible/ScrollViewExample';
+export * from './TouchableWithoutFeedbackAccessibleExample';
