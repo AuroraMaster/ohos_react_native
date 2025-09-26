@@ -23,7 +23,7 @@ export class ImageLoaderTurboModule extends UITurboModule {
   constructor(protected ctx: UITurboModuleContext) {
     super(ctx)
     this.imageLoader = new RemoteImageLoader(
-      new RemoteImageMemoryCache(128), new RemoteImageDiskCache(128, ctx.uiAbilityContext.cacheDir),
+      new RemoteImageMemoryCache(128), new RemoteImageDiskCache(128, `${ctx.uiAbilityContext.cacheDir}/rn_image_cache`),
       ctx.uiAbilityContext, ({ remoteUri, fileUri }) => {
       ctx.rnInstance.postMessageToCpp('UPDATE_IMAGE_SOURCE_MAP', {
         remoteUri,

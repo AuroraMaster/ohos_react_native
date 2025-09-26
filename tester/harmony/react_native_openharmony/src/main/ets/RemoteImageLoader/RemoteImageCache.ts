@@ -21,7 +21,7 @@ export class RemoteImageCache<T> {
 
     // Check if memoryCache size exceeds maxSize, and if so, remove the oldest entry
     if (this.data.size > this.maxSize) {
-      const oldestKey = this.data.keys()[0];
+      const oldestKey = this.data.keys().next().value;
       this.remove(oldestKey);
     }
   }

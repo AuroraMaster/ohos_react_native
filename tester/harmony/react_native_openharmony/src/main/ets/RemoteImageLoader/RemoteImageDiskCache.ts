@@ -16,13 +16,19 @@ export class RemoteImageDiskCache extends RemoteImageCache<boolean> {
   constructor(maxSize: number, cacheDir: string) {
     super(maxSize);
     this.cacheDir = cacheDir;
+    if (!fs.accessSync(cacheDir)) {
+      fs.mkdirSync(cacheDir, true);
+      return;
+    }
     const filenames: string[] = fs.listFileSync(cacheDir);
 
     // number of files in cache might be over maxSize but `listFile` cannot specify sort order by modification time
     filenames
-      .map(filename => filename.replace('/', ''))
+      .filter(filename => fs.statSync(`${cacheDir}/${filename}`).isFile())
       .forEach(filename => {
-        this.set(filename, true);
+        if (filename === this.getCacheKey(filename)) {
+          this.set(filename, true);
+        }
       });
   }
 
@@ -30,7 +36,7 @@ export class RemoteImageDiskCache extends RemoteImageCache<boolean> {
     const cachedKey = this.getCacheKey(key);
     if (this.data.has(cachedKey)) {
       try {
-        fs.unlinkSync(cachedKey);
+        fs.unlinkSync(this.getFilePath(cachedKey));
       } catch (reason) {
         throw new Error('Cache file was not deleted ' + reason);
       }
