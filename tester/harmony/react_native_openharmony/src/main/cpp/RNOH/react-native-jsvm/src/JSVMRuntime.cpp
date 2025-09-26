@@ -28,6 +28,7 @@ bool JSVMRuntime::initialized = false;
 std::mutex JSVMRuntime::codeCacheMtx;
 std::unordered_map<std::string, std::vector<uint8_t>> JSVMRuntime::codeCacheL2 = {};
 thread_local bool JSVMPointerValue::isJsThread = false;
+thread_local JSVMPointerValue *JSVMPointerValue::head = nullptr;
 
 JSVMRuntime::JSVMRuntime(folly::dynamic initOptions)
     : hostObjectClass(nullptr) {
@@ -55,7 +56,7 @@ JSVMRuntime::JSVMRuntime(folly::dynamic initOptions)
         }
     }
 
-    JSVMPointerValue::isJsThread = true;
+    JSVMPointerValue::init();
     memset(&options, 0, sizeof(options));
     OH_JSVM_CreateVM(&options, &vm);
     OH_JSVM_OpenVMScope(vm, &vmScope);
@@ -73,6 +74,7 @@ JSVMRuntime::JSVMRuntime(
 
 JSVMRuntime::~JSVMRuntime()
 {
+    JSVMPointerValue::ReleasePointerValueList();
     OH_JSVM_CloseEnvScope(env, envScope);
     OH_JSVM_DestroyEnv(env);
     OH_JSVM_CloseVMScope(vm, vmScope);

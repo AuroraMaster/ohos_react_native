@@ -11,6 +11,7 @@
 #include "common.h"
 #include <unordered_map>
 #include <cxxreact/MessageQueueThread.h>
+#include <react/debug/react_native_assert.h>
 #include "JSVMUtil.h"
 #include "folly/dynamic.h"
 
@@ -188,11 +189,34 @@ class JSVMPointerValue : public JSVMRuntime::PointerValue {
       OH_JSVM_CreateReference(env, value, 1, &(ptr->reference));
     }
 
+    ptr->next = head->next;
+    ptr->prev = head;
+    if (head->next) {
+      head->next->prev = ptr;
+    }
+    head->next = ptr;
+
     return ptr;
   }
-    JSVMPointerValue(JSVM_Env env) : env(env),
-                                     refcount(1),
-                                     reference(nullptr) {}
+
+  static void init() {
+    head = new JSVMPointerValue(nullptr);
+    isJsThread = true;
+  }
+
+  static void ReleasePointerValueList() {
+    if (!head) {
+      return;
+    }
+    while(head->next) {
+      head->next->CleanUp();
+    }
+    delete head;
+    head = nullptr;
+  }
+
+  JSVMPointerValue(JSVM_Env env) : env(env),refcount(1),reference(nullptr), 
+                                   prev(nullptr), next(nullptr) {}
 
   ~JSVMPointerValue() {
      env = nullptr;
@@ -219,18 +243,47 @@ class JSVMPointerValue : public JSVMRuntime::PointerValue {
         STRONG_REF_COUNT = 1,
         DUPLICATE_REF_COUNT = 2
     };
+  
+  void CleanUp() {
+    react_native_assert(isJsThread && "Should be evaled in js thread");
+    // Has been clean up
+    if (!env) {
+      return;
+    }
+
+    // Unlink
+    if (prev) {
+      prev->next = next;
+    }
+
+    if (next) {
+      next->prev = prev;
+    }
+
+    // Clean up js resource
+    OH_JSVM_DeleteReference(env, reference);
+    env = nullptr;
+    reference = nullptr;
+  }
 
   void invalidate() {
     if (--refcount == 0) {
+      // Case1: jsi::Value is deconstructored after its' corresponding JSVMRuntime 
+      // has been deconstructored. Resource has already released, just simply delete this.
+      if (!env) {
+        delete this;
+        return;
+      }
       if (!unlikely(!isJsThread)) {
-        OH_JSVM_DeleteReference(env, reference);
+        CleanUp();
+        delete this;
       } else {
-      void *data = nullptr;
-      OH_JSVM_GetInstanceData(env, &data);
-      facebook::react::MessageQueueThread *jsQueue = static_cast<facebook::react::MessageQueueThread *>(data);
-      jsQueue->runOnQueue(
-        [env = this->env, reference = this->reference]() {
-          OH_JSVM_DeleteReference(env, reference);
+        void *data = nullptr;
+        OH_JSVM_GetInstanceData(env, &data);
+        facebook::react::MessageQueueThread *jsQueue = static_cast<facebook::react::MessageQueueThread *>(data);
+        jsQueue->runOnQueue([this]() {
+          CleanUp();
+          delete this;
         });
       }
       delete this;
@@ -240,10 +293,13 @@ class JSVMPointerValue : public JSVMRuntime::PointerValue {
   JSVM_Ref reference;
   JSVM_Env env;
   uint64_t refcount;
+  JSVMPointerValue *prev;
+  JSVMPointerValue *next;
 
  private:
   friend class JSVMRuntime;
   friend class JSVMConverter;
+  static thread_local JSVMPointerValue *head;
   static thread_local bool isJsThread;
 };
 
