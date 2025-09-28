@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.72.93
+- Fix the limit of number of cache files in RemoteImageDiskCache,([7014557d9](https://gitcode.com/openharmony-sig/ohos_react_native/commit/7014557d981b5fccb9cb50187cdd5b77482556af))
+- fix: libjsvm.so Mapping error,([57ae5e919](https://gitcode.com/openharmony-sig/ohos_react_native/commit/57ae5e9197254a48980e68045013c4ad2ef9a33e))
+- Fix: Add support for handling ArkTS touches for FallbackComponentInstance.,([c697ae33a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c697ae33a3a7acf6b3a801ef91e94ac2eb8f8637))
+- fix: crashing EventLoopTaskRunner::waitForSyncTask on RNInstance destruction,([5244cac3a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/5244cac3a46a407fb7d0edf8ec669a61c22008bc))
+- [chore]: updated to version 6.0.0.602(0.72.92),([7650cfeb5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/7650cfeb54d7d966c2a2fda3897b62ddd74b8822))
+
 ## 0.72.92
 - fix: Cursor abnormally resets inside TextInput component,([6786df707](https://gitcode.com/openharmony-sig/ohos_react_native/commit/6786df707087f29e9ff7a6b4771558eef9d8cfc9))
 - fix: dynamic font registration sometimes not taking the effect,([e0bd9b30f](https://gitcode.com/openharmony-sig/ohos_react_native/commit/e0bd9b30f6125b23eff96cbb2366069cee345c05))
