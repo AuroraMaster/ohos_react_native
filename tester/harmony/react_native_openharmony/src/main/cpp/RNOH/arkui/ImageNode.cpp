@@ -79,17 +79,23 @@ ImageNode& ImageNode::setSources(std::string const& uri, std::string prefix) {
 
 ImageNode& ImageNode::setResizeMode(
     facebook::react::ImageResizeMode const& mode) {
+  // Based on:
+  // https://github.com/facebook/react-native/blob/main/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/image/ImageResizeMode.kt
   int32_t val = ARKUI_OBJECT_FIT_COVER;
-  if (mode == facebook::react::ImageResizeMode::Cover) {
-    val = ARKUI_OBJECT_FIT_COVER;
-  } else if (mode == facebook::react::ImageResizeMode::Contain) {
-    val = ARKUI_OBJECT_FIT_CONTAIN;
-  } else if (mode == facebook::react::ImageResizeMode::Stretch) {
-    val = ARKUI_OBJECT_FIT_FILL;
-  } else if (
-      mode == facebook::react::ImageResizeMode::Center ||
-      mode == facebook::react::ImageResizeMode::Repeat) {
-    val = ARKUI_OBJECT_FIT_NONE;
+  switch (mode) {
+    case facebook::react::ImageResizeMode::Cover:
+      val = ARKUI_OBJECT_FIT_COVER;
+      break;
+    case facebook::react::ImageResizeMode::Contain:
+      val = ARKUI_OBJECT_FIT_CONTAIN;
+      break;
+    case facebook::react::ImageResizeMode::Center:
+    case facebook::react::ImageResizeMode::Repeat:
+      val = ARKUI_OBJECT_FIT_SCALE_DOWN;
+      break;
+    case facebook::react::ImageResizeMode::Stretch:
+      val = ARKUI_OBJECT_FIT_FILL;
+      break;
   }
 
   ArkUI_NumberValue value[] = {{.i32 = val}};
