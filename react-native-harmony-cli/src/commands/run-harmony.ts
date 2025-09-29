@@ -270,8 +270,6 @@ export const commandRunHarmony: Command = {
             args: [
               'install',
               '--all',
-              '--strict_ssl',
-              'true',
             ],
             cwd: harmonyProjectPath,
             shell: true,
