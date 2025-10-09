@@ -37,6 +37,10 @@ class ModalHostTouchHandler : public UIInputEventHandler {
     m_touchEventDispatcher.dispatchTouchEvent(
         event, m_rootView->shared_from_this());
   }
+  
+  ~ModalHostTouchHandler() {
+    m_touchEventDispatcher.cancelActiveTouches();
+  }
 };
 
 void ModalHostViewComponentInstance::updateDisplaySize(

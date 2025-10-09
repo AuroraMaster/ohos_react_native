@@ -380,20 +380,8 @@ void TouchEventDispatcher::sendEvent(
 }
 
 void TouchEventDispatcher::cancelActiveTouches() {
-  for (const auto& touch : m_previousEvent.changedTouches) {
-    if (m_touchTargetByTouchId.find(touch.identifier) ==
-        m_touchTargetByTouchId.end()) {
-      continue;
-    }
-    auto touchIdAndTouchTarget = m_touchTargetByTouchId.find(touch.identifier);
-    auto touchTarget = touchIdAndTouchTarget->second;
-    if (touchTarget) {
-      if (m_previousEvent.changedTouches.size() > 0) {
-        DLOG(INFO) << "TOUCH::CANCEL";
-        m_touchTargetByTouchId.erase(touchIdAndTouchTarget->first);
-        touchTarget->getTouchEventEmitter()->onTouchCancel(m_previousEvent);
-      }
-    }
+  if (m_previousEvent.touches.size() > 0) {
+    sendEvent({}, m_previousEvent.touches, UI_TOUCH_EVENT_ACTION_CANCEL);
   }
 }
 
