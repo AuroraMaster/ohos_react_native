@@ -29,7 +29,9 @@ void SwitchComponentInstance::onPropsChanged(SharedConcreteProps const& props) {
   if (!m_props || props->tintColor != m_props->tintColor) {
     getLocalRootArkUINode().setUnselectedColor(props->tintColor);
   }
-  if (!m_props || props->thumbTintColor != m_props->thumbTintColor) {
+  if (!m_props && props->thumbTintColor != DEFAULT_SWITCH_POINT_COLOR) {
+    getLocalRootArkUINode().setThumbColor(props->thumbTintColor);
+  } else if (m_props && props->thumbTintColor != m_props->thumbTintColor) {
     getLocalRootArkUINode().setThumbColor(props->thumbTintColor);
   }
   getLocalRootArkUINode().setEnabled(!props->disabled);

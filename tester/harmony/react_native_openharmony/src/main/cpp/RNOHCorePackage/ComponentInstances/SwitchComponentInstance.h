@@ -28,5 +28,6 @@ class SwitchComponentInstance
   void onValueChange(int32_t& value) override;
 
   ToggleNode& getLocalRootArkUINode() override;
+  const SharedColor DEFAULT_SWITCH_POINT_COLOR = 0x7FFFFFFF;
 };
 } // namespace rnoh
