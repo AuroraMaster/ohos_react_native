@@ -1,0 +1,34 @@
+{
+  "name": "third-party-library-sample",
+  "version": "1.0.0",
+  "description": "Third party library sample package of autolinking in harmony",
+  "main": "index.ts",
+  "scripts": {
+    "codegen-lib": "react-native codegen-lib-harmony --no-safety-check --npm-package-name third-party-library-sample --cpp-output-path ./harmony/library/src/main/cpp/generated --ets-output-path ./harmony/library/src/main/ets/generated --cpp-components-spec-paths ./src/specs/cpp-components --turbo-modules-spec-paths ./src/specs/turbo-modules --arkts-components-spec-paths ./src/specs/arkts-components"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "harmony": {
+    "alias": "third-party-library-sample",
+    "autolinking": {
+      "cmakeLibraryTargetName": "third_party_library"
+    }
+  },
+  "files": [
+    "index.ts",
+    "src/*",
+    "harmony/*"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@react-native-community/cli": "11.3.6",
+    "@react-native-oh/react-native-harmony-cli": "0.0.39",
+    "react": "18.2.0",
+    "react-native": "0.72.5"
+  },
+  "overrides": {
+    "@react-native-community/cli": "11.3.6",
+    "@react-native/codegen": "0.74.0"
+  }
+}
