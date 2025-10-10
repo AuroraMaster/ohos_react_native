@@ -366,8 +366,9 @@ void TextInputComponentInstance::onPropsChanged(
   m_textAreaNode.setId(getIdFromProps(props));
   m_textInputNode.setId(getIdFromProps(props));
 
-  if (!m_props || props->autoFocus != m_props->autoFocus){
-    if (m_multiline == true){
+  if (!m_props || props->autoFocus != m_props->autoFocus) {
+    m_autoFocus = props->autoFocus;
+    if (m_multiline == true) {
         m_textAreaNode.setAutoFocus(props->autoFocus);
     } else if (m_multiline == false) {
         m_textInputNode.setAutoFocus(props->autoFocus);
@@ -375,7 +376,7 @@ void TextInputComponentInstance::onPropsChanged(
   }
   if (!m_props || props->selection->start != m_props->selection->start ||
     props->selection->end != m_props->selection->end) {
-    if (m_multiline == true){
+    if (m_multiline == true) {
         m_textAreaNode.setTextSelection(props->selection->start, props->selection->end);
     } else {
         m_textInputNode.setTextSelection(props->selection->start, props->selection->end);
@@ -547,8 +548,7 @@ void TextInputComponentInstance::setTextContent(std::string const& content) {
   // roughly in the same place, rather than have it move to the end of the
   // input (which is the ArkUI default behaviour)
   //auto selectionFromEnd = m_content.size() - m_selectionLocation;
-  if (m_selectionLocation == 0 && !content.empty())
-  {
+  if (m_selectionLocation == 0 && !content.empty() && m_autoFocus) {
     m_selectionLocation = countUtf16Characters(content);
   }
   int32_t contentLength = countUtf16Characters(content);

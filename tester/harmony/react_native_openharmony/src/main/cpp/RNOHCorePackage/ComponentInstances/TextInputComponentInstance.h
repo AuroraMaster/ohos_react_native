@@ -76,6 +76,8 @@ class TextInputComponentInstance
    * prevents updating `m_caretPositionForControlledInput` too quickly.
    */
   bool m_hasLatestControlledValueChangeBeenProcessed = true;
+  
+  bool m_autoFocus = false;
 
   void focus();
   void blur();
