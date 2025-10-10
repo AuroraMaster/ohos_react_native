@@ -271,6 +271,9 @@ PropUpdatesList AnimatedNodesManager::runUpdates(long long frameTimeNanos) {
   std::vector<facebook::react::Tag> finishedAnimations;
   std::vector<facebook::react::Tag> valueNodeTags;
   for (auto& [animationId, driver] : m_animationById) {
+    if (!driver) {
+      continue;
+    }
     driver->runAnimationStep(frameTimeNanos);
     auto nodeTag = driver->getAnimatedValueTag();
     valueNodeTags.push_back(nodeTag);
