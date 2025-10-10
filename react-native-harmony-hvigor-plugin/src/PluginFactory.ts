@@ -5,53 +5,28 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import { HvigorPlugin } from '@ohos/hvigor';
-import {
-  CliExecutor,
-  Logger,
-  PrebuiltTask,
-  RNOHHvigorPluginOptions,
-} from './PrebuiltTask';
-import fs from 'node:fs';
-import { execSync } from 'node:child_process';
+import { HvigorPlugin } from "@ohos/hvigor";
+import { SyncTask } from "./tasks/sync/SyncTask";
+import fs from "node:fs";
+import { Logger } from "./common/Logger";
+import { CommandExecutor } from "./common/CommandExecutor";
+import { RNOHModulePluginOptions } from "./types";
 
-class CliExecutorImpl extends CliExecutor {
-  run(
-    command: string,
-    args?: Record<string, string | number | boolean>
-  ): string {
-    let commandWithArgs = command;
-    if (args) {
-      commandWithArgs += ' ' + this.stringifyCliArgs(args);
-    }
-    return execSync(commandWithArgs, { encoding: 'utf-8' });
-  }
-}
-
-class LoggerImpl implements Logger {
-  info(message: string): void {
-    console.info(message);
-  }
-
-  warn(message: string): void {
-    console.warn(message);
-  }
-
-  error(message: string): void {
-    console.error(message);
-  }
-}
-
-export function createRNOHHvigorPlugin(
-  options: RNOHHvigorPluginOptions
+export function createRNOHModulePlugin(
+  options: RNOHModulePluginOptions
 ): HvigorPlugin {
   return {
-    pluginId: 'rnoh',
+    pluginId: "rnohModulePlugin",
     apply: () => {
-      const cliExecutor = new CliExecutorImpl();
-      const logger = new LoggerImpl();
-      const task = new PrebuiltTask(cliExecutor, logger, fs);
+      const commandExecutor = new CommandExecutor();
+      const logger = new Logger();
+      const task = new SyncTask(commandExecutor, logger, fs);
       task.run(options);
     },
   };
 }
+
+/**
+ * @deprecated Use `createRNOHModulePlugin` instead.
+ */
+export const createRNOHHvigorPlugin = createRNOHModulePlugin;

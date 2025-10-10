@@ -15,6 +15,7 @@ import {
 import Mustache from 'mustache';
 import Case from 'case';
 import { Logger } from '../io';
+import pathUtils from 'node:path';
 
 type Version = string;
 type DependencySpecifier = `file:${string}` | Version;
@@ -88,7 +89,7 @@ const CPP_RNOH_PACKAGES_FACTORY_TEMPLATE = `
 #pragma once
 #include "RNOH/Package.h"
 {{#libraries}}
-#include "{{etsRNOHPackageClassName}}.h"
+#include "{{cppRNOHPackageClassName}}.h"
 {{/libraries}}
 
 std::vector<rnoh::Package::Shared> createRNOHPackages(const rnoh::Package::Context &ctx) {
@@ -105,7 +106,7 @@ const CMAKE_AUTOLINKING_TEMPLATE = `
 # DO NOT modify it manually, your changes WILL be overwritten.
 cmake_minimum_required(VERSION 3.5)
 
-# @api
+# @actor RNOH_APP
 function(autolink_libraries target)
 {{#libraries}}
     add_subdirectory("\${OH_MODULES_DIR}/{{{ohPackageName}}}/src/main/cpp" ./{{cmakeLibraryTargetName}})
@@ -124,7 +125,10 @@ endfunction()
 `.trimStart();
 
 export class Autolinking {
-  constructor(private fs: FS, private logger: Logger) {}
+  constructor(
+    private fs: FS,
+    private logger: Logger
+  ) { }
 
   async prepareInput(config: AutolinkingConfig): Promise<AutolinkingInput> {
     if (
@@ -151,21 +155,21 @@ export class Autolinking {
     const skippedLibraryNpmPackageNames: string[] = [];
     await new ProjectDependenciesManager(this.fs, projectRootPath).forEachAsync(
       (dependency) => {
-        const harFilePath = dependency.getHarFilePath();
-        if (!harFilePath) {
+        const harFilePaths = dependency.getHarFilePaths();
+        if (harFilePaths.length === 0) {
           return;
         }
-        nodeModuleHarPaths.push(harFilePath);
+        nodeModuleHarPaths.push(...harFilePaths);
         const packageJson = dependency.readPackageJSON();
         const providedAutolinkingConfig = packageJson.harmony?.autolinking;
-
         if (
           providedAutolinkingConfig === undefined ||
           providedAutolinkingConfig === null ||
           (config.excludedNpmPackageNames.has(packageJson.name) &&
             config.excludedNpmPackageNames.size > 0) ||
           (!config.includedNpmPackageNames.has(packageJson.name) &&
-            config.includedNpmPackageNames.size > 0)
+            config.includedNpmPackageNames.size > 0) ||
+          harFilePaths.length !== 1
         ) {
           skippedLibraryNpmPackageNames.push(packageJson.name);
           return;
@@ -178,7 +182,7 @@ export class Autolinking {
           cppRNOHPackageClassName: autolinkingConfig?.cppPackageClassName,
           cmakeLibraryTargetName: autolinkingConfig?.cmakeLibraryTargetName,
           ohPackageName: autolinkingConfig?.ohPackageName,
-          harFilePathRelativeToHarmony: harFilePath
+          harFilePathRelativeToHarmony: harFilePaths[0]
             .relativeTo(harmonyProjectPath)
             .toString(),
         });
@@ -194,6 +198,7 @@ export class Autolinking {
     const cmakeAutolinkingPath = harmonyProjectPath.copyWithNewSegment(
       config.cmakeAutolinkPathRelativeToHarmony
     );
+
     return {
       projectRootPath,
       skippedLibraryNpmPackageNames,
@@ -244,7 +249,12 @@ export class Autolinking {
     > = {};
     Object.entries<DependencySpecifier>(ohPackage.dependencies).forEach(
       ([name, dependencySpecifier]) => {
-        if (!dependencySpecifier.includes('file:')) {
+        if (
+          !(
+            dependencySpecifier.includes('file:') &&
+            dependencySpecifier.includes('node_modules')
+          )
+        ) {
           unmanagedNativeDependencySpecifierByName[name] = dependencySpecifier;
         } else {
           const harFilePathRelativeToHarmony = dependencySpecifier.replace(
@@ -253,10 +263,10 @@ export class Autolinking {
           );
           if (
             !autolinkableHarFilePathsRelativeToHarmony.includes(
-              harFilePathRelativeToHarmony
+              pathUtils.normalize(harFilePathRelativeToHarmony)
             ) &&
             input.nodeModuleHarFilePathsRelativeToHarmony.includes(
-              harFilePathRelativeToHarmony
+              pathUtils.normalize(harFilePathRelativeToHarmony)
             )
           ) {
             unmanagedNativeDependencySpecifierByName[name] =
@@ -268,7 +278,7 @@ export class Autolinking {
     const managedNativeDependencySpecifierByName: Record<string, string> = {};
     for (const library of autolinkableLibraries) {
       managedNativeDependencySpecifierByName[library.ohPackageName] =
-        'file:' + library.harFilePathRelativeToHarmony;
+        `file:${library.harFilePathRelativeToHarmony}`.split(pathUtils.sep).join('/');
     }
     return {
       skippedLibraryNpmPackageNames: input.skippedLibraryNpmPackageNames,

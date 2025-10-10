@@ -24,21 +24,20 @@ export class ProjectDependency {
     return this.readPackageJSON().getCodegenConfigs();
   }
 
-  getHarFilePath(): AbsolutePath | null {
+  getHarFilePaths(): AbsolutePath[] {
     const packageHarmonyPath =
       this.packageRootPath.copyWithNewSegment('harmony');
-    if (!this.fs.existsSync(packageHarmonyPath)) {
-      return null;
+    if (this.fs.existsSync(packageHarmonyPath)) {
+      return this.fs.findFilePathsWithExtensions(
+        packageHarmonyPath,
+        ['har']
+      );
+    } else {
+      return this.fs.findFilePathsWithExtensions(
+        this.packageRootPath,
+        ['har']
+      );
     }
-
-    const harFilePaths = this.fs.findFilePathsWithExtensions(
-      packageHarmonyPath,
-      ['har']
-    );
-    if (harFilePaths.length !== 1) {
-      return null;
-    }
-    return harFilePaths[0];
   }
 
   readPackageJSON() {

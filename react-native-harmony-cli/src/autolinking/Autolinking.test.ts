@@ -7,8 +7,9 @@
 
 import { Autolinking, AutolinkingConfig } from './Autolinking';
 import { NestedDirectoryJSON } from 'memfs';
-import { AbsolutePath, DescriptiveError } from '../core';
+import { AbsolutePath, DescriptiveError } from '../core/';
 import { MockedLogger, MemFS } from '../io/__fixtures__';
+import pathUtils from "node:path"
 
 function createAutolinking({
   fsStructure,
@@ -162,7 +163,7 @@ std::vector<rnoh::Package::Shared> createRNOHPackages(const rnoh::Package::Conte
 # DO NOT modify it manually, your changes WILL be overwritten.
 cmake_minimum_required(VERSION 3.5)
 
-# @api
+# @actor RNOH_APP
 function(autolink_libraries target)
     add_subdirectory("\${OH_MODULES_DIR}/@rnoh/rnoh--link-scoped/src/main/cpp" ./rnoh__rnoh__link_scoped)
 
@@ -210,8 +211,14 @@ it('should handle custom autolinking configuration', async () => {
   expect(memFS.readTextSync(output.etsRNOHPackagesFactoryPath)).toContain(
     'CustomEtsClass'
   );
+  expect(memFS.readTextSync(output.etsRNOHPackagesFactoryPath)).not.toContain(
+    'CustomCppClass'
+  );
   expect(memFS.readTextSync(output.cppRNOHPackagesFactoryPath)).toContain(
     'CustomCppClass'
+  );
+  expect(memFS.readTextSync(output.cppRNOHPackagesFactoryPath)).not.toContain(
+    'CustomEtsClass'
   );
   expect(memFS.readTextSync(output.cmakeAutolinkingPath)).toContain(
     'custom_cmake_target'
@@ -323,14 +330,14 @@ it('should log updated files', async () => {
   const { logs } = await runAutolinking();
 
   const combinedLogs = logs.map((log) => log.msg).join('\n');
-  expect(combinedLogs).toContain('harmony/entry/src/main/cpp/autolink.cmake');
-  expect(combinedLogs).toContain(
-    'harmony/entry/src/main/ets/RNOHPackageFactory.ets'
+  expect(combinedLogs).toContain(pathUtils.normalize('harmony/entry/src/main/cpp/autolink.cmake'));
+  expect(combinedLogs).toContain(pathUtils.normalize(
+    'harmony/entry/src/main/ets/RNOHPackageFactory.ets')
   );
-  expect(combinedLogs).toContain(
-    'harmony/entry/src/main/cpp/RNOHPackageFactory.h'
+  expect(combinedLogs).toContain(pathUtils.normalize(
+    'harmony/entry/src/main/cpp/RNOHPackageFactory.h')
   );
-  expect(combinedLogs).toContain('harmony/oh-package.json5');
+  expect(combinedLogs).toContain(pathUtils.normalize('harmony/oh-package.json5'));
 });
 
 it('should log linked and skipped packages', async () => {
@@ -446,7 +453,6 @@ it('should link only specified packages', async () => {
   expect(combinedLogs).toContain('[skip] ignored-package');
 });
 
-
 it('should link by default only those packages that support autolinking', async () => {
   const { runAutolinking } = createAutolinking({
     fsStructure: {
@@ -480,4 +486,41 @@ it('should link by default only those packages that support autolinking', async 
   const combinedLogs = logs.map((log) => log.msg).join('\n');
   expect(combinedLogs).toContain('[link] autolinkable-package');
   expect(combinedLogs).toContain('[skip] not-autolinkable-package');
+});
+
+it('not delete packages with two hars', async () => {
+  const { runAutolinking, memFS } = createAutolinking({
+    fsStructure: {
+      ...baseFileStructure,
+      node_modules: {
+        '@rnoh': {
+          'multiple-har': {
+            harmony: {
+              'multiple_har.har': '',
+              'some_other_har.har': '',
+            },
+            'package.json': JSON.stringify({
+              name: '@rnoh/multiple-har',
+              harmony: {
+                autolinking: null,
+              },
+            }),
+          },
+        },
+      },
+      harmony: {
+        ...baseFileStructure.harmony,
+        'oh-package.json5': `{
+            "dependencies": {
+              "@rnoh/multiple-har": "file:../node_modules/@rnoh/multiple-har/harmony/multiple_har.har",
+            }
+          }`,
+      },
+    },
+  });
+
+  const output = await runAutolinking();
+
+  const ohPackageContent = memFS.readTextSync(output.ohPackagePath);
+  expect(ohPackageContent).toContain('@rnoh/multiple-har');
 });

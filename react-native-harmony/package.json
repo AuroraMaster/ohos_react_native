@@ -2,6 +2,10 @@
   "name": "@rnoh/react-native-harmony",
   "version": "0.72.93",
   "description": "",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "scripts": {
     "install:local-cli": "cd ../react-native-harmony-cli && npm pack && cd ../react-native-harmony && npm i ../react-native-harmony-cli/rnoh-react-native-harmony-cli-0.0.39.tgz && cd ../react-native-harmony",
     "prepublishOnly": "npm run verify",
@@ -41,7 +45,8 @@
     "./types/**/*",
     "./*.js",
     "./*.json",
-    "./harmony/*"
+    "./harmony/*",
+    "./*.har"
   ],
   "dependencies": {
     "@rnoh/react-native-harmony-cli": "file:../react-native-harmony-cli/rnoh-react-native-harmony-cli-0.0.39.tgz",
@@ -53,9 +58,9 @@
   "harmony": {
     "autolinking": null
   },
-  "homepage": "https://gitee.com/openharmony-sig/ohos_react_native",
+  "homepage": "https://gitcode.com/openharmony-sig/ohos_react_native",
   "repository": {
-    "type": "gitee",
-    "url": "https://gitee.com/openharmony-sig/ohos_react_native"
+    "type": "gitcode",
+    "url": "https://gitcode.com/openharmony-sig/ohos_react_native"
   }
 }

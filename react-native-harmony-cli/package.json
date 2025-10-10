@@ -8,7 +8,8 @@
   },
   "scripts": {
     "build": "tsc --outDir dist -p tsconfig.build.json",
-    "prepack": "npm run build",
+    "prepack": "npm run build && npm run _recreate-hvigor-plugin",
+    "_recreate-hvigor-plugin": "cd ../react-native-harmony-hvigor-plugin && npm i && npm run deploy && cd ../react-native-harmony-cli",
     "verify": "tsc --noEmit && npm run test",
     "test": "npm run build && jest",
     "test:codegen": "jest ./src/codegen/.* && npm run build && jest tests/codegen.*",
@@ -25,6 +26,13 @@
     "metro": "*"
   },
   "main": "dist/index.js",
+  "files": [
+    "./*.js",
+    "./*.json",
+    "./dist/*",
+    "./harmony/*",
+    "./README.md"
+  ],
   "devDependencies": {
     "@react-native-community/cli": "^15.0.0",
     "@react-native-community/cli-types": "^11.3.0",
@@ -62,9 +70,9 @@
     "tmp": "^0.2.1",
     "metro": "0.82.5"
   },
-  "homepage": "https://gitee.com/openharmony-sig/ohos_react_native",
+  "homepage": "https://gitcode.com/openharmony-sig/ohos_react_native",
   "repository": {
-    "type": "gitee",
-    "url": "https://gitee.com/openharmony-sig/ohos_react_native"
+    "type": "gitcode",
+    "url": "https://gitcode.com/openharmony-sig/ohos_react_native"
   }
 }

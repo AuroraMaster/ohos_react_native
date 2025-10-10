@@ -1,34 +1,44 @@
 /**
- * Copyright (c) 2024 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
  *
  * This source code is licensed under the MIT license found in the
- * LICENSE-MIT file in the root directory of this source tree.
+ * LICENSE file in the root directory of this source tree.
  */
 
-import { PrebuiltTask, ValidationError } from '../src/PrebuiltTask';
+import { ValidationError } from '../src/tasks/sync/SyncTask';
 import { memfs, NestedDirectoryJSON } from 'memfs';
 import pathUtils from 'node:path';
-import { FakeCliExecutor, FakeLogger } from './__fixtures__';
+import { StubCommandExecutor, FakeLogger, FakeSyncTask } from './__fixtures__';
 
-function createPreBuiltTask(options: {
+const ORIGINAL_DEVECO_SDK_HOME = process.env.DEVECO_SDK_HOME;
+
+beforeEach(() => {
+  process.env.DEVECO_SDK_HOME = '/Applications/DevEco-Studio.app/Contents/sdk';
+});
+
+afterEach(() => {
+  process.env.DEVECO_SDK_HOME = ORIGINAL_DEVECO_SDK_HOME;
+});
+
+function createSyncTask(options: {
   onCodegenRun?: (command: string) => string;
   fsSetup?: NestedDirectoryJSON;
 }) {
-  const fakeCliExecutor = new FakeCliExecutor(
+  const fakeCliExecutor = new StubCommandExecutor(
     options.onCodegenRun ?? (() => '')
   );
   const fakeLogger = new FakeLogger();
 
-  const preBuiltTask = new PrebuiltTask(
+  const SyncTask = new FakeSyncTask(
     fakeCliExecutor,
     fakeLogger,
     memfs(options.fsSetup, './').fs
   );
-  return { preBuiltTask, fakeCliExecutor, fakeLogger };
+  return { SyncTask, fakeCliExecutor, fakeLogger };
 }
 
 it('should handle port forwarding, call codegen-harmony, and log progress', () => {
-  const { preBuiltTask, fakeCliExecutor, fakeLogger } = createPreBuiltTask({
+  const { SyncTask, fakeCliExecutor, fakeLogger } = createSyncTask({
     onCodegenRun: () => '__GENERATED_FILE__',
     fsSetup: {
       node_modules: {
@@ -39,16 +49,18 @@ it('should handle port forwarding, call codegen-harmony, and log progress', () =
     },
   });
 
-  preBuiltTask.run({
+  SyncTask.run({
     nodeModulesPath: './node_modules',
     codegen: { rnohModulePath: '_' },
   });
 
   const executedCommands = fakeCliExecutor.getCommands();
-  expect(executedCommands[0]).toBe('hdc rport tcp:8081 tcp:8081');
+  expect(executedCommands[0]).toContain(
+    '"/test/path" rport tcp:8081 tcp:8081'
+  );
   expect(executedCommands[1]).toBe(
     pathUtils.join('node_modules', '.bin', 'react-native') +
-      ' codegen-harmony --project-root-path ../ --cpp-output-path ./entry/src/main/cpp/generated --rnoh-module-path _'
+      ` codegen-harmony --project-root-path .. --cpp-output-path entry${pathUtils.sep}src${pathUtils.sep}main${pathUtils.sep}cpp${pathUtils.sep}generated --ets-output-path _`
   );
   expect(
     fakeLogger
@@ -59,10 +71,10 @@ it('should handle port forwarding, call codegen-harmony, and log progress', () =
 });
 
 it("should fail if node_modules dir doesn't exist", () => {
-  const { preBuiltTask } = createPreBuiltTask({});
+  const { SyncTask } = createSyncTask({});
 
   expect(() => {
-    preBuiltTask.run({
+    SyncTask.run({
       nodeModulesPath: './NOT_EXISTING_DIR',
       codegen: { rnohModulePath: '_' },
     });
@@ -70,7 +82,7 @@ it("should fail if node_modules dir doesn't exist", () => {
 });
 
 it('should allow skipping codegen process', () => {
-  const { preBuiltTask, fakeCliExecutor, fakeLogger } = createPreBuiltTask({
+  const { SyncTask, fakeCliExecutor, fakeLogger } = createSyncTask({
     fsSetup: {
       node_modules: {
         '.bin': {
@@ -80,7 +92,7 @@ it('should allow skipping codegen process', () => {
     },
   });
 
-  preBuiltTask.run({
+  SyncTask.run({
     nodeModulesPath: './node_modules',
     codegen: null,
   });
@@ -96,7 +108,7 @@ it('should allow skipping codegen process', () => {
 });
 
 it('should allow skipping Metro setup', () => {
-  const { preBuiltTask, fakeCliExecutor, fakeLogger } = createPreBuiltTask({
+  const { SyncTask, fakeCliExecutor, fakeLogger } = createSyncTask({
     fsSetup: {
       node_modules: {
         '.bin': {
@@ -106,7 +118,7 @@ it('should allow skipping Metro setup', () => {
     },
   });
 
-  preBuiltTask.run({
+  SyncTask.run({
     nodeModulesPath: './node_modules',
     metro: null,
     codegen: null,
@@ -121,7 +133,7 @@ it('should allow skipping Metro setup', () => {
 });
 
 it('should call autolinking', () => {
-  const { preBuiltTask, fakeCliExecutor } = createPreBuiltTask({
+  const { SyncTask, fakeCliExecutor } = createSyncTask({
     fsSetup: {
       node_modules: {
         '.bin': {
@@ -131,7 +143,7 @@ it('should call autolinking', () => {
     },
   });
 
-  preBuiltTask.run({
+  SyncTask.run({
     nodeModulesPath: './node_modules',
     codegen: null,
     metro: null,
@@ -145,7 +157,7 @@ it('should call autolinking', () => {
 });
 
 it('should skip autolinking', () => {
-  const { preBuiltTask, fakeCliExecutor } = createPreBuiltTask({
+  const { SyncTask, fakeCliExecutor } = createSyncTask({
     fsSetup: {
       node_modules: {
         '.bin': {
@@ -155,7 +167,7 @@ it('should skip autolinking', () => {
     },
   });
 
-  preBuiltTask.run({
+  SyncTask.run({
     nodeModulesPath: './node_modules',
     codegen: null,
     metro: null,
