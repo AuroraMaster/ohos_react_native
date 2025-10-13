@@ -4,17 +4,17 @@
 
 | 名称                          | 版本号                            |
 | ----------------------------- | -------------------------------|
-| react-native-harmony.tgz        | 0.72.93 |
-| react-native-harmony-cli.tgz    | 0.0.39 |
-| react_native_openharmony-6.0.0.603.har              | 0.72.93 |
-| react_native_openharmony_release-6.0.0.603.har      | 6.0.0.603 |
+| react-native-harmony.tgz        | 0.72.94 |
+| react-native-harmony-cli.tgz    | 0.0.40 |
+| react_native_openharmony-6.0.0.604.har              | 0.72.94 |
+| react_native_openharmony_release-6.0.0.604.har      | 6.0.0.604 |
 
 配套IDE、SDK版本和手机ROM:
 
 | 名称                          | 版本号                            |
 | ----------------------------- | -------------------------------|
-| DevEco Studio     | Deveco Studio 6.0.1.410 |
-| HarmonyOS SDK     | HarmonyOS SDK 6.0.1.51(SP30) |
-| 手机ROM           | ALN-AL00 206.0.0.51(SP30DEVC00E51R4P5) <br> ALN-AL80 206.0.0.51(SP30DEVC00E51R4P5) <br> BRA-AL00 206.0.0.51(SP30DEVC00E51R4P4) |
+| DevEco Studio     | Deveco Studio 6.0.2.410 |
+| HarmonyOS SDK     | HarmonyOS SDK 6.0.2.53(SP30) |
+| 手机ROM           | ALN-AL00 206.0.0.53(SP30DEVC00E53R4P5) <br> ALN-AL80 206.0.0.53(SP30DEVC00E53R4P5) <br> BRA-AL00 206.0.0.53(SP30DEVC00E53R4P4) |
 
 > 该React Native鸿蒙化版本依赖的OpenHarmony SDK最低版本为API 20，相应配套版本可通过：链接 https://developer.huawei.com/consumer/cn/doc/harmonyos-releases/deveco-studio-new-features-600 获取

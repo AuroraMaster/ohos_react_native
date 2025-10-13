@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.72.94
+- fix:Fixed the issue where selection does not take effect in specific scenarios.,([ff965fbc2](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ff965fbc2a66a7ab24f5ac55106b9d43a87121f7))
+- fix: null pointer dereference in AnimatedNodesManager::runUpdates,([11d5b9e0c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/11d5b9e0c6caf508c3dddb6b36010d638d1c8426))
+- fix: Touch events do not respond after long-pressing to close the Modal.,([13966cc09](https://gitcode.com/openharmony-sig/ohos_react_native/commit/13966cc09913a6df8dd7bb9d0f10d158a4c02588))
+- fix: The color display effect of the thumbColor property of the Switch component is inconsistent.,([d80e2f2d7](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d80e2f2d74212a34248299da3276773cedf6e39d))
+- fix: The incorrect resizing of repeat and center modes.,([104bbba22](https://gitcode.com/openharmony-sig/ohos_react_native/commit/104bbba22b08904cca74821718970eccee1b6012))
+- [chore]: updated to version 6.0.0.603(0.72.93),([47c4684a0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/47c4684a030c39a4ffcc38a89622866bdc064f2d))
+
 ## 0.72.93
 - Fix the limit of number of cache files in RemoteImageDiskCache,([7014557d9](https://gitcode.com/openharmony-sig/ohos_react_native/commit/7014557d981b5fccb9cb50187cdd5b77482556af))
 - fix: libjsvm.so Mapping error,([57ae5e919](https://gitcode.com/openharmony-sig/ohos_react_native/commit/57ae5e9197254a48980e68045013c4ad2ef9a33e))
