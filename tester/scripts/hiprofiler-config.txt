@@ -1,0 +1,20 @@
+request_id: 1
+session_config {
+    buffers {
+        pages: 16384
+    }
+}
+plugin_configs {
+    plugin_name: "ftrace-plugin"
+    sample_interval: 0
+    config_data {
+        hitrace_categories: "app"
+        buffer_size_kb: 20480
+        flush_interval_ms: 1000
+        flush_threshold_kb: 4096
+        parse_ksyms: true
+        clock: "boot"
+        trace_period_ms: 200
+        debug_on: false
+    }
+}

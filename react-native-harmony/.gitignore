@@ -1,0 +1,5 @@
+*.tgz
+*.tar.gz
+*.har
+react-native
+out

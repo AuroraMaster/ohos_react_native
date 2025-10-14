@@ -1,0 +1,11 @@
+[
+    {
+        "Name": "react-native",
+        "License": "MIT",
+        "License File": "LICENSE",
+        "Version Number": "0.72.5",
+        "Owner": "huangyouhua2@huawei.com",
+        "Upstream URL": "https://github.com/facebook/react-native",
+        "Description": "The Ohos React Native is an open-source framework based on React Native. It is used to develop Harmony mobile applications across platforms. It leverages JavaScript and React for rapid development and high-performance operations."
+    }
+]

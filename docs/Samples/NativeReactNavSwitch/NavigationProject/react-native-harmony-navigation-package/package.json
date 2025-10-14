@@ -1,0 +1,34 @@
+{
+  "name": "react-native-harmony-navigation-package",
+  "version": "1.0.0",
+  "description": "Navigation RN harmony package",
+  "main": "index.ts",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "harmony": {
+    "alias": "react-native-navigation-package",
+    "codegenConfig": [
+      {
+        "version": 1,
+        "specPaths": [
+          "./src/specs/v1"
+        ]
+      }
+    ]
+  },
+  "files": [
+    "index.ts",
+    "src/*",
+    "harmony/navigation_package.har"
+  ],
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.47",
+    "react": "18.2.0",
+    "react-native": "0.72.5"
+  }
+}

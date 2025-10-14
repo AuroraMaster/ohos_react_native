@@ -1,0 +1,15 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "@rnoh/react-native-openharmony": "0.72.53",
+    "@react-native-oh-tpl/react-native-video": "file:../../RNHomeFluency/node_modules/@react-native-oh-tpl/react-native-video/harmony/rn_video.har",
+    "@react-native-oh-tpl/react-native-gesture-handler": "file:../../RNHomeFluency/node_modules/@react-native-oh-tpl/react-native-gesture-handler/harmony/gesture_handler.har",
+    "@react-native-oh-tpl/react-native-safe-area-context": "file:../../RNHomeFluency/node_modules/@react-native-oh-tpl/react-native-safe-area-context/harmony/safe_area.har",
+    "@react-native-oh-tpl/flash-list": "file:../../RNHomeFluency/node_modules/@react-native-oh-tpl/flash-list/harmony/flash_list.har"
+  }
+}

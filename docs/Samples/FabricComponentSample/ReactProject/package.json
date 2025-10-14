@@ -1,0 +1,44 @@
+{
+  "name": "ReactProject",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "lint": "eslint .",
+    "start": "npm run codegen && react-native start --reset-cache",
+    "dev": "npm run codegen && react-native bundle-harmony --dev false --bundle-output ../NativeProject/entry/src/main/resources/rawfile/bundle.harmony.js",
+    "codegen": "react-native codegen-harmony --cpp-output-path ../NativeProject/entry/src/main/cpp/generated --rnoh-module-path ../NativeProject/entry/oh_modules/@rnoh/react-native-openharmony --no-safety-check"
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-native": "0.72.5",
+    "react-native-performance": "^5.1.2",
+    "fabric-component-sample-package": "file:../fabric-component-sample-package/fabric-component-sample-package-1.0.0.tgz"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@babel/preset-env": "^7.20.0",
+    "@babel/runtime": "^7.20.0",
+    "@react-native/eslint-config": "^0.72.2",
+    "@react-native/metro-config": "^0.72.11",
+    "@tsconfig/react-native": "^3.0.0",
+    "@types/react": "^18.0.24",
+    "@types/react-test-renderer": "^18.0.0",
+    "babel-jest": "^29.2.1",
+    "eslint": "^8.19.0",
+    "jest": "^29.2.1",
+    "metro-react-native-babel-preset": "0.76.8",
+    "prettier": "^2.4.1",
+    "react-test-renderer": "18.2.0",
+    "typescript": "4.8.4"
+  },
+  "overrides": {
+    "@react-native-community/cli": "11.3.6",
+    "@react-native/codegen": "0.74.0"
+  },
+  "resolutions": {
+    "@react-native-community/cli": "11.3.6"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

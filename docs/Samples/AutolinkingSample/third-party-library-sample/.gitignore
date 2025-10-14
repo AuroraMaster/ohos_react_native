@@ -1,0 +1,4 @@
+*.tgz
+node_modules
+harmony/library/src/main/cpp/generated
+harmony/library/src/main/ets/generated

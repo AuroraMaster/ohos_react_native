@@ -1,0 +1,13 @@
+{
+  "name": "multi_surface",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "@rnoh/react-native-openharmony": "file:../react_native_openharmony",
+    "@rnoh/sample-package": "file:../sample_package"
+  }
+}
+
