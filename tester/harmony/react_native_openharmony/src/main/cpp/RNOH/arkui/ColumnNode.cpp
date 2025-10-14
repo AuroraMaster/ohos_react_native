@@ -17,7 +17,9 @@ namespace rnoh {
 ColumnNode::ColumnNode(const ArkUINode::Context::Shared& context)
     : ArkUINode(context, ArkUI_NodeType::ARKUI_NODE_COLUMN),
       m_columnNodeDelegate(nullptr) {
+  #ifdef ALL_CONTAINERS_CLICKABLE
   registerNodeEvent(NODE_ON_CLICK);
+  #endif
 }
 
 void ColumnNode::insertChild(ArkUINode& child, std::size_t index) {

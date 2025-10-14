@@ -38,9 +38,10 @@ CustomNode::CustomNode(const ArkUINode::Context::Shared& context)
   };
   maybeThrow(NativeNodeApi::getInstance()->addNodeCustomEventReceiver(
       m_nodeHandle, eventReceiver));
-
-  maybeThrow(NativeNodeApi::getInstance()->registerNodeEvent(
-      m_nodeHandle, NODE_ON_CLICK, 0, this));
+  
+  #ifdef ALL_CONTAINERS_CLICKABLE
+  registerNodeEvent(NODE_ON_CLICK);
+  #endif
   maybeThrow(NativeNodeApi::getInstance()->registerNodeEvent(
       m_nodeHandle, NODE_ON_HOVER, 0, this));
   maybeThrow(NativeNodeApi::getInstance()->registerNodeCustomEvent(
@@ -60,13 +61,6 @@ CustomNode::CustomNode(const ArkUINode::Context::Shared& context)
 }
 
 void CustomNode::onMeasure(ArkUI_NodeCustomEventType eventType) {
-    // auto rect = NativeNodeApi::getInstance()->getAttribute(m_nodeHandle, NODE_LAYOUT_RECT);
-    // if (!rect) {
-    //     LOG(ERROR)<<"Custom Node Get layout Rect para error";
-    //     return;
-    // }
-    // int32_t width = rect->value[2].i32;
-    // int32_t height = rect->value[3].i32;
     int32_t width = getSavedWidth();
     int32_t height = getSavedHeight();
     m_nodeApi->setMeasuredSize(m_nodeHandle, width, height);
@@ -122,8 +116,7 @@ void CustomNode::onClick() {
 }
 
 CustomNode::~CustomNode() {
-  NativeNodeApi::getInstance()->unregisterNodeEvent(
-      m_nodeHandle, NODE_ON_CLICK);
+  unregisterNodeEvent(NODE_ON_CLICK);
   NativeNodeApi::getInstance()->unregisterNodeEvent(
       m_nodeHandle, NODE_ON_HOVER);
   NativeNodeApi::getInstance()->unregisterNodeCustomEvent(
@@ -142,6 +135,13 @@ CustomNode& CustomNode::setAlign(int32_t align) {
 }
 
 CustomNode& CustomNode::setFocusable(bool focusable) {
+  #ifndef ALL_CONTAINERS_CLICKABLE
+  if (focusable) {
+    registerNodeEvent(NODE_ON_CLICK);
+  } else {
+    unregisterNodeEvent(NODE_ON_CLICK);
+  }
+  #endif
   int32_t focusableValue = focusable;
   ArkUI_NumberValue preparedFocusable[] = {{.i32 = focusableValue}};
   ArkUI_AttributeItem focusItem = {
