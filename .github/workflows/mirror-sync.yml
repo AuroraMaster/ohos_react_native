@@ -8,25 +8,25 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Configure Git
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
-    
+
     - name: Add upstream and sync
       run: |
         git remote add upstream https://gitcode.com/openharmony-sig/ohos_react_native.git || true
         git remote set-url upstream https://gitcode.com/openharmony-sig/ohos_react_native.git
         git fetch upstream
-        
+
         # 检测上游主分支
         if git show-ref --verify --quiet refs/remotes/upstream/master; then
           UPSTREAM_BRANCH="master"
@@ -36,11 +36,11 @@ jobs:
           echo "无法找到上游主分支"
           exit 1
         fi
-        
+
         # 检查是否需要同步
         LATEST_COMMIT=$(git rev-parse upstream/$UPSTREAM_BRANCH)
         CURRENT_COMMIT=$(git rev-parse HEAD)
-        
+
         if [[ "$LATEST_COMMIT" != "$CURRENT_COMMIT" ]]; then
           echo "同步上游更改..."
           git merge upstream/$UPSTREAM_BRANCH --allow-unrelated-histories -X theirs
