@@ -8,7 +8,10 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
+      actions: read
+    
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -26,7 +29,7 @@ jobs:
         git remote add upstream https://gitcode.com/openharmony-sig/ohos_react_native.git || true
         git remote set-url upstream https://gitcode.com/openharmony-sig/ohos_react_native.git
         git fetch upstream
-
+        
         # 检测上游主分支
         if git show-ref --verify --quiet refs/remotes/upstream/master; then
           UPSTREAM_BRANCH="master"
@@ -36,15 +39,15 @@ jobs:
           echo "无法找到上游主分支"
           exit 1
         fi
-
+        
         # 检查是否需要同步
         LATEST_COMMIT=$(git rev-parse upstream/$UPSTREAM_BRANCH)
         CURRENT_COMMIT=$(git rev-parse HEAD)
-
+        
         if [[ "$LATEST_COMMIT" != "$CURRENT_COMMIT" ]]; then
           echo "同步上游更改..."
           git merge upstream/$UPSTREAM_BRANCH --allow-unrelated-histories -X theirs
-          git push origin main
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main
           echo "✅ 同步完成"
         else
           echo "ℹ️ 已是最新版本"
