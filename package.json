@@ -1,0 +1,24 @@
+{
+  "name": "ohos-react-native-mirror",
+  "version": "1.0.0",
+  "description": "GitHub mirror repository for OpenHarmony React Native project",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AuroraMaster/ohos_react_native.git"
+  },
+  "keywords": [
+    "openharmony",
+    "react-native",
+    "mirror",
+    "ohos"
+  ],
+  "author": "AuroraMaster",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/AuroraMaster/ohos_react_native/issues"
+  },
+  "homepage": "https://github.com/AuroraMaster/ohos_react_native#readme",
+  "mirror": {
+    "source": "https://gitcode.com/openharmony-sig/ohos_react_native.git"
+  }
+}
