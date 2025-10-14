@@ -1,0 +1,58 @@
+{
+  app: {
+    products: [
+      {
+        name: 'default',
+        signingConfig: 'default',
+        compatibleSdkVersion: '5.0.0(12)',
+        runtimeOS: 'HarmonyOS',
+        "buildOption": {
+          "nativeCompiler": "BiSheng"
+        }
+      },
+    ],
+    buildModeSet: [
+      {
+        name: 'debug',
+      },
+      {
+        name: 'release',
+      },
+    ],
+    signingConfigs: [],
+  },
+  modules: [
+    {
+      name: 'entry',
+      srcPath: './entry',
+      targets: [
+        {
+          name: 'default',
+          applyToProducts: [
+            'default',
+          ],
+        },
+      ],
+    },
+    {
+      name: 'multi_surface',
+      srcPath: './multi_surface',
+      "targets": [
+        {
+          name: 'default',
+          applyToProducts: [
+            'default',
+          ],
+        },
+      ]
+    },
+    {
+      name: 'react_native_openharmony',
+      srcPath: "./react_native_openharmony"
+    },
+    {
+      name: 'sample_package',
+      srcPath: './sample_package',
+    },
+  ],
+}

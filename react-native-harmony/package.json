@@ -1,0 +1,66 @@
+{
+  "name": "@rnoh/react-native-harmony",
+  "version": "0.72.94",
+  "description": "",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "scripts": {
+    "install:local-cli": "cd ../react-native-harmony-cli && npm pack && cd ../react-native-harmony && npm i ../react-native-harmony-cli/rnoh-react-native-harmony-cli-0.0.40.tgz && cd ../react-native-harmony",
+    "prepublishOnly": "npm run verify",
+    "hermes:build": "sh ./scripts/build-hermes.sh",
+    "update_version": "node ./scripts/update-version.js",
+    "gen:changelog": "node ./scripts/generate-changelog.js",
+    "deploy": "node ./scripts/deploy.js",
+    "verify": "react-native verify-package-harmony --package-path . --skip-checks oh_package_name_is_derived_from_npm_package_name",
+    "test": "jest"
+  },
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "react-native": "0.72.5"
+  },
+  "types": "types",
+  "devDependencies": {
+    "@react-native-community/cli": "^11.2.0",
+    "@react-native-community/cli-types": "^11.2.0",
+    "@react-native/metro-config": "^0.72.6",
+    "@tsconfig/react-native": "^2.0.3",
+    "@types/fs-extra": "^11.0.1",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^18.16.0",
+    "@types/react": "^18.2.24",
+    "@types/tmp": "^0.2.6",
+    "jest": "^29.5.0",
+    "json5": "^2.2.3",
+    "rimraf": "^5.0.0",
+    "tmp": "^0.2.1",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  },
+  "files": [
+    "./Libraries/**/*",
+    "./types/**/*",
+    "./*.js",
+    "./*.json",
+    "./harmony/*",
+    "./*.har"
+  ],
+  "dependencies": {
+    "@rnoh/react-native-harmony-cli": "file:../react-native-harmony-cli/rnoh-react-native-harmony-cli-0.0.40.tgz",
+    "colors": "^1.4.0",
+    "fs-extra": "^11.1.1",
+    "metro": "^0.76.3",
+    "metro-config": "^0.76.3"
+  },
+  "harmony": {
+    "autolinking": null
+  },
+  "homepage": "https://gitcode.com/openharmony-sig/ohos_react_native",
+  "repository": {
+    "type": "gitcode",
+    "url": "https://gitcode.com/openharmony-sig/ohos_react_native"
+  }
+}

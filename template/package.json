@@ -1,0 +1,14 @@
+{
+  "name": "@react-native-oh/template",
+  "version": "0.72.94",
+  "description": "RNOH template",
+  "files": [
+    "package.json",
+    "README.md",
+    "template/**/*",
+    "template/harmony/build-profile.json5",
+    "template.config.js"
+  ],
+  "author": "",
+  "license": "MIT"
+}

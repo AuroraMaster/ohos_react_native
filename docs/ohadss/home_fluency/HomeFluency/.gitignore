@@ -1,0 +1,16 @@
+/node_modules
+/oh_modules
+/local.properties
+/.idea
+**/build
+/.hvigor
+.cxx
+/.clangd
+/.clang-format
+/.clang-tidy
+**/.test
+/entry/src/mock
+/entry/src/ohosTest
+/entry/src/test
+/.appanalyzer
+/oh-package-lock.json5

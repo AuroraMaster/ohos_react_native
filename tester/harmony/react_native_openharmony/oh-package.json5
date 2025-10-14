@@ -1,0 +1,16 @@
+{
+  license: 'MIT',
+  types: '',
+  devDependencies: {},
+  name: '@rnoh/react-native-openharmony',
+  description: 'React Native for OpenHarmony',
+  author: "rnoh",
+  ohos: {
+    org: '',
+  },
+  type: 'module',
+  version: '0.72.94',
+  dependencies: {},
+  main: 'index.ets',
+  repository: 'https://gitcode.com/openharmony-sig/ohos_react_native/tree/master'
+}

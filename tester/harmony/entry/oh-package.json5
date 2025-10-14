@@ -1,0 +1,11 @@
+{
+  "license": "ISC",
+  "devDependencies": {},
+  "name": "entry",
+  "description": "example description",
+  "version": "1.0.0",
+  "dependencies": {
+    "@rnoh/react-native-openharmony": "file:../react_native_openharmony",
+    "@rnoh/sample-package": "file:../sample_package"
+  }
+}

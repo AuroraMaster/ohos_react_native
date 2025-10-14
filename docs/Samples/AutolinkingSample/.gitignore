@@ -1,0 +1,6 @@
+*.tgz
+package-lock.json
+oh-package-lock.json5
+NativeProject/entry/src/main/cpp/autolinking.cmake
+NativeProject/entry/src/main/cpp/RNOHPackagesFactory.h
+NativeProject/entry/src/main/ets/RNOHPackagesFactory.ets
