@@ -24,7 +24,7 @@ module.exports = {
     return require('react-native/Libraries/Utilities/Appearance');
   },
   get AppRegistry() {
-    return require('react-native/Libraries/ReactNative/AppRegistry');
+    return require('./Libraries/ReactNative/AppRegistry');
   },
   get AppState() {
     return require('react-native/Libraries/AppState/AppState');
