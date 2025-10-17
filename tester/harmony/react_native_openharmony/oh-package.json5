@@ -10,7 +10,9 @@
   },
   type: 'module',
   version: '0.72.94',
-  dependencies: {},
+  dependencies: {
+    "@ppd/ffrt": "^1.1.5"
+  },
   main: 'index.ets',
   repository: 'https://gitcode.com/openharmony-sig/ohos_react_native/tree/master'
 }

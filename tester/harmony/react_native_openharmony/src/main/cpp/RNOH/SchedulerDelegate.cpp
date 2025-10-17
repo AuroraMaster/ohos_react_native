@@ -19,18 +19,18 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
   HarmonyReactMarker::logMarker(HarmonyReactMarker::HarmonyReactMarkerId::
                                     FABRIC_FINISH_TRANSACTION_START);
   mountingCoordinator->getTelemetryController().pullTransaction(
-      [](auto const& transaction, auto const& surfaceTelemetry) {},
-      [this](auto const& transaction, auto const& surfaceTelemetry) {
+      [](auto transaction, auto const& surfaceTelemetry) {},
+      [this](auto transaction, auto const& surfaceTelemetry) {
         performOnMainThread(
             [transaction](MountingManager::Shared const& mountingManager) {
-              mountingManager->doMount(transaction.getMutations());
+              mountingManager->doMount(transaction->getMutations());
             });
       },
-      [this](auto const& transaction, auto const& surfaceTelemetry) {
+      [this](auto transaction, auto const& surfaceTelemetry) {
         int taskId = random();
         std::string taskTrace =
             "#RNOH::TaskExecutor::runningTask t" + std::to_string(taskId);
-        auto mutationVecs = transaction.getMutations();
+        auto mutationVecs = transaction->getMutations();
         facebook::react::ShadowViewMutationList mutationVec;
         facebook::react::ShadowViewMutationList otherMutation;
         // The reason for using 70 here is that the average time for each mutation 
@@ -77,7 +77,7 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
                 MountingManager::Shared const& mountingManager) {
                 mountingManager->clearPreallocatedViews();
             });
-        logTransactionTelemetryMarkers(transaction);
+        logTransactionTelemetryMarkers(*transaction);
         facebook::react::SystraceSection s(
             "#RNOH::TaskExecutor::runTask t", taskId);
       });
