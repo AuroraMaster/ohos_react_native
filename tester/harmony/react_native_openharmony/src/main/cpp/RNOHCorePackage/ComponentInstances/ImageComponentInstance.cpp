@@ -16,7 +16,20 @@ namespace rnoh {
 const std::string RAWFILE_PREFIX = "resource://RAWFILE/assets/";
 const std::string INVALID_PATH_PREFIX = "invalidpathprefix/";
 const std::string RESFILE_PREFIX = "file:///data/storage/el1/bundle/";
+const std::string BASE_64_PREFIX = "data:";
+const std::string BASE_64_MARK = ";base64,";
+const std::int32_t BASE_64_FORMAT_LENGTH = 8; // length of ";base64,"
+const std::int32_t BASE_64_MIME_TYPE_LENGTH = 6; // length of "image/"
+const std::string BASE_64_STANDARD_PREFIX = "data:image/png;base64,";
 const std::string RESFILE_PATH = "/resources/resfile/assets/";
+const std::unordered_set<std::string> validImageTypes = {
+    "png",
+    "jpeg",
+    "jpg",
+    "gif",
+    "bmp",
+    "webp",
+};
 
 ImageComponentInstance::ImageComponentInstance(Context context)
     : CppComponentInstance(std::move(context)),
@@ -119,6 +132,35 @@ std::string ImageComponentInstance::getAbsolutePathPrefix(std::string const& bun
   return prefix;
 }
 
+bool isValidMimeType(const std::string& mimeType) {
+  if (mimeType.empty()) {
+    return false;
+  }
+
+  if (mimeType.substr(0, BASE_64_MIME_TYPE_LENGTH) != "image/") {
+    return false;
+  }
+  std::string imageType = mimeType.substr(BASE_64_MIME_TYPE_LENGTH);
+
+  return validImageTypes.find(imageType) != validImageTypes.end();
+}
+
+std::string processBase64Uri(const std::string& uri) {
+  size_t base64Pos = uri.find(BASE_64_MARK);
+  if (base64Pos == std::string::npos) {
+    return uri;
+  }
+  size_t mimeStart = BASE_64_PREFIX.length();
+  std::string mimeType = uri.substr(mimeStart, base64Pos - mimeStart);
+  if (base64Pos <= mimeStart || !isValidMimeType(mimeType)) {
+    // Only change to image/png when MIME type is illegal.
+    return BASE_64_STANDARD_PREFIX +
+        uri.substr(base64Pos + BASE_64_FORMAT_LENGTH);
+  }
+
+  return uri;
+}
+
 void ImageComponentInstance::onPropsChanged(SharedConcreteProps const& props) {
   CppComponentInstance::onPropsChanged(props);
 
@@ -126,6 +168,10 @@ void ImageComponentInstance::onPropsChanged(SharedConcreteProps const& props) {
 
   if (!m_props || m_props->sources != props->sources) {
     std::string uri = FindLocalCacheByUri(props->sources[0].uri);
+    if (uri.rfind(BASE_64_PREFIX, 0) == 0 && 
+        uri.find(BASE_64_MARK) != std::string::npos) {
+      uri = processBase64Uri(uri);
+    }
     this->getLocalRootArkUINode().setSources(uri, getAbsolutePathPrefix(getBundlePath()));
     if (!this->getLocalRootArkUINode().getUri().empty()) {
       onLoadStart();
