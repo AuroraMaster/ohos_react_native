@@ -574,6 +574,7 @@ void RNInstanceCAPI::handleArkTSMessage(
   if (name == "CONFIGURATION_UPDATE") {
     onConfigurationChange(payload);
   }
+  std::lock_guard<std::mutex> lock(m_arkTSMessageHandlersMtx);
   for (auto& arkTSMessageHandler : m_arkTSMessageHandlers) {
     arkTSMessageHandler->handleArkTSMessage(
         {.messageName = name,
@@ -584,11 +585,13 @@ void RNInstanceCAPI::handleArkTSMessage(
 
 void RNInstanceCAPI::addArkTSMessageHandler(
     ArkTSMessageHandler::Shared handler) {
+  std::lock_guard<std::mutex> lock(m_arkTSMessageHandlersMtx);
   m_arkTSMessageHandlers.push_back(handler);
 }
 
 void RNInstanceCAPI::removeArkTSMessageHandler(
     ArkTSMessageHandler::Shared handler) {
+  std::lock_guard<std::mutex> lock(m_arkTSMessageHandlersMtx);
   for (auto it = m_arkTSMessageHandlers.begin();
        it != m_arkTSMessageHandlers.end();
        it++) {

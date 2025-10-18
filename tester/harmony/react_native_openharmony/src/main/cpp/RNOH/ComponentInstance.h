@@ -23,6 +23,7 @@
 #include "RNOH/arkui/ArkUINode.h"
 #include "RNOH/arkui/UIInputEventHandler.h"
 #include "RNOH/ArkTSTurboModule.h"
+#include "RNOH/ImageSourceResolver.h"
 
 namespace rnoh {
 
@@ -66,6 +67,7 @@ class ComponentInstance
     ArkTSChannel::Shared arkTSChannel;
     ArkTSMessageHub::Shared arkTSMessageHub;
     RNInstance::Weak rnInstance;
+    ImageSourceResolver::Shared imageSourceResolver;
     Registry::Weak componentInstanceRegistry;
   };
 

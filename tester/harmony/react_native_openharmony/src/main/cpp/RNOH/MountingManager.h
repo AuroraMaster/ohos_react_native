@@ -58,6 +58,7 @@ class MountingManager {
       facebook::react::ComponentDescriptor const& componentDescriptor) = 0;
 
   virtual void clearPreallocatedViews() = 0;
+  virtual void clearPreallocatedViews(facebook::react::ShadowViewMutationList mutations) = 0;
   virtual void clearPreallocationRequestQueue() = 0;
 };
 } // namespace rnoh

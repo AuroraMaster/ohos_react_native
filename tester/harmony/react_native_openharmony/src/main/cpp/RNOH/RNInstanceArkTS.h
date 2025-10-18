@@ -182,6 +182,7 @@ class RNInstanceArkTS : public RNInstanceInternal,
       const std::string& name,
       folly::dynamic const& payload) override;
   NativeResourceManager const* getNativeResourceManager() const override;
+  std::string getCacheDir() override {return {};}
   void registerFont(
       std::string const& fontFamily,
       std::string const& fontFilePath) override;

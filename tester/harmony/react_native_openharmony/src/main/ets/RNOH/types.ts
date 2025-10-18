@@ -44,7 +44,7 @@ export type Corners<T> = {
 // The minimum supported SDK API version for getWindowDensityInfo is 15
 export const OH_API_LEVEL_15 = 15;
 // The minimum supported SDK API version for parallelization is 21
-export const OH_API_LEVEL_20 = 20;
+export const OH_API_LEVEL_21 = 21;
 
 export type PointerEvents = "auto" | "none" | "box-none" | "box-only"
 

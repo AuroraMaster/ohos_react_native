@@ -8,7 +8,7 @@
 #include "SchedulerDelegate.h"
 #include <react/renderer/debug/SystraceSection.h>
 #include "RNOH/Performance/HarmonyReactMarker.h"
-
+#include "RNOH/ApiVersionCheck.h"
 
 namespace rnoh {
 
@@ -30,6 +30,17 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
         int taskId = random();
         std::string taskTrace =
             "#RNOH::TaskExecutor::runningTask t" + std::to_string(taskId);
+        if (IsAtLeastApi21()) {
+          performOnMainThread(
+              [transaction,
+               this](MountingManager::Shared const& mountingManager) {
+                mountingManager->didMount(transaction->getMutations());
+                mountingManager->finalizeMutationUpdates(
+                    transaction->getMutations());
+              });
+          logTransactionTelemetryMarkers(*transaction);
+          return;
+        }
         auto mutationVecs = transaction->getMutations();
         facebook::react::ShadowViewMutationList mutationVec;
         facebook::react::ShadowViewMutationList otherMutation;
@@ -62,6 +73,7 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
                         MountingManager::Shared const &mountingManager) {
                     facebook::react::SystraceSection s(taskTrace.c_str());
                     mountingManager->didMount(mutations);
+                    mountingManager->clearPreallocatedViews(mutations);
                 });
             }
         }
@@ -133,8 +145,6 @@ void SchedulerDelegate::logTransactionTelemetryMarkers(
 void SchedulerDelegate::schedulerDidRequestPreliminaryViewAllocation(
     SurfaceId /*surfaceId*/,
     const ShadowNode& shadowNode) {
-  facebook::react::SystraceSection s(
-      "#RNOH::SchedulerDelegate::schedulerDidRequestPreliminaryViewAllocation");
   auto preallocationRequestQueue = m_weakPreallocationRequestQueue.lock();
   if (preallocationRequestQueue == nullptr) {
     return;
@@ -143,7 +153,8 @@ void SchedulerDelegate::schedulerDidRequestPreliminaryViewAllocation(
       PreallocationRequest{
           shadowNode.getTag(),
           shadowNode.getComponentHandle(),
-          shadowNode.getComponentName()});
+          shadowNode.getComponentName(),
+          shadowNode.getProps()});
 }
 
 void SchedulerDelegate::schedulerDidDispatchCommand(

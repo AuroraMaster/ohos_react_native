@@ -20,6 +20,12 @@ namespace rnoh {
  */
 class ComponentInstancePreallocationRequestQueue {
  public:
+  using Request = struct {
+    facebook::react::Tag tag;
+    facebook::react::ComponentHandle componentHandle;
+    facebook::react::ComponentName componentName;
+    facebook::react::Props::Shared props;
+  };
   class Delegate {
     friend ComponentInstancePreallocationRequestQueue;
 
@@ -28,15 +34,11 @@ class ComponentInstancePreallocationRequestQueue {
 
    protected:
     virtual void onPushPreallocationRequest() = 0;
+    virtual void processPreallocationRequest(Request const& shadowView) = 0;
   };
 
   using Shared = std::shared_ptr<ComponentInstancePreallocationRequestQueue>;
   using Weak = std::weak_ptr<ComponentInstancePreallocationRequestQueue>;
-  using Request = struct {
-    facebook::react::Tag tag;
-    facebook::react::ComponentHandle componentHandle;
-    facebook::react::ComponentName componentName;
-  };
 
  private:
   std::queue<Request> m_queue;

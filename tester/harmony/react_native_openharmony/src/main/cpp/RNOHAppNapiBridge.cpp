@@ -210,7 +210,7 @@ static napi_value onCreateRNInstance(
     DLOG(INFO) << "createReactNativeInstance";
     HarmonyReactMarker::setAppStartTime(
         facebook::react::JSExecutor::performanceNow());
-    auto args = arkJs.getCallbackArgs(info, 16);
+    auto args = arkJs.getCallbackArgs(info, 17);
     size_t instanceId = arkJs.getDouble(args[0]);
     auto mainArkTSTurboModuleProviderRef = arkJs.createNapiRef(args[1]);
     auto mutationsListenerRef = arkJs.createNapiRef(args[2]);
@@ -243,6 +243,7 @@ static napi_value onCreateRNInstance(
     }
     int envId = arkJs.getDouble(args[13]);
     auto hspModuleName = arkJs.getString(args[15]);
+    std::string cacheDir = arkJs.getString(args[16]);
     auto workerLock = std::lock_guard(WORKER_DATA_MTX);
     std::unique_ptr<NapiTaskRunner> workerTaskRunner = nullptr;
     auto workerTaskRunnerIt =
@@ -309,7 +310,8 @@ static napi_value onCreateRNInstance(
         shouldEnableBackgroundExecutor,
         arkTsComponentNames,
         std::move(fontPathByFontFamily),
-        hspModuleName);
+        hspModuleName,
+        std::move(cacheDir));
 
     auto lock = std::lock_guard<std::mutex>(RN_INSTANCE_BY_ID_MTX);
     if (RN_INSTANCE_BY_ID.find(instanceId) != RN_INSTANCE_BY_ID.end()) {

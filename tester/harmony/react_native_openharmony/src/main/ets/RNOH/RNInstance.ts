@@ -34,7 +34,7 @@ import { WorkerThread } from "./WorkerThread"
 import font from "@ohos.font"
 import { common } from '@kit.AbilityKit'
 import { deviceInfo } from '@kit.BasicServicesKit';
-import { OH_API_LEVEL_20 } from './types';
+import { OH_API_LEVEL_21 } from './types';
 
 export type Resource = Exclude<font.FontOptions["familySrc"], string>
 
@@ -505,6 +505,7 @@ export class RNInstanceImpl implements RNInstance {
   private uiCtx: UIContext;
   private unregisterDevToolsMessageListeners: (() => void)[] = [];
   private uiAbilityContext: common.UIAbilityContext = undefined;
+  private cacheDir?: string;
 
   /**
    * @deprecated
@@ -543,13 +544,15 @@ export class RNInstanceImpl implements RNInstance {
     backPressHandler?: () => void,
     private jsvmInitOptions?: ReadonlyArray<JSVMInitOption>,
     private hspModuleName?: string,
+    cacheDir?: string
   ) {
-    this.defaultProps = { concurrentRoot: !disableConcurrentRoot, batchToNative: deviceInfo.sdkApiVersion >= OH_API_LEVEL_20 };
+    this.defaultProps = { concurrentRoot: !disableConcurrentRoot, batchToNative: deviceInfo.sdkApiVersion >= OH_API_LEVEL_21 };
     this.httpClient = httpClient ?? httpClientProvider.getInstance(this);
     this.caPathProvider = caPathProvider ?? ((url: string) => '');
     this.logger = injectedLogger.clone('RNInstance');
     this.frameNodeFactoryRef = { frameNodeFactory: null };
     this.backPressHandler = backPressHandler;
+    this.cacheDir = cacheDir;
     if (this.shouldUseNDKToMeasureText) {
       this.enableFeatureFlag("NDK_TEXT_MEASUREMENTS")
     }
@@ -679,6 +682,7 @@ export class RNInstanceImpl implements RNInstance {
       this.fontPathByFontFamily,
       this.jsvmInitOptions ?? JSVM_INIT_OPTIONS_PRESET.DEFAULT,
       this.hspModuleName ?? "",
+      this.cacheDir,
     )
     stopTracing()
   }

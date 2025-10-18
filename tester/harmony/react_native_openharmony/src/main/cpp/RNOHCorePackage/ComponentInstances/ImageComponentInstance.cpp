@@ -10,6 +10,7 @@
 #include <react/renderer/components/image/ImageState.h>
 #include <react/renderer/core/ConcreteState.h>
 #include <sstream>
+#include "ffrt/cpp/pattern/job_partner.h"
 
 namespace rnoh {
 
@@ -33,6 +34,8 @@ const std::unordered_set<std::string> validImageTypes = {
 
 ImageComponentInstance::ImageComponentInstance(Context context)
     : CppComponentInstance(std::move(context)),
+      ImageSourceResolver::ImageSourceUpdateListener(
+        m_deps->imageSourceResolver),
       m_imageNode(m_arkUINodeCtx) {
   this->getLocalRootArkUINode().setNodeDelegate(this);
   this->getLocalRootArkUINode().setInterpolation(
@@ -42,36 +45,49 @@ ImageComponentInstance::ImageComponentInstance(Context context)
     facebook::react::ImportantForAccessibility::Auto);
 }
 
-std::string ImageComponentInstance::FindLocalCacheByUri(std::string const& uri) {
-  if(uri.find("http", 0) != 0) {
-    return uri;
+bool isValidMimeType(const std::string& mimeType) {
+  if (mimeType.empty()) {
+    return false;
   }
 
-  if (!m_deps) {
+  if (mimeType.substr(0, BASE_64_MIME_TYPE_LENGTH) != "image/") {
+    return false;
+  }
+  std::string imageType = mimeType.substr(BASE_64_MIME_TYPE_LENGTH);
+
+  return validImageTypes.find(imageType) != validImageTypes.end();
+}
+
+std::string processBase64Uri(const std::string& uri) {
+  size_t base64Pos = uri.find(BASE_64_MARK);
+  if (base64Pos == std::string::npos) {
     return uri;
   }
-
-  auto rnInstance = m_deps->rnInstance.lock();
-  if (!rnInstance) {
-    return uri;
+  size_t mimeStart = BASE_64_PREFIX.length();
+  std::string mimeType = uri.substr(mimeStart, base64Pos - mimeStart);
+  if (base64Pos <= mimeStart || !isValidMimeType(mimeType)) {
+    // Only change to image/png when MIME type is illegal.
+    return BASE_64_STANDARD_PREFIX +
+        uri.substr(base64Pos + BASE_64_FORMAT_LENGTH);
   }
 
-  auto turboModule = rnInstance->getTurboModule("ImageLoader");
-  if (!turboModule) {
-    return uri;
+  return uri;
+}
+
+void ImageComponentInstance::setSources(
+    facebook::react::ImageSources const& sources) {
+  // Defined layoutMetrics are necessary for determining the best source
+  // for current container dimensions
+  if (m_layoutMetrics == facebook::react::EmptyLayoutMetrics) {
+    return;
   }
 
-  auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
-  if (!arkTsTurboModule) {
-    return uri;
+  auto uri = m_deps->imageSourceResolver->resolveImageSource(
+      *this, m_layoutMetrics, sources);
+  if (uri.rfind(BASE_64_PREFIX, 0) == 0 && uri.find(BASE_64_MARK) != std::string::npos) {
+    uri = processBase64Uri(uri);
   }
-
-  auto cache = arkTsTurboModule->callSync("getPrefetchResult", {uri});
-  if (!cache.isString()) {
-    return uri;
-  }
-
-  return cache.asString();
+  this->getLocalRootArkUINode().setSources(uri, getAbsolutePathPrefix(getBundlePath()));
 }
 
 std::string ImageComponentInstance::getBundlePath() {
@@ -132,47 +148,13 @@ std::string ImageComponentInstance::getAbsolutePathPrefix(std::string const& bun
   return prefix;
 }
 
-bool isValidMimeType(const std::string& mimeType) {
-  if (mimeType.empty()) {
-    return false;
-  }
-
-  if (mimeType.substr(0, BASE_64_MIME_TYPE_LENGTH) != "image/") {
-    return false;
-  }
-  std::string imageType = mimeType.substr(BASE_64_MIME_TYPE_LENGTH);
-
-  return validImageTypes.find(imageType) != validImageTypes.end();
-}
-
-std::string processBase64Uri(const std::string& uri) {
-  size_t base64Pos = uri.find(BASE_64_MARK);
-  if (base64Pos == std::string::npos) {
-    return uri;
-  }
-  size_t mimeStart = BASE_64_PREFIX.length();
-  std::string mimeType = uri.substr(mimeStart, base64Pos - mimeStart);
-  if (base64Pos <= mimeStart || !isValidMimeType(mimeType)) {
-    // Only change to image/png when MIME type is illegal.
-    return BASE_64_STANDARD_PREFIX +
-        uri.substr(base64Pos + BASE_64_FORMAT_LENGTH);
-  }
-
-  return uri;
-}
-
 void ImageComponentInstance::onPropsChanged(SharedConcreteProps const& props) {
   CppComponentInstance::onPropsChanged(props);
 
   auto rawProps = ImageRawProps::getFromDynamic(props->rawProps);
 
   if (!m_props || m_props->sources != props->sources) {
-    std::string uri = FindLocalCacheByUri(props->sources[0].uri);
-    if (uri.rfind(BASE_64_PREFIX, 0) == 0 && 
-        uri.find(BASE_64_MARK) != std::string::npos) {
-      uri = processBase64Uri(uri);
-    }
-    this->getLocalRootArkUINode().setSources(uri, getAbsolutePathPrefix(getBundlePath()));
+    setSources(props->sources);
     if (!this->getLocalRootArkUINode().getUri().empty()) {
       onLoadStart();
     }
@@ -247,10 +229,15 @@ void ImageComponentInstance::onPropsChanged(SharedConcreteProps const& props) {
   }
 }
 
+void ImageComponentInstance::onImageSourceCacheUpdate() {
+  if (m_state != nullptr) {
+    setSources({m_state->getData().getImageSource()});
+  }
+}
+
 void ImageComponentInstance::onStateChanged(SharedConcreteState const& state) {
   CppComponentInstance::onStateChanged(state);
-  auto source = state->getData().getImageSource();
-  this->getLocalRootArkUINode().setSources(FindLocalCacheByUri(source.uri), getAbsolutePathPrefix(getBundlePath()));
+  setSources({state->getData().getImageSource()});
   this->getLocalRootArkUINode().setBlur(state->getData().getBlurRadius());
 }
 

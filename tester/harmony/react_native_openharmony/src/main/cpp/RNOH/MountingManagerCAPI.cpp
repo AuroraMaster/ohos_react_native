@@ -7,7 +7,11 @@
 
 #include "MountingManagerCAPI.h"
 #include <cxxreact/SystraceSection.h>
+#include "FFRTConfig.h"
 #include "RNOH/Performance/HarmonyReactMarker.h"
+#include "ffrt/cpp/pattern/job_partner.h"
+#include "RNOH/ParallelComponent.h"
+#include "RNOH/ApiVersionCheck.h"
 
 namespace rnoh {
 
@@ -58,22 +62,65 @@ void MountingManagerCAPI::doMount(MutationList const& mutations) {
 }
 
 void MountingManagerCAPI::didMount(MutationList const& mutations) {
-    facebook::react::SystraceSection s(
-        "#RNOH::MountingManager::didMount ", mutations.size());
+  {
     auto validMutations = getValidMutations(mutations);
+    facebook::react::SystraceSection s(
+        "#RNOH::MountingManager::arkdidMount size = ", validMutations.size());
     m_arkTsMountingManager->didMount(validMutations);
- 
-  HarmonyReactMarker::logMarker(
-      HarmonyReactMarker::HarmonyReactMarkerId::FABRIC_BATCH_EXECUTION_START); 
+  }
+  {
+    HarmonyReactMarker::logMarker(
+        HarmonyReactMarker::HarmonyReactMarkerId::FABRIC_BATCH_EXECUTION_START);
+    m_componentInstanceProvider->clearPreallocationRequestQueue();
+  }
 
-    for (auto const& mutation : mutations) {
-        try {
+  facebook::react::SystraceSection s(
+      "#RNOH::MountingManager::didMount size = ", mutations.size());
+  auto agent = ffrt::job_partner<rnoh::ScenarioID::MUTATION_PARALLELIZATION>::get_partner_of_this_thread(
+      ffrt::job_partner_attr().max_parallelism(MAX_THREAD_NUM_MUTATION_CREATE).qos(THREAD_PRIORITY_LEVEL_5));
+  for (uint64_t i = 0; i < mutations.size(); i++) {
+    auto const& mutation = mutations[i];
+    if (mutation.type == facebook::react::ShadowViewMutation::Create) {
+      if (IsAtLeastApi21() &&
+          (parallelComponentHandles.find(mutation.newChildShadowView.componentHandle) !=
+               parallelComponentHandles.end() ||
+           ComponentNameManager::getInstance().hasComponentName(
+               mutation.newChildShadowView.componentName))) {
+        agent->submit([this, &mutation] {
+          try {
             this->handleMutation(mutation);
+          } catch (std::exception const& e) {
+            LOG(ERROR) << "Mutation" << getMutationNameFromType(mutation.type)
+                       << "failed:" << e.what();
+          }
+        });
+      } else {
+        try {
+          this->handleMutation(mutation);
         } catch (std::exception const& e) {
-            LOG(ERROR)  << "Mutation " << getMutationNameFromType(mutation.type)
-                        << " failed: " << e.what();
+          LOG(ERROR) << "Mutation" << getMutationNameFromType(mutation.type)
+                     << "failed:" << e.what();
         }
+      }
     }
+  }
+
+  if (IsAtLeastApi21()) {
+    agent->wait();
+  }
+
+  for (uint64_t i = 0; i < mutations.size(); i++) {
+    auto const& mutation = mutations[i];
+    if (mutation.type != facebook::react::ShadowViewMutation::Create) {
+      try {
+        this->handleMutation(mutation);
+      } catch (std::exception const& e) {
+        LOG(ERROR) << "Mutation" << getMutationNameFromType(mutation.type)
+                   << "failed:" << e.what();
+      }
+    }
+  }
+
   HarmonyReactMarker::logMarker(
       HarmonyReactMarker::HarmonyReactMarkerId::FABRIC_BATCH_EXECUTION_END);
 }
@@ -117,20 +164,11 @@ auto MountingManagerCAPI::getValidMutations(MutationList const& mutations)
 bool MountingManagerCAPI::isCAPIComponent(
     facebook::react::ShadowView const& shadowView) {
   std::string componentName = shadowView.componentName;
-  if (m_cApiComponentNames.count(componentName) > 0) {
-    return true;
-  }
   if (m_arkTsComponentNames.count(componentName) > 0) {
     return false;
-  }
-  auto componentInstance = m_componentInstanceProvider->getComponentInstance(
-      shadowView.tag, shadowView.componentHandle, componentName);
-  if (componentInstance) {
-    m_cApiComponentNames.insert(std::move(componentName));
+  } else {
     return true;
   }
-  m_arkTsComponentNames.insert(std::move(componentName));
-  return false;
 }
 
 void MountingManagerCAPI::dispatchCommand(
@@ -256,46 +294,16 @@ void MountingManagerCAPI::handleMutation(Mutation const& mutation) {
         break;
       }
       case facebook::react::ShadowViewMutation::Insert: {
-        auto parentComponentInstance = m_componentInstanceRegistry->findByTag(
+        const auto& parentComponentInstance = m_componentInstanceRegistry->findByTag(
             mutation.parentShadowView.tag);
-        auto newChildComponentInstance = m_componentInstanceRegistry->findByTag(
+        const auto& newChildComponentInstance = m_componentInstanceRegistry->findByTag(
             mutation.newChildShadowView.tag);
 
         if (parentComponentInstance != nullptr &&
             newChildComponentInstance != nullptr) {
           // text need change stackNode
-          if (parentComponentInstance->checkUpdateBaseNode()) {
-            if (parentComponentInstance->getParent().lock() != nullptr) {
-              facebook::react::Tag grandParentTag = parentComponentInstance->getParent().lock()->getTag();
-              std::size_t parentIndex = parentComponentInstance->getIndex();
-              //  mutation.newChildShadowView is old data
-              facebook::react::ShadowView parentShadowView = parentComponentInstance->getShadowView();
-              DLOG(INFO) << "need update text node, parent tag=" << parentComponentInstance->getTag()
-                << ", grandParentTag tag=" << grandParentTag << ", parent index=" << parentIndex
-                << ", child index=" << mutation.index;
-              auto grandParentComponentInstance = m_componentInstanceRegistry->findByTag(grandParentTag);
-              if (grandParentComponentInstance != nullptr) {
-                grandParentComponentInstance->removeChild(parentComponentInstance);
-                m_componentInstanceRegistry->deleteByTag(parentComponentInstance->getTag());
-                auto newParentComponentInstance = m_componentInstanceFactory->create(
-                  parentShadowView.tag, parentShadowView.componentHandle, parentShadowView.componentName);
-                if (newParentComponentInstance != nullptr) {
-                  updateComponentWithShadowView(newParentComponentInstance, parentShadowView);
-                  m_componentInstanceRegistry->insert(newParentComponentInstance);
-                  newParentComponentInstance->insertChild(newChildComponentInstance, mutation.index);
-                  grandParentComponentInstance->insertChild(newParentComponentInstance, parentIndex);
-                }
-              } else {
-                LOG(FATAL) << "Couldn't find grandParentComponentInstance by tag=" << grandParentTag;
-              }
-            } else {
-              LOG(FATAL) << "Couldn't find grandParentComponentInstance";
-            }
-          } else {
             parentComponentInstance->insertChild(
                 newChildComponentInstance, mutation.index);
-          }
-          
         }
         break;
       }
@@ -375,6 +383,10 @@ void MountingManagerCAPI::schedulerDidSendAccessibilityEvent(
 
 void MountingManagerCAPI::clearPreallocatedViews() {
   m_componentInstanceProvider->clearPreallocatedViews();
+}
+
+void MountingManagerCAPI::clearPreallocatedViews(facebook::react::ShadowViewMutationList mutations) {
+  m_componentInstanceProvider->clearPreallocatedViews(mutations);
 }
 
 void MountingManagerCAPI::clearPreallocationRequestQueue()

@@ -52,7 +52,9 @@ void MountingManagerArkTS::doMount(MutationList const& mutations) {
 }
 
 void MountingManagerArkTS::didMount(MutationList const& mutations) {
-  this->triggerUICallback(mutations);
+  if (mutations.size() > 0) {
+    this->triggerUICallback(mutations);
+  }
 }
 
 void MountingManagerArkTS::finalizeMutationUpdates(MutationList const& mutations) {}
@@ -83,6 +85,10 @@ void MountingManagerArkTS::updateView(
 }
 
 void MountingManagerArkTS::clearPreallocatedViews() {
+  throw RNOHError("Preallocation is not implemented in ArkTS architecture.");
+}
+
+void MountingManagerArkTS::clearPreallocatedViews(facebook::react::ShadowViewMutationList mutations) {
   throw RNOHError("Preallocation is not implemented in ArkTS architecture.");
 }
 

@@ -154,6 +154,7 @@ export class NapiBridge {
     fontPathByFontFamily: Record<string, string>,
     jsvmInitOptions: ReadonlyArray<JSVMInitOption>,
     hspModuleName: string,
+    cacheDir: string,
   ) {
     const cppFeatureFlagStatusByName = cppFeatureFlags.reduce((acc, cppFeatureFlag) => {
       acc[cppFeatureFlag] = true
@@ -187,6 +188,7 @@ export class NapiBridge {
       envId,
       jsvmInitOptions,
       hspModuleName,
+      cacheDir
     );
   }
 

@@ -268,7 +268,9 @@ export class RNInstancesCoordinator {
       options?.defaultHttpClient,
       this.uiAbilityContext.resourceManager,
       displayMetricsManager,
-      workerThreadPromise
+      workerThreadPromise,
+      this.options?.launchURI,
+      this.uiAbilityContext.cacheDir
     )
     this.rnohCoreContext = new InternalRNOHCoreContext({
       reactNativeVersion: "0.72.5",

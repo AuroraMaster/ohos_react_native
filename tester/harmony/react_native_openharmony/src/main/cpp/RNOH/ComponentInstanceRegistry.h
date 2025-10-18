@@ -29,11 +29,10 @@ class ComponentInstanceRegistry : public ComponentInstance::Registry {
 
   ~ComponentInstanceRegistry() {
     DLOG(INFO) << "~ComponentInstanceRegistry";
-    assertMainThread();
   }
 
   ComponentInstance::Shared findByTag(facebook::react::Tag tag) const {
-    assertMainThread();
+    std::lock_guard<std::mutex> lock(m_componentInstanceByTagMtx);
     auto it = m_componentInstanceByTag.find(tag);
     if (it != m_componentInstanceByTag.end()) {
       return it->second;
@@ -42,7 +41,7 @@ class ComponentInstanceRegistry : public ComponentInstance::Registry {
   }
 
   std::optional<facebook::react::Tag> findTagById(const std::string& id) const {
-    assertMainThread();
+    std::lock_guard<std::mutex> lock(m_tagByIdMtx);
     auto it = m_tagById.find(id);
     if (it != m_tagById.end()) {
       return it->second;
@@ -51,7 +50,6 @@ class ComponentInstanceRegistry : public ComponentInstance::Registry {
   }
 
   ComponentInstance::Shared findById(const std::string& id) const override {
-    assertMainThread();
     auto maybeTag = this->findTagById(id);
     if (!maybeTag.has_value()) {
       return nullptr;
@@ -60,8 +58,8 @@ class ComponentInstanceRegistry : public ComponentInstance::Registry {
   }
 
   void insert(ComponentInstance::Shared componentInstance) {
-    assertMainThread();
     auto tag = componentInstance->getTag();
+    std::lock_guard<std::mutex> lock(m_componentInstanceByTagMtx);
     m_componentInstanceByTag.emplace(tag, std::move(componentInstance));
   }
 
@@ -69,7 +67,7 @@ class ComponentInstanceRegistry : public ComponentInstance::Registry {
       facebook::react::Tag tag,
       const std::string& id,
       const std::string prevId) {
-    assertMainThread();
+    std::lock_guard<std::mutex> lock(m_tagByIdMtx);
     if (!prevId.empty() && m_tagById.find(prevId) != m_tagById.end()) {
       m_tagById.erase(prevId);
     }
@@ -79,23 +77,33 @@ class ComponentInstanceRegistry : public ComponentInstance::Registry {
   }
 
   void deleteByTag(facebook::react::Tag tag) {
-    assertMainThread();
-    auto tagAndComponentInstance = m_componentInstanceByTag.find(tag);
-    if (tagAndComponentInstance == m_componentInstanceByTag.end()) {
-      return;
+    std::unordered_map<facebook::react::Tag, ComponentInstance::Shared>::
+        iterator tagAndComponentInstance;
+    {
+      std::lock_guard<std::mutex> lock(m_componentInstanceByTagMtx);
+      tagAndComponentInstance = m_componentInstanceByTag.find(tag);
+      if (tagAndComponentInstance == m_componentInstanceByTag.end()) {
+        return;
+      }
     }
     auto componentInstance = tagAndComponentInstance->second;
     auto componentInstanceId = componentInstance->getId();
     if (!componentInstanceId.empty()) {
+      std::lock_guard<std::mutex> lock(m_tagByIdMtx);
       m_tagById.erase(componentInstanceId);
     }
+
+    std::lock_guard<std::mutex> lock(m_componentInstanceByTagMtx);
     m_componentInstanceByTag.erase(tag);
   }
+
   private:
   std::thread::id m_mainThreadId = std::this_thread::get_id();
   std::unordered_map<facebook::react::Tag, ComponentInstance::Shared>
       m_componentInstanceByTag = {};
   std::unordered_map<std::string, facebook::react::Tag> m_tagById = {};
+  mutable std::mutex m_componentInstanceByTagMtx;
+  mutable std::mutex m_tagByIdMtx;
 
   void assertMainThread() const {
     RNOH_ASSERT_MSG(

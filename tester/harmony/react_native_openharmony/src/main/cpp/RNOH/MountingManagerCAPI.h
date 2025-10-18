@@ -90,6 +90,7 @@ class MountingManagerCAPI final : public MountingManager {
       std::string const& eventType) override;
 
     void clearPreallocatedViews();
+    void clearPreallocatedViews(facebook::react::ShadowViewMutationList mutations);
     void clearPreallocationRequestQueue();
 
  private:
