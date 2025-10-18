@@ -35,6 +35,8 @@ class MountingManager {
   virtual void doMount(MutationList const& mutations) = 0;
 
   virtual void didMount(MutationList const& mutations) = 0;
+    
+  virtual void handleMutation(Mutation const& mutation) = 0;
 
   virtual void finalizeMutationUpdates(MutationList const& mutations) = 0;
     
