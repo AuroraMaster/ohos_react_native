@@ -82,6 +82,8 @@ class CppComponentInstance : public ComponentInstance,
   CppComponentInstance(Context context)
       : ComponentInstance(std::move(context)) {}
 
+  ~CppComponentInstance() noexcept(false) = default;
+
   void onCreate() override {
     std::string componentName = this->getComponentName();
     if (SVG_TYPE_ARR.find(componentName) != SVG_TYPE_ARR.end()) {

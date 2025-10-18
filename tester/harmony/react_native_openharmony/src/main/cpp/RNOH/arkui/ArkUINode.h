@@ -43,7 +43,7 @@ class ArkUINode;
 
 class ArkUINodeDelegate {
  public:
-  virtual ~ArkUINodeDelegate() = default;
+  virtual ~ArkUINodeDelegate() noexcept(false) = default;
   virtual void onArkUINodeDestroy(ArkUINode* /*node*/){};
   virtual void onArkUINodeAccessibilityAction(
       ArkUINode* node,
@@ -185,7 +185,7 @@ class ArkUINode {
    */
   virtual bool isFocused();
 
-  virtual ~ArkUINode() noexcept;
+  virtual ~ArkUINode() noexcept(false);
 
  protected:
   void maybeThrow(int32_t status) {

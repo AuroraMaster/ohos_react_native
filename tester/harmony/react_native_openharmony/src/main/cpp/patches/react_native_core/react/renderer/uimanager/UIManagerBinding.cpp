@@ -195,21 +195,25 @@ jsi::Value UIManagerBinding::get(
             jsi::Runtime& runtime,
             jsi::Value const& /*thisValue*/,
             jsi::Value const* arguments,
-            size_t /*count*/) noexcept -> jsi::Value {
-          auto eventTarget =
-              eventTargetFromValue(runtime, arguments[4], arguments[0]);
-          if (!eventTarget) {
-            react_native_assert(false);
-            return jsi::Value::undefined();
+            size_t /*count*/) -> jsi::Value {
+          try {
+            auto eventTarget =
+                eventTargetFromValue(runtime, arguments[4], arguments[0]);
+            if (!eventTarget) {
+              react_native_assert(false);
+              return jsi::Value::undefined();
+            }
+            return valueFromShadowNode(
+                runtime,
+                uiManager->createNode(
+                    tagFromValue(arguments[0]),
+                    stringFromValue(runtime, arguments[1]),
+                    surfaceIdFromValue(runtime, arguments[2]),
+                    RawProps(runtime, arguments[3]),
+                    eventTarget));
+          } catch (const std::logic_error& ex) {
+            LOG(FATAL) << "logic_error in createNode: " << ex.what();
           }
-          return valueFromShadowNode(
-              runtime,
-              uiManager->createNode(
-                  tagFromValue(arguments[0]),
-                  stringFromValue(runtime, arguments[1]),
-                  surfaceIdFromValue(runtime, arguments[2]),
-                  RawProps(runtime, arguments[3]),
-                  eventTarget));
         });
   }
   // RNOH patch begin

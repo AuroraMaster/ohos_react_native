@@ -146,16 +146,20 @@ ArkUINode::ArkUINode(const Context::Shared context, ArkUI_NodeType nodeType) {
   }
 }
 
-ArkUINode::~ArkUINode() noexcept {
-  for (auto eventType : NODE_EVENT_TYPES) {
-    this->unregisterNodeEvent(eventType);
+ArkUINode::~ArkUINode() noexcept(false) {
+  try {
+    for (auto eventType : NODE_EVENT_TYPES) {
+      this->unregisterNodeEvent(eventType);
+    }
+    if (m_arkUINodeDelegate != nullptr) {
+      m_arkUINodeDelegate->onArkUINodeDestroy(this);
+    }
+    NativeNodeApi::getInstance()->removeNodeEventReceiver(
+        m_nodeHandle, receiveEvent);
+    NativeNodeApi::getInstance()->disposeNode(m_nodeHandle);
+  } catch (const std::logic_error& ex) {
+    LOG(FATAL) << "logic_error in ArkUINode::~ArkUINode():" << ex.what();
   }
-  if (m_arkUINodeDelegate != nullptr) {
-    m_arkUINodeDelegate->onArkUINodeDestroy(this);
-  }
-  NativeNodeApi::getInstance()->removeNodeEventReceiver(
-      m_nodeHandle, receiveEvent);
-  NativeNodeApi::getInstance()->disposeNode(m_nodeHandle);
 }
 
 void ArkUINode::setArkUINodeDelegate(ArkUINodeDelegate* delegate) {

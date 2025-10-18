@@ -31,14 +31,20 @@ ThreadTaskRunner::ThreadTaskRunner(
   pthread_setname_np(handle, name.c_str());
 }
 
-ThreadTaskRunner::~ThreadTaskRunner() {
-  RNOH_ASSERT(!isOnCurrentThread());
-  DLOG(INFO) << "ThreadTaskRunner::~ThreadTaskRunner()::start";
-  // drop the wrapped task runner to stop the event loop
-  m_wrappedTaskRunner->cleanup();
-  m_wrappedTaskRunner.reset();
-  m_thread.join();
-  DLOG(INFO) << "ThreadTaskRunner::~ThreadTaskRunner()::stop";
+ThreadTaskRunner::~ThreadTaskRunner() noexcept(false) {
+  try {
+    RNOH_ASSERT(!isOnCurrentThread());
+    DLOG(INFO) << "ThreadTaskRunner::~ThreadTaskRunner()::start";
+    // drop the wrapped task runner to stop the event loop
+    m_wrappedTaskRunner->cleanup();
+    m_wrappedTaskRunner.reset();
+    m_thread.join();
+    DLOG(INFO) << "ThreadTaskRunner::~ThreadTaskRunner()::stop";
+  } catch (const std::logic_error& ex) {
+    LOG(FATAL)
+        << "logic_error in ThreadTaskRunner~ThreadTaskRunner():"
+        << ex.what();
+  }
 }
 
 void ThreadTaskRunner::runAsyncTask(Task&& task) {

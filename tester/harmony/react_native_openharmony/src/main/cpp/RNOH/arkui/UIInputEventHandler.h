@@ -29,7 +29,7 @@ class UIInputEventHandler {
    * NOTE: The node must outlive the UIInputEventHandler.
    */
   UIInputEventHandler(ArkUINode& node);
-  virtual ~UIInputEventHandler() noexcept;
+  virtual ~UIInputEventHandler() noexcept(false);
   virtual void onTouchEvent(ArkUI_UIInputEvent* event) = 0;
     
  private:
