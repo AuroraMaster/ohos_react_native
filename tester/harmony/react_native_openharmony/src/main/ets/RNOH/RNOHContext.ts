@@ -288,6 +288,7 @@ export interface AnyThreadTurboModuleContext {
   httpClient: HttpClient;
   caPathProvider: CAPathProvider;
   safeAreaInsetsProvider: SafeAreaInsetsProvider;
+  launchUri?: string;
 }
 
 /**
@@ -322,6 +323,7 @@ export type WorkerTurboModuleContextDependencies = {
   httpClient: HttpClient;
   caPathProvider: CAPathProvider;
   safeAreaInsetsProvider: SafeAreaInsetsProvider;
+  launchUri?: string;
 };
 
 /**
@@ -358,5 +360,9 @@ export class WorkerTurboModuleContext implements AnyThreadTurboModuleContext {
 
   get safeAreaInsetsProvider() {
     return this._workerTurboModuleContextDeps.safeAreaInsetsProvider;
+  }
+
+  get launchUri(): string | undefined {
+    return this._workerTurboModuleContextDeps.launchUri;
   }
 }

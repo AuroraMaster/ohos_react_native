@@ -51,7 +51,6 @@ export class RNOHCorePackage extends RNPackage {
     return new Map<string, ((ctx: UITurboModuleContext) => UITurboModule)>()
       .set(AccessibilityInfoTurboModule.NAME, (ctx) => new AccessibilityInfoTurboModule(ctx))
       .set(AlertManagerTurboModule.NAME, (ctx) => new AlertManagerTurboModule(ctx))
-      .set(AppStateTurboModule.NAME, (ctx) => new AppStateTurboModule(ctx))
       .set(DeviceEventManagerTurboModule.NAME, (ctx) => new DeviceEventManagerTurboModule(ctx))
       .set(DevSettingsTurboModule.NAME, (ctx) => new DevSettingsTurboModule(ctx))
       .set(DevMenuTurboModule.NAME, (ctx) => new DevMenuTurboModule(ctx))
@@ -59,13 +58,11 @@ export class RNOHCorePackage extends RNPackage {
       .set(ImageLoaderTurboModule.NAME, (ctx) => new ImageLoaderTurboModule(ctx))
       .set(KeyboardObserverTurboModule.NAME, (ctx) => new KeyboardObserverTurboModule(ctx))
       .set(NativeAnimatedTurboModule.NAME, (ctx) => new NativeAnimatedTurboModule(ctx))
-      .set(LinkingManagerTurboModule.NAME, (ctx) => new LinkingManagerTurboModule(ctx))
       .set(PlatformColorTurboModule.NAME, (ctx) => new PlatformColorTurboModule(ctx))
       .set(PlatformConstantsTurboModule.NAME, (ctx) => new PlatformConstantsTurboModule(ctx))
       .set(ShareTurboModule.NAME, (ctx) => new ShareTurboModule(ctx))
       .set(SourceCodeTurboModule.NAME, (ctx) => new SourceCodeTurboModule(ctx))
       .set(TimingTurboModule.NAME, (ctx) => new TimingTurboModule(ctx))
-      .set(I18nManagerTurboModule.NAME, (ctx) => new I18nManagerTurboModule(ctx))
       .set(LogBoxTurboModule.NAME, (ctx) => new LogBoxTurboModule(ctx))
       .set(DevLoadingViewTurboModule.NAME, (ctx) => new DevLoadingViewTurboModule(ctx))
       .set(VibrationTurboModule.NAME, (ctx) => new VibrationTurboModule(ctx))
@@ -92,6 +89,9 @@ export class RNOHCorePackage extends RNPackage {
       .set(WebSocketTurboModule.NAME, (ctx) => new WebSocketTurboModule(ctx))
       .set(BlobTurboModule.NAME, (ctx) => new BlobTurboModule(ctx))
       .set(FileReaderTurboModule.NAME, (ctx) => new FileReaderTurboModule(ctx))
+      .set(LinkingManagerTurboModule.NAME, (ctx) => new LinkingManagerTurboModule(ctx))
+      .set(I18nManagerTurboModule.NAME, (ctx) => new I18nManagerTurboModule(ctx))
+      .set(AppStateTurboModule.NAME, (ctx) => new AppStateTurboModule(ctx))
   }
 
   override getDebugName() {

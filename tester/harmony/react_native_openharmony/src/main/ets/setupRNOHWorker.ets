@@ -50,6 +50,7 @@ interface CreateRNInstanceWorkerEnvPayload {
   uiAbilityContext: common.UIAbilityContext
   architecture: "C_API" | "ARK_TS"
   assetsDest: string
+  launchUri: string
 }
 
 class CreateRNInstanceWorkerEnvAckPayload {
@@ -160,6 +161,7 @@ export async function setupRNOHWorker(config: RNOHWorkerConfig) {
             const rnInstanceName = typedMessagePayload.rnInstanceName;
             const rnInstanceId = typedMessagePayload.rnInstanceId;
             const uiAbilityContext = typedMessagePayload.uiAbilityContext
+            const launchUri = typedMessagePayload.launchUri
             if (turboModuleDepsByRNInstanceId.has(rnInstanceId)) {
               throw new RNOHError({
                 whatHappened: `Tried to re-create UITaskRunner (rnInstanceId=${rnInstanceId})`,
@@ -185,6 +187,7 @@ export async function setupRNOHWorker(config: RNOHWorkerConfig) {
                   httpClient: rnInstanceConfig.httpClient ?? new DefaultHttpClient({ logger: workerLogger }),
                   caPathProvider: rnInstanceConfig.caPathProvider ?? ((url: string) => ''),
                   safeAreaInsetsProvider: new SafeAreaInsetsProvider(uiAbilityContext),
+                  launchUri
                 },
                 uiTaskRunner: uiTaskRunner
               })

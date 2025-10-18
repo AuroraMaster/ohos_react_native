@@ -29,6 +29,7 @@ import { SurfaceHandle, SurfaceProps } from './RNOH/SurfaceHandle';
 import { I18nManagerTurboModule } from './RNOHCorePackage/turboModules';
 import type { SurfaceContext } from './RNOH/RNInstance';
 import { NodeContent } from '@ohos.arkui.node'
+import I18n from '@ohos.i18n';
 
 interface RootViewState {}
 
@@ -191,8 +192,9 @@ struct ContentAdaptiveSurface {
   }
 
   updateSurfaceConstraints(constraints: Constraints): Size {
-    const isRTL = this.ctx.rnInstance.getTurboModule<I18nManagerTurboModule>('I18nManager').getConstants()
-      .isRTL;
+    let RTLAllowed = true;
+    let RTLForced = false;
+    const isRTL = RTLForced || (RTLAllowed && I18n.isRTL(this.ctx.uiAbilityContext.config.language))
     this.surfaceContext = {
       minWidth: this.constraints?.minWidth ?? constraints?.minWidth ?? 0,
       minHeight: this.constraints?.minHeight ?? constraints?.minHeight ?? 0,
@@ -422,8 +424,9 @@ struct ParentBoundSurface {
   }
 
   updateSurfaceConstraints() {
-    let isRTL = this.ctx.rnInstance.getTurboModule<I18nManagerTurboModule>('I18nManager').getConstants()
-      .isRTL;
+    let RTLAllowed = true;
+    let RTLForced = false;
+    const isRTL = RTLForced || (RTLAllowed && I18n.isRTL(this.ctx.uiAbilityContext.config.language))
     if (this.shouldStartSurface) {
       this.surfaceHandle.setDisplayMode(DisplayMode.Visible)
       this.surfaceHandle.start(	

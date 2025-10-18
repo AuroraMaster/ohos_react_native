@@ -152,7 +152,8 @@ export class RNInstanceRegistry {
         rnInstanceName: options.name,
         uiAbilityContext: this.uiAbilityContext,
         architecture: options.enableCAPIArchitecture ? "C_API" : "ARK_TS",
-        assetsDest: options.assetsDest ?? DEFAULT_ASSETS_DEST
+        assetsDest: options.assetsDest ?? DEFAULT_ASSETS_DEST,
+        launchUri: this.launchUri,
       })
     }, 0)
     await workerThread.waitForMessage("RNOH_CREATE_WORKER_RN_INSTANCE_ACK",

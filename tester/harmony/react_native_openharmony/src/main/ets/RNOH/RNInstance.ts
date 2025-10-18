@@ -33,7 +33,7 @@ import { DisplayMetricsManager } from './DisplayMetricsManager'
 import { WorkerThread } from "./WorkerThread"
 import font from "@ohos.font"
 import { common } from '@kit.AbilityKit'
-import { deviceInfo } from '@kit.BasicServicesKit';
+import { deviceInfo, emitter } from '@kit.BasicServicesKit';
 import { OH_API_LEVEL_21 } from './types';
 
 export type Resource = Exclude<font.FontOptions["familySrc"], string>
@@ -992,8 +992,10 @@ export class RNInstanceImpl implements RNInstance {
   public onWindowStageChange(windowStageEvent: window.WindowStageEventType) {
     if (windowStageEvent == window.WindowStageEventType.ACTIVE) {
       this.stageEventEmitter.emit("APP_STATE_FOCUS");
+      emitter.emit("APP_STATE_FOCUS");
     } else if (windowStageEvent == window.WindowStageEventType.INACTIVE) {
       this.stageEventEmitter.emit("APP_STATE_BLUR");
+      emitter.emit("APP_STATE_BLUR");
     }
   }
 

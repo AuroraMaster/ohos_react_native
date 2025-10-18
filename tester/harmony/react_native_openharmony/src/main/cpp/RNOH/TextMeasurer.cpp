@@ -28,17 +28,6 @@ TextMeasurement TextMeasurer::measure(
     AttributedString attributedString,
     ParagraphAttributes paragraphAttributes,
     LayoutConstraints layoutConstraints) {
-  auto const& fragments = attributedString.getFragments();
-  auto canUseOHOSTextMeasurer = fragments.size() == 1 &&
-      !fragments[0].isAttachment() &&
-      isnan(fragments[0].textAttributes.letterSpacing) &&
-      isnan(fragments[0].textAttributes.lineHeight);
-  auto isNDKTextMeasuringEnabled =
-      this->m_featureFlagRegistry->getFeatureFlagStatus(
-          "ENABLE_NDK_TEXT_MEASURING");
-  // first deal textCase
-  dealTextCase(attributedString, paragraphAttributes);
-  if (canUseOHOSTextMeasurer || isNDKTextMeasuringEnabled) {
     // calc typograph
     facebook::react::TextMeasureCacheKey cacheKey{attributedString, paragraphAttributes, layoutConstraints};
     std::optional<std::shared_ptr<TextMeasureInfo>> measureInfo = TextMeasureRegistry::getTextMeasureRegistry().getTextMeasureInfo(cacheKey, m_scale);
@@ -89,7 +78,6 @@ TextMeasurement TextMeasurer::measure(
       }
       return {{.width = longestLineWidth + 0.5, .height = height}, attachments};
     }
-  }
 }
 
 void TextMeasurer::dealTextCase(
