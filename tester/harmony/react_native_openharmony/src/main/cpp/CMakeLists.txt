@@ -15,6 +15,9 @@ if(NOT DEFINED USE_HERMES)
   set(USE_HERMES ON)
 endif()
 message("USE_HERMES is set to: ${USE_HERMES}")
+if(DEFINED PACKAGE_FIND_FILE)
+  include(${PACKAGE_FIND_FILE})
+endif()
 
 add_compile_options("-Wno-error=unused-command-line-argument")
 
@@ -328,12 +331,12 @@ add_react_common_subdir(react/config)
 add_react_common_subdir(react/renderer/animations)
 add_react_common_subdir(react/renderer/attributedstring)
 add_react_common_subdir(react/renderer/componentregistry)
-add_react_common_subdir(react/renderer/mounting)
+add_subdirectory(${REACT_COMMON_PATCH_DIR}/react/renderer/mounting)
 add_react_common_subdir(react/renderer/scheduler)
 add_react_common_subdir(react/renderer/telemetry)
 add_react_common_subdir(react/renderer/templateprocessor)
-add_react_common_subdir(react/renderer/uimanager)
-add_react_common_subdir(react/renderer/core)
+add_subdirectory(${REACT_COMMON_PATCH_DIR}/react/renderer/uimanager)
+add_subdirectory(${REACT_COMMON_PATCH_DIR}/react/renderer/core)
 add_react_common_subdir(react/renderer/graphics)
 add_subdirectory(${REACT_COMMON_PATCH_DIR}/react/renderer/debug)
 add_react_common_subdir(react/renderer/imagemanager)
@@ -527,6 +530,8 @@ target_link_libraries(rnoh PUBLIC
     react_nativemodule_core
     react_bridging
     react_render_animations
+    ffrt::ffrt_cpp
+    libffrt.z.so
 )
 
 if(USE_JSVM_ONLY AND NOT USE_HERMES)

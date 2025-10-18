@@ -33,6 +33,8 @@ import { DisplayMetricsManager } from './DisplayMetricsManager'
 import { WorkerThread } from "./WorkerThread"
 import font from "@ohos.font"
 import { common } from '@kit.AbilityKit'
+import { deviceInfo } from '@kit.BasicServicesKit';
+import { OH_API_LEVEL_20 } from './types';
 
 export type Resource = Exclude<font.FontOptions["familySrc"], string>
 
@@ -542,7 +544,7 @@ export class RNInstanceImpl implements RNInstance {
     private jsvmInitOptions?: ReadonlyArray<JSVMInitOption>,
     private hspModuleName?: string,
   ) {
-    this.defaultProps = { concurrentRoot: !disableConcurrentRoot };
+    this.defaultProps = { concurrentRoot: !disableConcurrentRoot, batchToNative: deviceInfo.sdkApiVersion >= OH_API_LEVEL_20 };
     this.httpClient = httpClient ?? httpClientProvider.getInstance(this);
     this.caPathProvider = caPathProvider ?? ((url: string) => '');
     this.logger = injectedLogger.clone('RNInstance');
