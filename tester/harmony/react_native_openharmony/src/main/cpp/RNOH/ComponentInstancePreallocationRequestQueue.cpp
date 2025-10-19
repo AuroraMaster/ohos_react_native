@@ -8,15 +8,34 @@
 #include "ComponentInstancePreallocationRequestQueue.h"
 #include <optional>
 #include "RNOH/RNOHError.h"
+#include "ffrt/cpp/pattern/job_partner.h"
+#include "RNOH/ParallelComponent.h"
+#include "RNOH/ApiVersionCheck.h"
+#include "RNOH/FFRTConfig.h"
 
 namespace rnoh {
 
 void ComponentInstancePreallocationRequestQueue::push(const Request& request) {
-  auto lock = std::lock_guard(m_mtx);
-  m_queue.push(std::move(request));
+  if (!IsAtLeastApi21()) {
+    auto lock = std::lock_guard(m_mtx);
+    m_queue.push(std::move(request));
+  }
   auto delegate = m_weakDelegate.lock();
   if (delegate != nullptr) {
-    delegate->onPushPreallocationRequest();
+    if (IsAtLeastApi21() &&
+        (parallelComponentHandles.find(request.componentHandle) !=
+             parallelComponentHandles.end() ||
+         ComponentNameManager::getInstance().hasComponentName(
+             request.componentName))) {
+      auto job_partner = 
+            ffrt::job_partner<ScenarioID::PRECREATED_COMPONENTS_PARALLELIZATION>::get_main_partner(
+            ffrt::job_partner_attr().max_parallelism(MAX_THREAD_NUM_RECREATED_COMPONENTS).qos(THREAD_PRIORITY_LEVEL_5));
+      job_partner->submit<true>([delegate, request = std::move(request)] {
+        delegate->processPreallocationRequest(request);
+      });
+    } else {
+      delegate->onPushPreallocationRequest();
+    }
   }
 }
 

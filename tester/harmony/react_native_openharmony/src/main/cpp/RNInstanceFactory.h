@@ -42,6 +42,8 @@
 #include "RNOH/ComponentInstanceRegistry.h"
 #include "RNOH/CustomComponentArkUINodeHandleFactory.h"
 #include "RNOH/MountingManagerCAPI.h"
+#include "RNOH/ImageSourceResolver.h"
+#include "RNOH/ParallelComponent.h"
 #endif
 
 using namespace rnoh;
@@ -78,7 +80,8 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
     bool shouldEnableBackgroundExecutor,
     std::unordered_set<std::string> arkTsComponentNames,
     std::unordered_map<std::string, std::string> fontPathByFontFamily,
-    std::string hspModuleName
+    std::string hspModuleName,
+    std::string cacheDir
     ) {  
   HarmonyReactMarker::logMarker(
       HarmonyReactMarker::HarmonyReactMarkerId::REACT_INSTANCE_INIT_START, id);
@@ -153,6 +156,10 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
          package->createComponentNapiBinderByName()) {
       componentNapiBinderByName.insert({name, componentNapiBinder});
     };
+
+    for (auto& componentName : package->getComponentCreateInSubThread()) {
+        ComponentNameManager::getInstance().addComponentName(componentName);
+    };
     auto packageGlobalJSIBinders = package->createGlobalJSIBinders();
     globalJSIBinders.insert(
         globalJSIBinders.end(),
@@ -198,7 +205,7 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
       shadowViewRegistry,
       [mutationsListener = std::move(mutationsListener),
        mutationsToNapiConverter](
-          facebook::react::ShadowViewMutationList mutations) {
+          facebook::react::ShadowViewMutationList const& mutations) {
         mutationsListener(*mutationsToNapiConverter, mutations);
       },
       [weakExecutor = std::weak_ptr(taskExecutor),
@@ -279,9 +286,13 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
         std::move(nativeResourceManager),
         shouldEnableDebugger,
         shouldEnableBackgroundExecutor,
-        hspModuleName);
+        hspModuleName,
+        cacheDir);
     rnInstance->onCreate();
     componentInstanceDependencies->rnInstance = rnInstance;
+    auto imageSourceResolver =
+        std::make_shared<ImageSourceResolver>(arkTSMessageHub, cacheDir);
+    componentInstanceDependencies->imageSourceResolver = imageSourceResolver;
     HarmonyReactMarker::logMarker(
         HarmonyReactMarker::HarmonyReactMarkerId::REACT_INSTANCE_INIT_STOP, id);
     return rnInstance;

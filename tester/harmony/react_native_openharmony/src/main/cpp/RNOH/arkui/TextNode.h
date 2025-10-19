@@ -15,7 +15,7 @@ namespace rnoh {
 
 class TextNodeDelegate {
  public:
-  virtual ~TextNodeDelegate() = default;
+  virtual ~TextNodeDelegate() noexcept(false) = default;
   virtual void onDisappear(){};
 };
 

@@ -8,19 +8,19 @@
 import uri from '@ohos.uri';
 import Url from '@ohos.url';
 import call from '@ohos.telephony.call';
-import type { TurboModuleContext } from "../../RNOH/TurboModule";
-import { TurboModule } from "../../RNOH/TurboModule";
+import { AnyThreadTurboModuleContext } from "../../RNOH/RNOHContext";
+import { AnyThreadTurboModule } from "../../RNOH/TurboModule";
 import type Want from '@ohos.app.ability.Want';
 import bundleManager from '@ohos.bundle.bundleManager';
 
-export class LinkingManagerTurboModule extends TurboModule {
+export class LinkingManagerTurboModule extends AnyThreadTurboModule {
   public static readonly NAME = 'LinkingManager' as const;
 
   private static readonly CUSTOM_HANDLED_SCHEMES = ['tel', 'sms', 'map']; // those exceptions are manually handled in openURL because OH doesn't support opening urls with those schemes
 
   private initialUrl: string | undefined;
 
-  constructor(ctx: TurboModuleContext) {
+  constructor(ctx: AnyThreadTurboModuleContext) {
     super(ctx);
     this.initialUrl = ctx.launchUri;
   }
@@ -50,7 +50,7 @@ export class LinkingManagerTurboModule extends TurboModule {
     const uriObject = new uri.URI(urlString);
     switch (uriObject.scheme) {
       case "tel": {
-        await call.makeCall(uriObject.ssp);
+        await call.makeCall(this.ctx.uiAbilityContext, uriObject.ssp);
         return;
       }
       case "http":

@@ -13,7 +13,7 @@ namespace rnoh {
 
 class ToggleNodeDelegate {
  public:
-  virtual ~ToggleNodeDelegate() = default;
+  virtual ~ToggleNodeDelegate() noexcept(false) = default;
   virtual void onValueChange(int32_t& value) = 0;
 };
 

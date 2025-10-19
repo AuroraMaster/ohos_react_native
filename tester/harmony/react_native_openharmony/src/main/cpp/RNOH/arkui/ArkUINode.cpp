@@ -86,19 +86,12 @@ static constexpr std::array NODE_EVENT_TYPES{
     NODE_ON_TOUCH_INTERCEPT
 };
 
-static std::unordered_map<ArkUI_NodeHandle, ArkUINode*> NODE_BY_HANDLE;
-
 static void receiveEvent(ArkUI_NodeEvent* event) {
 #ifdef C_API_ARCH
   try {
     auto eventType = OH_ArkUI_NodeEvent_GetEventType(event);
     auto node = OH_ArkUI_NodeEvent_GetNodeHandle(event);
-    auto it = NODE_BY_HANDLE.find(node);
-    if (it == NODE_BY_HANDLE.end()) {
-      DLOG(WARNING) << "Node with handle: " << node << " not found";
-      return;
-    }
-    auto target = it->second;
+    ArkUINode* target = static_cast<ArkUINode*>(NativeNodeApi::getInstance()->getUserData(node));
 
     if (eventType == ArkUI_NodeEventType::NODE_TOUCH_EVENT) {
       // Node Touch events are handled in UIInputEventHandler instead
@@ -132,7 +125,7 @@ ArkUINode::ArkUINode(ArkUI_NodeHandle nodeHandle) : m_nodeHandle(nodeHandle) {
   RNOH_ASSERT(nodeHandle != nullptr);
   maybeThrow(NativeNodeApi::getInstance()->addNodeEventReceiver(
       m_nodeHandle, receiveEvent));
-  NODE_BY_HANDLE.emplace(m_nodeHandle, this);
+  NativeNodeApi::getInstance()->setUserData(m_nodeHandle, this);
   for (auto eventType : NODE_EVENT_TYPES) {
     this->registerNodeEvent(eventType);
   }
@@ -147,26 +140,26 @@ ArkUINode::ArkUINode(const Context::Shared context, ArkUI_NodeType nodeType) {
   RNOH_ASSERT(m_nodeHandle != nullptr);
   maybeThrow(NativeNodeApi::getInstance()->addNodeEventReceiver(
       m_nodeHandle, receiveEvent));
-  NODE_BY_HANDLE.emplace(m_nodeHandle, this);
+  NativeNodeApi::getInstance()->setUserData(m_nodeHandle, this);
   for (auto eventType : NODE_EVENT_TYPES) {
     this->registerNodeEvent(eventType);
   }
 }
 
-ArkUINode::~ArkUINode() noexcept {
-  for (auto eventType : NODE_EVENT_TYPES) {
-    this->unregisterNodeEvent(eventType);
+ArkUINode::~ArkUINode() noexcept(false) {
+  try {
+    for (auto eventType : NODE_EVENT_TYPES) {
+      this->unregisterNodeEvent(eventType);
+    }
+    if (m_arkUINodeDelegate != nullptr) {
+      m_arkUINodeDelegate->onArkUINodeDestroy(this);
+    }
+    NativeNodeApi::getInstance()->removeNodeEventReceiver(
+        m_nodeHandle, receiveEvent);
+    NativeNodeApi::getInstance()->disposeNode(m_nodeHandle);
+  } catch (const std::logic_error& ex) {
+    LOG(FATAL) << "logic_error in ArkUINode::~ArkUINode():" << ex.what();
   }
-  if (m_arkUINodeDelegate != nullptr) {
-    m_arkUINodeDelegate->onArkUINodeDestroy(this);
-  }
-  auto it = NODE_BY_HANDLE.find(m_nodeHandle);
-  if (it != NODE_BY_HANDLE.end()) {
-    NODE_BY_HANDLE.erase(it);
-  }
-  NativeNodeApi::getInstance()->removeNodeEventReceiver(
-      m_nodeHandle, receiveEvent);
-  NativeNodeApi::getInstance()->disposeNode(m_nodeHandle);
 }
 
 void ArkUINode::setArkUINodeDelegate(ArkUINodeDelegate* delegate) {

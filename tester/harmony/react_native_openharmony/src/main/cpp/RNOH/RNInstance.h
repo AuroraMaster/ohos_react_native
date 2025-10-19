@@ -117,6 +117,7 @@ class RNInstance {
     auto turboModule = getTurboModule(name);
     return std::dynamic_pointer_cast<T>(turboModule);
   }
+  virtual std::string getCacheDir() = 0;
   virtual NativeResourceManager const* getNativeResourceManager() const = 0;
   virtual void synchronouslyUpdateViewOnUIThread(
       facebook::react::Tag tag,

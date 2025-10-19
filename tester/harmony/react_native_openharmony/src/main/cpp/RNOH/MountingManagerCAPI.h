@@ -66,6 +66,8 @@ class MountingManagerCAPI final : public MountingManager {
 
   void didMount(MutationList const& mutations) override;
     
+  void handleMutation(Mutation const& mutation);
+    
   facebook::react::ShadowViewMutationList getValidMutations(
       facebook::react::ShadowViewMutationList const& mutations);
   bool isCAPIComponent(facebook::react::ShadowView const& shadowView);
@@ -90,14 +92,13 @@ class MountingManagerCAPI final : public MountingManager {
       std::string const& eventType) override;
 
     void clearPreallocatedViews();
+    void clearPreallocatedViews(facebook::react::ShadowViewMutationList mutations);
     void clearPreallocationRequestQueue();
 
  private:
   void updateComponentWithShadowView(
       ComponentInstance::Shared const& componentInstance,
       facebook::react::ShadowView const& shadowView);
-
-  void handleMutation(Mutation const& mutation);
 
   void finalizeMutationUpdates(MutationList const& mutations);
 

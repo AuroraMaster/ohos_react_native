@@ -46,6 +46,8 @@ export class RNInstanceRegistry {
   private resourceManager: resourceManager.ResourceManager
   private displayMetricsManager: DisplayMetricsManager
   private workerThreadPromise: Promise<WorkerThread> | undefined
+  private launchUri?: string
+  private cacheDir?: string
 
   constructor(
     uiAbilityContext: common.UIAbilityContext,
@@ -60,6 +62,8 @@ export class RNInstanceRegistry {
     resourceManager: resourceManager.ResourceManager,
     displayMetricsManager: DisplayMetricsManager,
     workerThreadPromise: Promise<WorkerThread> | undefined,
+    launchUri: string | undefined,
+    cacheDir: string | undefined
   ) {
     this.uiAbilityContext = uiAbilityContext
     this.envId = envId
@@ -73,6 +77,8 @@ export class RNInstanceRegistry {
     this.resourceManager = resourceManager
     this.displayMetricsManager = displayMetricsManager
     this.workerThreadPromise = workerThreadPromise
+    this.launchUri = launchUri
+    this.cacheDir = cacheDir
   }
 
   public async createInstance(options: RNInstanceOptions): Promise<RNInstance> {
@@ -126,6 +132,7 @@ export class RNInstanceRegistry {
       options.backPressHandler,
       options.jsvmInitOptions,
       options.hspModuleName,
+      this.cacheDir,
     );
     rnInstance.setUIAbilityContext(this.uiAbilityContext);
     const packages = options.createRNPackages({})
@@ -145,7 +152,8 @@ export class RNInstanceRegistry {
         rnInstanceName: options.name,
         uiAbilityContext: this.uiAbilityContext,
         architecture: options.enableCAPIArchitecture ? "C_API" : "ARK_TS",
-        assetsDest: options.assetsDest ?? DEFAULT_ASSETS_DEST
+        assetsDest: options.assetsDest ?? DEFAULT_ASSETS_DEST,
+        launchUri: this.launchUri,
       })
     }, 0)
     await workerThread.waitForMessage("RNOH_CREATE_WORKER_RN_INSTANCE_ACK",

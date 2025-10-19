@@ -23,6 +23,10 @@ ComponentInstance::ComponentInstance(Context ctx)
 void ComponentInstance::insertChild(
     ComponentInstance::Shared childComponentInstance,
     std::size_t index) {
+  if (index > m_children.size()) {
+    LOG(ERROR) << "index out of range, index=" << index << " size=" << m_children.size();
+    return;
+  }
   auto it = m_children.begin() + index;
   std::size_t newIndex = index;
   childComponentInstance->setParent(shared_from_this());

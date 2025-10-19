@@ -22,6 +22,7 @@ class ComponentInstanceProvider
   ComponentInstanceFactory::Shared m_componentInstanceFactory;
   std::unordered_map<facebook::react::Tag, ComponentInstance::Shared>
       m_preallocatedComponentInstanceByTag;
+  std::mutex m_preallocatedComponentInstanceByTagMtx;
   std::mutex m_unsubscribeUITickerListenerMtx;
   std::function<void()> m_unsubscribeUITickerListener = nullptr;
   ComponentInstancePreallocationRequestQueue::Shared
@@ -43,7 +44,7 @@ class ComponentInstanceProvider
       UITicker::Shared uiTicker,
       TaskExecutor::Weak weakTaskExecutor);
 
-  ~ComponentInstanceProvider();
+  ~ComponentInstanceProvider() noexcept(false);
 
   void initialize();
 
@@ -59,6 +60,8 @@ class ComponentInstanceProvider
 
   void clearPreallocationRequestQueue();
 
+  void clearPreallocatedViews(facebook::react::ShadowViewMutationList mutations);
+
   void clearPreallocatedViews();
 
  private:
@@ -70,7 +73,7 @@ class ComponentInstanceProvider
   void onUITick(UITicker::Timestamp recentVSyncTimestamp);
 
   void processPreallocationRequest(
-      PreallocationRequest const& shadowView);
+      PreallocationRequest const& shadowView) override;
 
   bool shouldPausePreallocationToAvoidBlockingMainThread(
       UITicker::Timestamp recentVSyncTimestamp);

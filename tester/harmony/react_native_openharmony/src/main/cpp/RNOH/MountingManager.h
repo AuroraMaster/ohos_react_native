@@ -35,6 +35,8 @@ class MountingManager {
   virtual void doMount(MutationList const& mutations) = 0;
 
   virtual void didMount(MutationList const& mutations) = 0;
+    
+  virtual void handleMutation(Mutation const& mutation) = 0;
 
   virtual void finalizeMutationUpdates(MutationList const& mutations) = 0;
     
@@ -58,6 +60,7 @@ class MountingManager {
       facebook::react::ComponentDescriptor const& componentDescriptor) = 0;
 
   virtual void clearPreallocatedViews() = 0;
+  virtual void clearPreallocatedViews(facebook::react::ShadowViewMutationList mutations) = 0;
   virtual void clearPreallocationRequestQueue() = 0;
 };
 } // namespace rnoh

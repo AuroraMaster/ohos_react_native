@@ -7,6 +7,7 @@
 
 #include "ComponentInstanceProvider.h"
 #include <cxxreact/SystraceSection.h>
+#include "RNOH/ApiVersionCheck.h"
 
 using namespace rnoh;
 
@@ -27,12 +28,18 @@ void ComponentInstanceProvider::initialize() {
   m_preallocationRequestQueue->setDelegate(this->weak_from_this());
 }
 
-ComponentInstanceProvider::~ComponentInstanceProvider() {
-  m_threadGuard.assertThread();
-  LOG(INFO) << "~ComponentInstanceProvider";
-  std::lock_guard lock(m_unsubscribeUITickerListenerMtx);
-  if (m_unsubscribeUITickerListener != nullptr) {
-    m_unsubscribeUITickerListener();
+ComponentInstanceProvider::~ComponentInstanceProvider() noexcept(false) {
+  try {
+    m_threadGuard.assertThread();
+    LOG(INFO) << "~ComponentInstanceProvider";
+    std::lock_guard lock(m_unsubscribeUITickerListenerMtx);
+    if (m_unsubscribeUITickerListener != nullptr) {
+      m_unsubscribeUITickerListener();
+    }
+  } catch (const std::logic_error& ex) {
+    LOG(FATAL)
+        << "logic_error in ComponentInstanceProvider~ComponentInstanceProvider():"
+        << ex.what();
   }
 }
 
@@ -66,12 +73,20 @@ ComponentInstance::Shared ComponentInstanceProvider::getComponentInstance(
     facebook::react::Tag tag,
     facebook::react::ComponentHandle componentHandle,
     std::string componentName) {
-  m_threadGuard.assertThread();
-  auto componentInstanceIt = m_preallocatedComponentInstanceByTag.find(tag);
-  if (componentInstanceIt == m_preallocatedComponentInstanceByTag.end()) {
+  bool isComponentInstanceNotHit = false;
+  std::unordered_map<facebook::react::Tag, ComponentInstance::Shared>::
+      const_iterator componentInstanceIt;
+  {
+    std::lock_guard<std::mutex> lock(m_preallocatedComponentInstanceByTagMtx);
+    componentInstanceIt = m_preallocatedComponentInstanceByTag.find(tag);
+    isComponentInstanceNotHit =
+        componentInstanceIt == m_preallocatedComponentInstanceByTag.end();
+  }
+  if (isComponentInstanceNotHit) {
     return m_componentInstanceFactory->create(
         tag, componentHandle, std::move(componentName));
   } else {
+    std::lock_guard<std::mutex> lock(m_preallocatedComponentInstanceByTagMtx);
     return m_preallocatedComponentInstanceByTag.extract(componentInstanceIt)
         .mapped();
   }
@@ -90,8 +105,15 @@ void rnoh::ComponentInstanceProvider::clearPreallocationRequestQueue() {
   m_preallocationRequestQueue->clear();
 }
 
+void rnoh::ComponentInstanceProvider::clearPreallocatedViews(facebook::react::ShadowViewMutationList mutations) {
+  for (auto const& mutation : mutations) {
+   std::lock_guard<std::mutex> lock(m_preallocatedComponentInstanceByTagMtx);
+   m_preallocatedComponentInstanceByTag.erase(mutation.newChildShadowView.tag);
+  }
+}
+
 void rnoh::ComponentInstanceProvider::clearPreallocatedViews() {
-  m_threadGuard.assertThread();
+  std::lock_guard<std::mutex> lock(m_preallocatedComponentInstanceByTagMtx);
   m_preallocatedComponentInstanceByTag.clear();
 }
 
@@ -132,6 +154,10 @@ void ComponentInstanceProvider::processPreallocationRequest(
   auto componentInstance = m_componentInstanceFactory->create(
       shadowView.tag, shadowView.componentHandle, shadowView.componentName);
   if (componentInstance != nullptr) {
+    if (IsAtLeastApi21()) {
+      componentInstance->setProps(shadowView.props);
+    }
+    std::lock_guard<std::mutex> lock(m_preallocatedComponentInstanceByTagMtx);
     m_preallocatedComponentInstanceByTag.emplace(
         shadowView.tag, componentInstance);
   } else {

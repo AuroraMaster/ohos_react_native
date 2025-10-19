@@ -29,7 +29,7 @@ class Subject {
     Observer(Observer&&) = delete;
     Observer& operator=(Observer&&) = delete;
 
-    virtual ~Observer() {
+    virtual ~Observer() noexcept(false) {
       auto subject = m_subject.lock();
       if (subject) {
         subject->unregisterObserver(this);

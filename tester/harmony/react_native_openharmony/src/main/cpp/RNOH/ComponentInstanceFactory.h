@@ -78,7 +78,6 @@ class ComponentInstanceFactory {
       facebook::react::Tag tag,
       facebook::react::ComponentHandle componentHandle,
       std::string componentName) {
-    m_threadGuard.assertThread();
     ComponentInstance::Context ctx = {
         .tag = tag,
         .componentHandle = componentHandle,

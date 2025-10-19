@@ -115,7 +115,7 @@ void CustomNode::onClick() {
   }
 }
 
-CustomNode::~CustomNode() {
+CustomNode::~CustomNode() noexcept(false) {
   unregisterNodeEvent(NODE_ON_CLICK);
   NativeNodeApi::getInstance()->unregisterNodeEvent(
       m_nodeHandle, NODE_ON_HOVER);

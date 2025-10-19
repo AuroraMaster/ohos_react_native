@@ -76,7 +76,8 @@ class RNInstanceCAPI : public RNInstanceInternal,
       SharedNativeResourceManager nativeResourceManager,
       bool shouldEnableDebugger,
       bool shouldEnableBackgroundExecutor,
-      std::string hspModuleName)
+      std::string hspModuleName,
+      std::string cacheDir)
       : RNInstanceInternal(
             id,
             contextContainer,
@@ -100,7 +101,8 @@ class RNInstanceCAPI : public RNInstanceInternal,
         m_arkTSChannel(std::move(arkTSChannel)),
         m_arkTSMessageHandlers(std::move(arkTSMessageHandlers)),
         m_componentInstancePreallocationRequestQueue(
-            std::move(componentInstancePreallocationRequestQueue)) {}
+            std::move(componentInstancePreallocationRequestQueue)),
+        m_cacheDir(cacheDir) {}
 
   ~RNInstanceCAPI() noexcept override;
 
@@ -200,6 +202,7 @@ class RNInstanceCAPI : public RNInstanceInternal,
   int getId() override {
     return m_id;
   }
+  std::string getCacheDir() override {return m_cacheDir;}
   std::optional<Surface::Weak> getSurfaceByRootTag(
       facebook::react::Tag rootTag) override;
   void registerFont(
@@ -245,11 +248,13 @@ class RNInstanceCAPI : public RNInstanceInternal,
   ComponentInstanceFactory::Shared m_componentInstanceFactory;
   MountingManager::Shared m_mountingManager;
   float m_densityDpi;
+  std::mutex m_arkTSMessageHandlersMtx;
   std::vector<ArkTSMessageHandler::Shared> m_arkTSMessageHandlers;
   ArkTSChannel::Shared m_arkTSChannel;
   ArkTSMessageHub::Shared m_arkTSMessageHub;
   std::shared_ptr<facebook::react::JSExecutorFactory> m_jsExecutorFactory =
       nullptr;
+  std::string m_cacheDir;
 
   void initialize();
   void initializeScheduler(

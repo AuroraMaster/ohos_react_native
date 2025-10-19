@@ -55,6 +55,8 @@ class MountingManagerArkTS final : public MountingManager {
   void doMount(MutationList const& mutations) override;
 
   void didMount(MutationList const& mutations) override;
+    
+  void handleMutation(Mutation const& mutation) {}
 
   void finalizeMutationUpdates(MutationList const& mutations) override;
 
@@ -74,6 +76,7 @@ class MountingManagerArkTS final : public MountingManager {
       facebook::react::ComponentDescriptor const& componentDescriptor) override;
 
     void clearPreallocatedViews();
+    void clearPreallocatedViews(facebook::react::ShadowViewMutationList mutations);
     void clearPreallocationRequestQueue();
 
  private:

@@ -46,7 +46,7 @@ UIInputEventHandler::UIInputEventHandler(ArkUINode& node) : m_node(node) {
       nativeHandle, NODE_TOUCH_EVENT, NODE_TOUCH_EVENT, this);
 }
 
-UIInputEventHandler::~UIInputEventHandler() noexcept {
+UIInputEventHandler::~UIInputEventHandler() noexcept(false) {
   // Unregister the touch event handler
   NativeNodeApi::getInstance()->unregisterNodeEvent(
       m_node.getArkUINodeHandle(), NODE_TOUCH_EVENT);

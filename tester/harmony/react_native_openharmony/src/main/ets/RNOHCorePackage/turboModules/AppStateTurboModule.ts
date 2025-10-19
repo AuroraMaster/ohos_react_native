@@ -5,34 +5,44 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import type { TurboModuleContext } from "../../RNOH/TurboModule";
-import { TurboModule } from "../../RNOH/TurboModule";
+import { AnyThreadTurboModuleContext } from "../../RNOH/RNOHContext";
+import { AnyThreadTurboModule } from "../../RNOH/TurboModule";
 import type EnvironmentCallback from '@ohos.app.ability.EnvironmentCallback';
-import { AbilityConstant } from '@kit.AbilityKit';
+import { AbilityConstant, ApplicationStateChangeCallback } from '@kit.AbilityKit';
+import { emitter, Callback } from '@kit.BasicServicesKit';
 
-export class AppStateTurboModule extends TurboModule {
+export class AppStateTurboModule extends AnyThreadTurboModule {
   public static readonly NAME = 'AppState';
+  private state: string = 'FOREGROUND';
 
   private cleanUpCallbacks: (() => void)[] = [];
 
-  constructor(protected ctx: TurboModuleContext) {
+  constructor(protected ctx: AnyThreadTurboModuleContext) {
     super(ctx);
     this.subscribeListeners();
   }
 
   private subscribeListeners() {
-    this.ctx.rnInstance.subscribeToLifecycleEvents("FOREGROUND", () => {
-      this.ctx.rnInstance.emitDeviceEvent("appStateDidChange", { app_state: this.getAppState() });
-    })
-    this.ctx.rnInstance.subscribeToLifecycleEvents("BACKGROUND", () => {
-      this.ctx.rnInstance.emitDeviceEvent("appStateDidChange", { app_state: this.getAppState() });
-    })
-    this.ctx.rnInstance.subscribeToStageChangeEvents("APP_STATE_FOCUS", () => {
-      this.ctx.rnInstance.emitDeviceEvent("appStateFocusChange",  true);
-    })
-    this.ctx.rnInstance.subscribeToStageChangeEvents("APP_STATE_BLUR", () => {
+    const applicationContext = this.ctx.uiAbilityContext.getApplicationContext();
+    let applicationStateChangeCallback: ApplicationStateChangeCallback = {
+      onApplicationForeground: () => {
+        this.state = "FOREGRROUND"
+        this.ctx.rnInstance.emitDeviceEvent("appStateDidChange", { app_state: this.getAppState() });
+      },
+      onApplicationBackground: () => {
+        this.state = "BACKGROUND"
+        this.ctx.rnInstance.emitDeviceEvent("appStateDidChange", { app_state: this.getAppState() });
+      },
+    }
+    let appStateFocusCallback: Callback<emitter.EventData> = (eventData: emitter.EventData) => {
+      this.ctx.rnInstance.emitDeviceEvent("appStateFocusChange", true);
+    };
+    let appStateBLURCallback: Callback<emitter.EventData> = (eventData: emitter.EventData) => {
       this.ctx.rnInstance.emitDeviceEvent("appStateFocusChange", false);
-    })
+    };
+    emitter.on("APP_STATE_FOCUS", appStateFocusCallback);
+    emitter.on("APP_STATE_BLUR", appStateBLURCallback);
+
     let envCallback: EnvironmentCallback = {
       onConfigurationUpdated: () => {
       },
@@ -41,20 +51,24 @@ export class AppStateTurboModule extends TurboModule {
         if (level == AbilityConstant.MemoryLevel.MEMORY_LEVEL_CRITICAL) {
           this.ctx.rnInstance.emitDeviceEvent("memoryWarning", null);
         }
-      }
+      },
     };
 
-    const applicationContext = this.ctx.uiAbilityContext.getApplicationContext();
-    const envCallbackID = applicationContext.on('environment', envCallback);
+    let envCallbackID: number;
+    if (applicationContext != undefined) {
+      applicationContext.on('applicationStateChange', applicationStateChangeCallback);
+      envCallbackID = applicationContext.on('environment', envCallback);
+    }
     this.cleanUpCallbacks.push(() => {
+      emitter.off("APP_STATE_FOCUS", appStateFocusCallback);
+      emitter.off("APP_STATE_BLUR", appStateBLURCallback);
       applicationContext.off("environment", envCallbackID);
+      applicationContext.off('applicationStateChange', applicationStateChangeCallback);
     });
   }
 
   private getAppState() {
-    const isActive = this.ctx.getUIAbilityState();
-
-    return isActive === "FOREGROUND" ? 'active' : 'background';
+    return this.state === "FOREGROUND" ? "active" : "background";
   }
 
   getConstants() {
@@ -71,4 +85,3 @@ export class AppStateTurboModule extends TurboModule {
     this.cleanUpCallbacks = [];
   }
 }
-

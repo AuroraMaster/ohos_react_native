@@ -21,7 +21,7 @@ class ThreadTaskRunner : public AbstractTaskRunner {
   ThreadTaskRunner(
       std::string name,
       ExceptionHandler exceptionHandler = defaultExceptionHandler);
-  ~ThreadTaskRunner() override;
+  ~ThreadTaskRunner() noexcept(false) override;
 
   void runAsyncTask(Task&& task) override;
   void runSyncTask(Task&& task) override;

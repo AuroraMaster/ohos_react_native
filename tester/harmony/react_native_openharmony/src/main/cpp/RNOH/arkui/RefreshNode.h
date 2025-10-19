@@ -11,7 +11,7 @@
 
 class RefreshNodeDelegate {
  public:
-  virtual ~RefreshNodeDelegate() = default;
+  virtual ~RefreshNodeDelegate() noexcept(false) = default;
   virtual void onRefresh(){};
   
   enum class RefreshStatus {

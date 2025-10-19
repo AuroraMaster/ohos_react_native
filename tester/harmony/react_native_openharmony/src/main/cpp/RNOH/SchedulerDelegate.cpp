@@ -7,8 +7,11 @@
 
 #include "SchedulerDelegate.h"
 #include <react/renderer/debug/SystraceSection.h>
+#include "ParallelComponent.h"
 #include "RNOH/Performance/HarmonyReactMarker.h"
-
+#include "ffrt/cpp/pattern/job_partner.h"
+#include "RNOH/ApiVersionCheck.h"
+#include "RNOH/FFRTConfig.h"
 
 namespace rnoh {
 
@@ -30,6 +33,40 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
         int taskId = random();
         std::string taskTrace =
             "#RNOH::TaskExecutor::runningTask t" + std::to_string(taskId);
+            if (IsAtLeastApi21()) {
+                facebook::react::SystraceSection s("#RNOH::SchedulerDelegate::didCreateMount");
+                auto job_partner = ffrt::job_partner<ScenarioID::MUTATION_PARALLELIZATION>::get_main_partner(
+                    ffrt::job_partner_attr()
+                        .max_parallelism(MAX_THREAD_NUM_MUTATION_CREATE)
+                        .qos(THREAD_PRIORITY_LEVEL_5));
+                ShadowViewMutationList otherMutationList;
+                for (uint64_t i = 0; i < transaction->getMutations().size(); ++i) {
+                    auto const &mutation = transaction->getMutations()[i];
+                    if (mutation.type == facebook::react::ShadowViewMutation::Create &&
+                        (parallelComponentHandles.find(mutation.newChildShadowView.componentHandle) !=
+                             parallelComponentHandles.end() ||
+                         ComponentNameManager::getInstance().hasComponentName(
+                             mutation.newChildShadowView.componentName))) {
+                        job_partner->submit([this, &mutation] {
+                            try {
+                                this->m_mountingManager.lock()->handleMutation(mutation);
+                            } catch (std::exception const &e) {
+                                LOG(ERROR) << "Mutation " << mutation.type << " failed: " << e.what();
+                            }
+                        });
+                    } else {
+                        otherMutationList.push_back(mutation);
+                    }
+                }
+                job_partner->wait();
+                performOnMainThread(
+                    [transaction, otherMutationList, this](MountingManager::Shared const &mountingManager) {
+                        mountingManager->didMount(otherMutationList);
+                        mountingManager->finalizeMutationUpdates(transaction->getMutations());
+                    });
+                logTransactionTelemetryMarkers(*transaction);
+                return;
+            }
         auto mutationVecs = transaction->getMutations();
         facebook::react::ShadowViewMutationList mutationVec;
         facebook::react::ShadowViewMutationList otherMutation;
@@ -39,16 +76,16 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
         size_t fragmentSize = 70;
         std::vector<facebook::react::ShadowViewMutationList> destVec;
         auto it = mutationVecs.begin();
-        while (it != mutationVecs.end() ) {
-            if( it->type == facebook::react::ShadowViewMutation::Create ){
-                    mutationVec.push_back(*it);
-               }else {
-                    otherMutation.push_back(*it);
-               }
+        while (it != mutationVecs.end()) {
+            if (it->type == facebook::react::ShadowViewMutation::Create) {
+                mutationVec.push_back(*it);
+            } else {
+                otherMutation.push_back(*it);
+            }
             ++it;
         }
         size_t mutationSize = mutationVec.size();
-        if( mutationSize > 0 ){
+        if (mutationSize > 0) {
             destVec.reserve((mutationSize + fragmentSize - 1) / fragmentSize);
             for (size_t i = 0; i < mutationSize; i += fragmentSize) {
                     destVec.emplace_back(
@@ -62,6 +99,7 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
                         MountingManager::Shared const &mountingManager) {
                     facebook::react::SystraceSection s(taskTrace.c_str());
                     mountingManager->didMount(mutations);
+                    mountingManager->clearPreallocatedViews(mutations);
                 });
             }
         }
@@ -81,9 +119,9 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
         facebook::react::SystraceSection s(
             "#RNOH::TaskExecutor::runTask t", taskId);
       });
-        if (auto mountingManager = m_mountingManager.lock()) {
-            mountingManager->clearPreallocationRequestQueue();
-        }
+    if (auto mountingManager = m_mountingManager.lock()) {
+        mountingManager->clearPreallocationRequestQueue();
+    }
 }
 
 void SchedulerDelegate::logTransactionTelemetryMarkers(
@@ -133,8 +171,6 @@ void SchedulerDelegate::logTransactionTelemetryMarkers(
 void SchedulerDelegate::schedulerDidRequestPreliminaryViewAllocation(
     SurfaceId /*surfaceId*/,
     const ShadowNode& shadowNode) {
-  facebook::react::SystraceSection s(
-      "#RNOH::SchedulerDelegate::schedulerDidRequestPreliminaryViewAllocation");
   auto preallocationRequestQueue = m_weakPreallocationRequestQueue.lock();
   if (preallocationRequestQueue == nullptr) {
     return;
@@ -143,7 +179,8 @@ void SchedulerDelegate::schedulerDidRequestPreliminaryViewAllocation(
       PreallocationRequest{
           shadowNode.getTag(),
           shadowNode.getComponentHandle(),
-          shadowNode.getComponentName()});
+          shadowNode.getComponentName(),
+          shadowNode.getProps()});
 }
 
 void SchedulerDelegate::schedulerDidDispatchCommand(

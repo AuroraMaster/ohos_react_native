@@ -19,7 +19,7 @@ RefreshNode::RefreshNode(const ArkUINode::Context::Shared& context)
   }
 }
 
-RefreshNode::~RefreshNode() {
+RefreshNode::~RefreshNode() noexcept(false) {
   for (auto eventType : REFRESH_NODE_EVENT_TYPES) {
     unregisterNodeEvent(eventType);
   }

@@ -17,7 +17,7 @@ namespace rnoh {
 
 class TextAreaNodeDelegate {
  public:
-  virtual ~TextAreaNodeDelegate() = default;
+  virtual ~TextAreaNodeDelegate() noexcept(false) = default;
   virtual void onChange(std::string text) {};
   virtual void onBlur() {};
   virtual void onFocus() {};

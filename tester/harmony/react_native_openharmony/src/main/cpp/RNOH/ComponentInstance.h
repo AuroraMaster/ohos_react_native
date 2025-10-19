@@ -23,6 +23,7 @@
 #include "RNOH/arkui/ArkUINode.h"
 #include "RNOH/arkui/UIInputEventHandler.h"
 #include "RNOH/ArkTSTurboModule.h"
+#include "RNOH/ImageSourceResolver.h"
 
 namespace rnoh {
 
@@ -66,6 +67,7 @@ class ComponentInstance
     ArkTSChannel::Shared arkTSChannel;
     ArkTSMessageHub::Shared arkTSMessageHub;
     RNInstance::Weak rnInstance;
+    ImageSourceResolver::Shared imageSourceResolver;
     Registry::Weak componentInstanceRegistry;
   };
 
@@ -81,7 +83,7 @@ class ComponentInstance
 
   ComponentInstance(Context ctx);
 
-  virtual ~ComponentInstance() = default;
+  virtual ~ComponentInstance() noexcept(false) = default;
 
   /**
    * In C++ virtual methods shouldn't be called from constructor. Override this

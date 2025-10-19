@@ -48,6 +48,10 @@ class Package {
     return {};
   };
 
+  virtual std::vector<std::string> getComponentCreateInSubThread() {
+    return {};
+  }
+
   /**
    * @architecture: C-API
    * @deprecated: Override `createComponentInstance` instead (latestRNOHVersion:

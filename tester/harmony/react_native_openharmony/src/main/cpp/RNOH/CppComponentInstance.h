@@ -82,6 +82,8 @@ class CppComponentInstance : public ComponentInstance,
   CppComponentInstance(Context context)
       : ComponentInstance(std::move(context)) {}
 
+  ~CppComponentInstance() noexcept(false) = default;
+
   void onCreate() override {
     std::string componentName = this->getComponentName();
     if (SVG_TYPE_ARR.find(componentName) != SVG_TYPE_ARR.end()) {
@@ -398,7 +400,7 @@ class CppComponentInstance : public ComponentInstance,
     }
         
     if (!isTransformManagedByAnimated) {
-      if (!old) {
+      if (!old || m_transform == defaultTransform) {
         if (props->transform != defaultTransform || abs(m_oldPointScaleFactor - 0.0f) > 0.001f) {
           m_oldPointScaleFactor = m_layoutMetrics.pointScaleFactor;
           this->setTransform(props->transform);

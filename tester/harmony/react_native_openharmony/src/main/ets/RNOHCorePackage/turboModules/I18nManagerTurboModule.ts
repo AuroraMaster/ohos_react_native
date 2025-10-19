@@ -6,9 +6,9 @@
  */
 
 import I18n from '@ohos.i18n';
-import { TurboModule } from "../../RNOH/TurboModule";
+import { AnyThreadTurboModule } from "../../RNOH/TurboModule";
 
-export class I18nManagerTurboModule extends TurboModule {
+export class I18nManagerTurboModule extends AnyThreadTurboModule {
   public static readonly NAME = 'I18nManager';
 
   private RTLAllowed = true;
