@@ -8,7 +8,7 @@
     "pack:harmony": "react-native pack-harmony --oh-module-path ../tester/harmony/sample_package --harmony-dir-path ./harmony --package-json-path ./package.json",
     "codegen-lib": "react-native codegen-lib-harmony --no-safety-check --npm-package-name react-native-harmony-sample-package-2 --cpp-output-path ../tester/harmony/sample_package/src/main/cpp/generated --ets-output-path ../tester/harmony/sample_package/src/main/ets/generated --cpp-components-spec-paths ./src/specs/codegen-lib/CodegenLibCppSampleNativeComponent.ts --turbo-modules-spec-paths ./src/specs/codegen-lib/NativeCodegenLibSampleModule.ts --arkts-components-spec-paths ./src/specs/codegen-lib/CodegenLibArkTSSampleNativeComponent.ts",
     "install:local-cli": "cd ../react-native-harmony-cli && npm pack && cd ../react-native-harmony-sample-package && npm i ../react-native-harmony-cli/rnoh-react-native-harmony-cli-0.0.26.tgz",
-    "install:rn_harmony": "cd ../react-native-harmony && npm pack && cd ../react-native-harmony-sample-package && npm uninstall react-native-harmony && npm i react-native-harmony@file:../react-native-harmony/rnoh-react-native-harmony-0.72.94.tgz"
+    "install:rn_harmony": "cd ../react-native-harmony && npm pack && cd ../react-native-harmony-sample-package && npm uninstall react-native-harmony && npm i react-native-harmony@file:../react-native-harmony/rnoh-react-native-harmony-0.72.95.tgz"
   },
   "keywords": [],
   "author": "",

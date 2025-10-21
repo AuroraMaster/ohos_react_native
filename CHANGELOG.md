@@ -1,5 +1,17 @@
 # Changelog
 
+## 6.0.0.605
+- Feat: Migrate appstate, I18TM, and linking TurboModules to the worker thread,([4ed720375](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4ed7203752d1fe1cca523fee000de495bb34e9df))
+- fix some function to noexcept false,([20e6ee02b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/20e6ee02bc146734c306d4fb69046e04679b1703))
+- feat: Modify the frame processing logic,([14c981c14](https://gitcode.com/openharmony-sig/ohos_react_native/commit/14c981c14a029ae60b28227b004164b55c775b76))
+- fix: Supplement null pointer protection.,([65ddc2db7](https://gitcode.com/openharmony-sig/ohos_react_native/commit/65ddc2db7d5f8a770c8b57b278a10aaa89e6b563))
+- feat: sub-thread ArkUI component pre-creation and parallel create command execution,([becca71d6](https://gitcode.com/openharmony-sig/ohos_react_native/commit/becca71d614f68853a4ee341fd3bebe34037b8b4))
+- Feat: ShadowTree parallelization(C++),([249642071](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2496420710042af2820880a9ac02d0fb82cbf7c1))
+- feat: support invalid base64 image uri,([4d6d4f0e4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4d6d4f0e4c6370a283e9d0cf21bf961642ff760e))
+- Feat: ShadowTree parallelization（JS）,([bd9a55da0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/bd9a55da05d379b7daf7a7b2f88bad85a09b42f9))
+- fix: the issue where all locations can be selected and announced after enabling voice broadcast.,([26c348d93](https://gitcode.com/openharmony-sig/ohos_react_native/commit/26c348d934cb5f4071e999bff24ee179d05d4591))
+- [chore]: updated to version 6.0.0.604(0.72.94),([5da3d654a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/5da3d654a3f4403daf512a6f698ad618bbeedcae))
+
 ## 6.0.0.604
 - fix:Fixed the issue where selection does not take effect in specific scenarios.,([ff965fbc2](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ff965fbc2a66a7ab24f5ac55106b9d43a87121f7))
 - fix: null pointer dereference in AnimatedNodesManager::runUpdates,([11d5b9e0c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/11d5b9e0c6caf508c3dddb6b36010d638d1c8426))
