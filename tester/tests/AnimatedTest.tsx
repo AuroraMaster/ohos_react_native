@@ -93,7 +93,62 @@ export function AnimatedTest() {
       <TestCase.Example itShould="move red square horizontally relatively to the scroll offset (attachNativeEvent)">
         <AnimatedAttachNativeEventTest />
       </TestCase.Example>
+      <TestCase.Example itShould="after the loading animation ends, move square immediately when pressing button">
+        <RemoveNodeAndStartNewAnimatedExample />
+      </TestCase.Example>
     </TestSuite>
+  );
+}
+
+const Loading = () => {
+  const opacity = useRef(new Animated.Value(0.2)).current;
+  const runAmimation = () => {
+    Animated.sequence([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0.2,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      runAmimation();
+    });
+  }
+
+  useEffect(() => {
+    runAmimation()
+  }, [])
+
+  return (
+    <Animated.View
+      style={[
+        {
+          height: '100%',
+          width: '100%',
+          backgroundColor: 'pink',
+          opacity,
+        }
+      ]}
+    />
+  )
+}
+
+const RemoveNodeAndStartNewAnimatedExample = () => {
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    setTimeout(() => {
+      setShow(true);
+    }, 6000)
+  }, [])
+
+  return (
+    <View style={{ height: 72 }}>
+      {show ? <DiffClamp /> : <Loading />}
+    </View>
   );
 }
 

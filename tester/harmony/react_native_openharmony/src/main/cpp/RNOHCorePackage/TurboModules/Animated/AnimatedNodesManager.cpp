@@ -436,9 +436,13 @@ int32_t AnimatedNodesManager::getMinAcceptableFrameRate(
     const std::vector<facebook::react::Tag>& valueNodeTags) {
   int32_t finalFrameRate = 30;
   for (const auto& tag : valueNodeTags) {
-    auto& node = getValueNodeByTag(tag);
-    int32_t currentFrameRate = node.getFrameRate();
-    finalFrameRate = std::max(finalFrameRate, currentFrameRate);
+    try {
+      auto& node = getValueNodeByTag(tag);
+      int32_t currentFrameRate = node.getFrameRate();
+      finalFrameRate = std::max(finalFrameRate, currentFrameRate);
+    } catch (std::out_of_range& _e) {
+      // if a node is not found we skip over it
+    }
   }
   return finalFrameRate;
 }
