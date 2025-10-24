@@ -5482,7 +5482,6 @@ updateHostContainer = function(current, workInProgress) {
     flushPendingNodes()
     flushPendingAppendChilds()
     //RNOH patch end
-    var newChildSet = createChildSet(portalOrRoot.containerInfo);
     current = portalOrRoot.containerInfo;
     var newChildSet = createChildNodeSet(current);
     appendAllChildrenToContainer(newChildSet, workInProgress, !1, !1);
