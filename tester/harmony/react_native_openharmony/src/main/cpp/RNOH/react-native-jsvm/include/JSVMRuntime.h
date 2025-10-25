@@ -286,7 +286,6 @@ class JSVMPointerValue : public JSVMRuntime::PointerValue {
           delete this;
         });
       }
-      delete this;
     }
   }
 
