@@ -10,6 +10,7 @@
 #include <arkui/styled_string.h>
 #include <native_drawing/drawing_brush.h>
 #include <native_drawing/drawing_font_collection.h>
+#include <native_drawing/drawing_point.h>
 #include <native_drawing/drawing_text_typography.h>
 #include <react/renderer/graphics/Size.h>
 #include <react/renderer/textlayoutmanager/TextLayoutManager.h>
@@ -337,10 +338,25 @@ class ArkUITypographyBuilder final {
     }
     
     // shadow
-    std::unique_ptr<
-        OH_Drawing_TextShadow,
-        decltype(&OH_Drawing_DestroyTextShadow)>
-        shadow(OH_Drawing_CreateTextShadow(), OH_Drawing_DestroyTextShadow);
+    if (facebook::react::isColorMeaningful(
+            fragment.textAttributes.textShadowColor)) {
+      std::unique_ptr<
+          OH_Drawing_TextShadow,
+          decltype(&OH_Drawing_DestroyTextShadow)>
+          shadow(OH_Drawing_CreateTextShadow(), OH_Drawing_DestroyTextShadow);
+      auto color = *fragment.textAttributes.textShadowColor;
+      auto radius = fragment.textAttributes.textShadowRadius;
+      auto offset = fragment.textAttributes.textShadowOffset.value_or(
+          facebook::react::Size{0., 0.});
+      std::unique_ptr<OH_Drawing_Point, decltype(&OH_Drawing_PointDestroy)>
+          offsetPoint(
+              OH_Drawing_PointCreate(
+                  offset.width * m_scale, offset.height * m_scale),
+              OH_Drawing_PointDestroy);
+
+      OH_Drawing_SetTextShadow(shadow.get(), color, offsetPoint.get(), radius);
+      OH_Drawing_TextStyleAddShadow(textStyle.get(), shadow.get());
+    }
 
     // new NDK for setting letterSpacing
     if (!isnan(fragment.textAttributes.letterSpacing)) {
