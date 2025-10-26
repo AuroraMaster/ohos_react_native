@@ -48,8 +48,6 @@ class FallbackComponentInstance
     m_stackNode.insertChild(*m_arkUINode, 0);
   };
 
-  ~FallbackComponentInstance() noexcept(false) = default;
-
   ArkUINode& getLocalRootArkUINode() override {
     return m_stackNode;
   };

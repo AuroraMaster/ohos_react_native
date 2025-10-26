@@ -12,7 +12,7 @@
 namespace rnoh {
 class StackNodeDelegate {
  public:
-  virtual ~StackNodeDelegate() noexcept(false) = default;
+  virtual ~StackNodeDelegate() = default;
   virtual void onClick() {};
   virtual void onHoverIn() {};
   virtual void onHoverOut() {};

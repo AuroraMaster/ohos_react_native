@@ -28,8 +28,6 @@ class ArkTSMessageHub final : public ArkTSMessageHandler,
     Observer(ArkTSMessageHub::Shared const& subject)
         : Subject::Observer(std::static_pointer_cast<Subject>(subject)) {}
 
-    virtual ~Observer() noexcept(false) = default;
-
     virtual void onMessageReceived(ArkTSMessage const& payload) = 0;
 
    protected:

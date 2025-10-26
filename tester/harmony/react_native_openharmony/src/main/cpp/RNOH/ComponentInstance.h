@@ -83,7 +83,7 @@ class ComponentInstance
 
   ComponentInstance(Context ctx);
 
-  virtual ~ComponentInstance() noexcept(false) = default;
+  virtual ~ComponentInstance() = default;
 
   /**
    * In C++ virtual methods shouldn't be called from constructor. Override this
