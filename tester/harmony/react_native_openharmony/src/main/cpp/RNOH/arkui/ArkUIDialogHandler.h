@@ -13,7 +13,7 @@ namespace rnoh {
 
 class ArkUIDialogDelegate {
  public:
-  virtual ~ArkUIDialogDelegate() noexcept(false) = default;
+  virtual ~ArkUIDialogDelegate() = default;
   virtual void onShow(){};
   virtual void onRequestClose(){};
 };

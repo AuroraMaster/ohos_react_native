@@ -28,18 +28,12 @@ void ComponentInstanceProvider::initialize() {
   m_preallocationRequestQueue->setDelegate(this->weak_from_this());
 }
 
-ComponentInstanceProvider::~ComponentInstanceProvider() noexcept(false) {
-  try {
-    m_threadGuard.assertThread();
-    LOG(INFO) << "~ComponentInstanceProvider";
-    std::lock_guard lock(m_unsubscribeUITickerListenerMtx);
-    if (m_unsubscribeUITickerListener != nullptr) {
-      m_unsubscribeUITickerListener();
-    }
-  } catch (const std::logic_error& ex) {
-    LOG(FATAL)
-        << "logic_error in ComponentInstanceProvider~ComponentInstanceProvider():"
-        << ex.what();
+ComponentInstanceProvider::~ComponentInstanceProvider() {
+  m_threadGuard.assertThread();
+  LOG(INFO) << "~ComponentInstanceProvider";
+  std::lock_guard lock(m_unsubscribeUITickerListenerMtx);
+  if (m_unsubscribeUITickerListener != nullptr) {
+    m_unsubscribeUITickerListener();
   }
 }
 

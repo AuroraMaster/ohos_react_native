@@ -15,7 +15,7 @@ namespace rnoh {
 
 class TextInputNodeDelegate {
  public:
-  virtual ~TextInputNodeDelegate() noexcept(false) = default;
+  virtual ~TextInputNodeDelegate() = default;
   virtual void onChange(std::string text) {};
   virtual void onBlur() {};
   virtual void onFocus() {};

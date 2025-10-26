@@ -12,7 +12,7 @@
 namespace rnoh {
 class CustomNodeDelegate {
  public:
-  virtual ~CustomNodeDelegate() noexcept(false) = default;
+  virtual ~CustomNodeDelegate() = default;
   virtual void onClick(){};
   virtual void onHoverIn(){};
   virtual void onHoverOut(){};

@@ -13,7 +13,7 @@
 namespace rnoh {
 class ScrollNodeDelegate {
  public:
-  virtual ~ScrollNodeDelegate() noexcept(false) = default;
+  virtual ~ScrollNodeDelegate() = default;
   virtual void onScroll(){};
   virtual void onScrollStart(){};
   virtual void onScrollStop(){};
