@@ -592,3 +592,18 @@
     })  
 ``` 
 
+### 开启语音播报后为什么空白区域也能选中 
+
+- 现象
+	
+    开启语音播报功能后开白位置也能被选中。
+
+- 原因
+
+    主要原因是因为 RNOH 中所有的 CustomNode（View 组件对应的 ArkUI 节点） 和 StackNode （RootView 组件对应的 ArkUI 节点） 都默认监听了 onClick 事件，因此系统便会认为该节点可以点击，开启语音播报后该位置自然也能响应点击。
+
+- 解决
+
+    最佳的解决方案应该是将 RNOH 中默认的 onClick 事件去掉。但考虑到有三方库或者某些伙伴的自定义组件可能会用到这个onClick事件，因此从 0.72.95 版本开始我们增加了一个编译选项 `ALL_CONTAINERS_CLICKABLE`，在模块的 `CMakeLists.txt` 文件中添加一行 `set(ALL_CONTAINERS_CLICKABLE OFF)` 即可取消掉默认的 onClick 监听。
+
+    > 需要注意的是，当将 `ALL_CONTAINERS_CLICKABLE` 设置为 `OFF` 后，RNOH 框架不再默认监听 onClick 事件，因此设置之前需要检查所用到的三方库或者自定义组件是否依赖 onClick （对应 CAPI 属性为 NODE_ON_CLICK） 事件，以免影响其他业务。如果发现有组件依赖到 onClick 事件，则需要自行注册事件监听器来处理 onClick 事件（可参考 ArkUI 的文档 [addnodeeventreceiver](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/capi-arkui-nativemodule-arkui-nativenodeapi-1#addnodeeventreceiver)）。
