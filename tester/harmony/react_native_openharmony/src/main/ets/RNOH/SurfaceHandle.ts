@@ -61,8 +61,6 @@ export class SurfaceHandle {
     if (this.destroyed) {
       throw new Error("start called on a destroyed surface");
     }
-
-    this.surfaceCtx = ctx;
     this.props = { ...this.defaultProps, ...props };
     const {
       minWidth,
@@ -70,6 +68,25 @@ export class SurfaceHandle {
       maxWidth,
       maxHeight,
     } = getConstraints(ctx);
+    const {
+      surfaceOffsetX,
+      surfaceOffsetY,
+      pixelRatio,
+      isRTL: ctxIsRTL,
+    } = ctx;
+    const isRTL = this.surfaceCtx?.isRTL ?? ctxIsRTL;
+
+    this.surfaceCtx = {
+      minWidth,
+      minHeight,
+      maxWidth,
+      maxHeight,
+      surfaceOffsetX,
+      surfaceOffsetY,
+      isRTL,
+      pixelRatio
+    };
+
     this.napiBridge.startSurface(
       this.rnInstance.getId(),
       this.tag,
@@ -77,10 +94,10 @@ export class SurfaceHandle {
       minHeight,
       maxWidth,
       maxHeight,
-      ctx.surfaceOffsetX,
-      ctx.surfaceOffsetY,
-      ctx.pixelRatio,
-      ctx.isRTL,
+      surfaceOffsetX,
+      surfaceOffsetY,
+      pixelRatio,
+      isRTL,
       this.props);
     this.running = true
   }
@@ -109,8 +126,10 @@ export class SurfaceHandle {
       surfaceOffsetX,
       surfaceOffsetY,
       pixelRatio,
-      isRTL,
+      isRTL: ctxIsRTL,
     } = ctx;
+    const isRTL = this.surfaceCtx?.isRTL ?? ctxIsRTL;
+
     this.surfaceCtx = {
       minWidth,
       minHeight,
