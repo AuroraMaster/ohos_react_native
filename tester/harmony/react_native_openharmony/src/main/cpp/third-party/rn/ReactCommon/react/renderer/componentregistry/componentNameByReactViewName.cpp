@@ -6,6 +6,8 @@
  */
 
 #include "componentNameByReactViewName.h"
+#include <glog/logging.h>
+#include <algorithm>
 
 namespace facebook::react {
 
@@ -18,7 +20,34 @@ std::string componentNameByReactViewName(std::string viewName) {
   if (std::mismatch(rctPrefix.begin(), rctPrefix.end(), viewName.begin())
           .first == rctPrefix.end()) {
     // If `viewName` has "RCT" prefix, remove it.
-    viewName.erase(0, rctPrefix.length());
+    // RNC: patch
+    if (viewName == "RCTView") {
+      viewName = "View";
+    } else if (viewName == "RCTRawText") {
+      viewName = "RawText";
+    } else if (viewName == "RCTText") {
+      viewName = "Text";
+    } else if (viewName == "RCTScrollContentView") {
+      viewName = "ScrollContentView";
+    } else if (viewName == "RCTActivityIndicatorView") {
+      viewName = "ActivityIndicatorView";
+    } else if (viewName == "RCTScrollView") {
+      viewName = "ScrollView";
+    } else if (viewName == "RCTVirtualText") {
+      viewName = "VirtualText";
+    } else if (viewName == "RCTImageView") {
+      viewName = "ImageView";
+    } else if (viewName == "RCTSinglelineTextInputView") {
+      viewName = "SinglelineTextInputView";
+    } else if (viewName == "RCTModalHostView") {
+      viewName = "ModalHostView";
+    } else if (viewName == "RCTRefreshControl") {
+      viewName = "RefreshControl";
+    } else if (viewName == "RCTSwitch") {
+      viewName = "Switch";
+    } else {
+      DLOG(INFO) << "Skipped removing RCT prefix for component: " << viewName;
+    }
   }
 
   // Fabric uses slightly new names for Text components because of differences
