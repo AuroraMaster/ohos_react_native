@@ -10,19 +10,19 @@
 #include "RNOH/RNOHError.h"
 #include "ffrt/cpp/pattern/job_partner.h"
 #include "RNOH/ParallelComponent.h"
-#include "RNOH/ApiVersionCheck.h"
+#include "RNOH/ParallelCheck.h"
 #include "RNOH/FFRTConfig.h"
 
 namespace rnoh {
 
 void ComponentInstancePreallocationRequestQueue::push(const Request& request) {
-  if (!IsAtLeastApi21()) {
+  if (!IsParallelizationWorkable()) {
     auto lock = std::lock_guard(m_mtx);
     m_queue.push(std::move(request));
   }
   auto delegate = m_weakDelegate.lock();
   if (delegate != nullptr) {
-    if (IsAtLeastApi21() &&
+    if (IsParallelizationWorkable() &&
         (parallelComponentHandles.find(request.componentHandle) !=
              parallelComponentHandles.end() ||
          ComponentNameManager::getInstance().hasComponentName(

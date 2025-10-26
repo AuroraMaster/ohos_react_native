@@ -10,7 +10,7 @@
 #include "ParallelComponent.h"
 #include "RNOH/Performance/HarmonyReactMarker.h"
 #include "ffrt/cpp/pattern/job_partner.h"
-#include "RNOH/ApiVersionCheck.h"
+#include "RNOH/ParallelCheck.h"
 #include "RNOH/FFRTConfig.h"
 
 namespace rnoh {
@@ -33,7 +33,7 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
         int taskId = random();
         std::string taskTrace =
             "#RNOH::TaskExecutor::runningTask t" + std::to_string(taskId);
-            if (IsAtLeastApi21()) {
+            if (IsParallelizationWorkable()) {
                 facebook::react::SystraceSection s("#RNOH::SchedulerDelegate::didCreateMount");
                 auto job_partner = ffrt::job_partner<ScenarioID::MUTATION_PARALLELIZATION>::get_main_partner(
                     ffrt::job_partner_attr()
