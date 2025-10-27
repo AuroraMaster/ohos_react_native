@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.72.97
+- feat: Add PARALLELIZATION_ENABLE build flag for runtime parallelization control,([b2df733dd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b2df733ddc281b1624208422b44ad72840254da4))
+- fix: Custom component named at the beginning of RCT crashes,([50800a854](https://gitcode.com/openharmony-sig/ohos_react_native/commit/50800a8541688fc90f2862fa8b625608e86ddf1e))
+- fix: make I18nManagerTM and AppStateTM work properly,([bf89beee9](https://gitcode.com/openharmony-sig/ohos_react_native/commit/bf89beee9b68d6c677fb373905a7551a79fa5b4d))
+- fix: noexcept revert,([a8d757abe](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a8d757abe874abb96a4b5e6458fa032a64060b59))
+- Implement text shadow,([47c23ea5f](https://gitcode.com/openharmony-sig/ohos_react_native/commit/47c23ea5fc8d75c37dffcb8a4d404bc06d238979))
+- fix:Fix nested ScrollView scenario where scrolling inside causes the outer disableIntervalMomentum to not take effect.,([f342ad758](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f342ad758f64a31098be05efd387aaad5b2144a1))
+- fix: remove redundant delete,([a25e13b56](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a25e13b562241423370708063d3f8fbcf016a079))
+- fix: the infinite loop caused by the error 'Animated node with tag xxx does not exist'.,([dd5bcbcbf](https://gitcode.com/openharmony-sig/ohos_react_native/commit/dd5bcbcbfd9b2be8631f3af022b45530727ec4ec))
+- [chore]: updated to version 6.0.0.605(0.72.95),([35ec3fcc7](https://gitcode.com/openharmony-sig/ohos_react_native/commit/35ec3fcc7ef05660083b7d9f6009a7760389a1ee))
+
 ## 0.72.95
 - Feat: Migrate appstate, I18TM, and linking TurboModules to the worker thread,([4ed720375](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4ed7203752d1fe1cca523fee000de495bb34e9df))
 - fix some function to noexcept false,([20e6ee02b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/20e6ee02bc146734c306d4fb69046e04679b1703))
