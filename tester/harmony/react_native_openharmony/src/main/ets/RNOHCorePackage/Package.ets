@@ -21,7 +21,6 @@ import {
   DevSettingsTurboModule,
   ExceptionsManagerTurboModule,
   FileReaderTurboModule,
-  I18nManagerTurboModule,
   ImageLoaderTurboModule,
   KeyboardObserverTurboModule,
   LogBoxTurboModule,
@@ -41,6 +40,7 @@ import {
 } from './turboModules';
 import { ViewDescriptorWrapper } from './components/ts';
 import { AppearanceTurboModule } from './turboModules/AppearanceTurboModule';
+import { I18nManagerTurboModule } from './turboModules/I18nManagerTurboModule'
 
 export class RNOHCorePackage extends RNPackage {
   override createDescriptorWrapperFactoryByDescriptorType(): DescriptorWrapperFactoryByDescriptorType {

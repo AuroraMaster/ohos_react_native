@@ -28,6 +28,7 @@ TextMeasurement TextMeasurer::measure(
     AttributedString attributedString,
     ParagraphAttributes paragraphAttributes,
     LayoutConstraints layoutConstraints) {
+    dealTextCase(attributedString, paragraphAttributes);
     // calc typograph
     facebook::react::TextMeasureCacheKey cacheKey{attributedString, paragraphAttributes, layoutConstraints};
     std::optional<std::shared_ptr<TextMeasureInfo>> measureInfo = TextMeasureRegistry::getTextMeasureRegistry().getTextMeasureInfo(cacheKey, m_scale);

@@ -45,8 +45,6 @@ export * from "./SafeAreaTurboModule";
 
 export * from "./AlertManagerTurboModule";
 
-export * from "./I18nManagerTurboModule";
-
 export * from "./DevSettingsTurboModule";
 
 export * from "./DevMenuTurboModule";

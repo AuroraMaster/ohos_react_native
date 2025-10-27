@@ -565,3 +565,8 @@ if(ALL_CONTAINERS_CLICKABLE)
   message("ALL_CONTAINERS_CLICKABLE is set to: ${ALL_CONTAINERS_CLICKABLE}")
   target_compile_definitions(rnoh PUBLIC ALL_CONTAINERS_CLICKABLE)
 endif()
+
+if(PARALLELIZATION_ENABLE)
+  message("PARALLELIZATION OPTIMIZATION is enabled!")
+  target_compile_definitions(rnoh PUBLIC PARALLELIZATION_ENABLED)
+endif()

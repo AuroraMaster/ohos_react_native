@@ -26,7 +26,7 @@ export class AppStateTurboModule extends AnyThreadTurboModule {
     const applicationContext = this.ctx.uiAbilityContext.getApplicationContext();
     let applicationStateChangeCallback: ApplicationStateChangeCallback = {
       onApplicationForeground: () => {
-        this.state = "FOREGRROUND"
+        this.state = "FOREGROUND"
         this.ctx.rnInstance.emitDeviceEvent("appStateDidChange", { app_state: this.getAppState() });
       },
       onApplicationBackground: () => {

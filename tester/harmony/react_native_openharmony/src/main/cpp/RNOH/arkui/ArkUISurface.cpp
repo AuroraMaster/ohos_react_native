@@ -14,6 +14,7 @@
 #include "RNOH/Performance/HarmonyReactMarker.h"
 #include "TouchEventDispatcher.h"
 #include "UIInputEventHandler.h"
+#include "../ParallelCheck.h"
 
 
 namespace rnoh {
@@ -210,7 +211,9 @@ void ArkUISurface::start(
     std::shared_ptr<facebook::react::LayoutAnimationDriver> const&
         animationDriver) {
   m_threadGuard.assertThread();  
-  this->setProps(initialProps);
+  folly::dynamic m_initialProps = initialProps;
+  m_initialProps["batchToNative"] = IsParallelizationWorkable();
+  this->setProps(m_initialProps);
   this->updateConstraints(
       minWidth,
       minHeight,

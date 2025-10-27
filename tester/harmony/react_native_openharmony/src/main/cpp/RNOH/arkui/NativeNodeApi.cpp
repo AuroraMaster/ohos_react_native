@@ -7,7 +7,7 @@
 
 #include "NativeNodeApi.h"
 #include <glog/logging.h>
-#include "RNOH/ApiVersionCheck.h"
+#include "RNOH/ParallelCheck.h"
 
 namespace rnoh {
 
@@ -15,13 +15,18 @@ ArkUI_NativeNodeAPI_1* NativeNodeApi::getInstance() {
 #ifdef C_API_ARCH
   static ArkUI_NativeNodeAPI_1* INSTANCE = nullptr;
   if (INSTANCE == nullptr) {
-    if (IsAtLeastApi21()) {
+#ifdef PARALLELIZATION_ENABLE
+    if (IsParallelizationWorkable()) {
       OH_ArkUI_GetModuleInterface(
           ARKUI_MULTI_THREAD_NATIVE_NODE, ArkUI_NativeNodeAPI_1, INSTANCE);
     } else {
       OH_ArkUI_GetModuleInterface(
           ARKUI_NATIVE_NODE, ArkUI_NativeNodeAPI_1, INSTANCE);
     }
+#else 
+    OH_ArkUI_GetModuleInterface(
+          ARKUI_NATIVE_NODE, ArkUI_NativeNodeAPI_1, INSTANCE);
+#endif
     if (INSTANCE == nullptr) {
       LOG(FATAL) << "Failed to get native node API instance.";
     }

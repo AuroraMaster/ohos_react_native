@@ -7,7 +7,7 @@
 
 #include "ComponentInstanceProvider.h"
 #include <cxxreact/SystraceSection.h>
-#include "RNOH/ApiVersionCheck.h"
+#include "RNOH/ParallelCheck.h"
 
 using namespace rnoh;
 
@@ -148,7 +148,7 @@ void ComponentInstanceProvider::processPreallocationRequest(
   auto componentInstance = m_componentInstanceFactory->create(
       shadowView.tag, shadowView.componentHandle, shadowView.componentName);
   if (componentInstance != nullptr) {
-    if (IsAtLeastApi21()) {
+    if (IsParallelizationWorkable()) {
       componentInstance->setProps(shadowView.props);
     }
     std::lock_guard<std::mutex> lock(m_preallocatedComponentInstanceByTagMtx);
