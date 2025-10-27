@@ -21,6 +21,7 @@ import {
   DevSettingsTurboModule,
   ExceptionsManagerTurboModule,
   FileReaderTurboModule,
+  I18nManagerTurboModule,
   ImageLoaderTurboModule,
   KeyboardObserverTurboModule,
   LogBoxTurboModule,
@@ -40,7 +41,6 @@ import {
 } from './turboModules';
 import { ViewDescriptorWrapper } from './components/ts';
 import { AppearanceTurboModule } from './turboModules/AppearanceTurboModule';
-import { I18nManagerTurboModule } from './turboModules/I18nManagerTurboModule'
 
 export class RNOHCorePackage extends RNPackage {
   override createDescriptorWrapperFactoryByDescriptorType(): DescriptorWrapperFactoryByDescriptorType {
@@ -63,6 +63,7 @@ export class RNOHCorePackage extends RNPackage {
       .set(ShareTurboModule.NAME, (ctx) => new ShareTurboModule(ctx))
       .set(SourceCodeTurboModule.NAME, (ctx) => new SourceCodeTurboModule(ctx))
       .set(TimingTurboModule.NAME, (ctx) => new TimingTurboModule(ctx))
+      .set(I18nManagerTurboModule.NAME, (ctx) => new I18nManagerTurboModule(ctx))
       .set(LogBoxTurboModule.NAME, (ctx) => new LogBoxTurboModule(ctx))
       .set(DevLoadingViewTurboModule.NAME, (ctx) => new DevLoadingViewTurboModule(ctx))
       .set(VibrationTurboModule.NAME, (ctx) => new VibrationTurboModule(ctx))
@@ -90,7 +91,6 @@ export class RNOHCorePackage extends RNPackage {
       .set(BlobTurboModule.NAME, (ctx) => new BlobTurboModule(ctx))
       .set(FileReaderTurboModule.NAME, (ctx) => new FileReaderTurboModule(ctx))
       .set(LinkingManagerTurboModule.NAME, (ctx) => new LinkingManagerTurboModule(ctx))
-      .set(I18nManagerTurboModule.NAME, (ctx) => new I18nManagerTurboModule(ctx))
       .set(AppStateTurboModule.NAME, (ctx) => new AppStateTurboModule(ctx))
   }
 
