@@ -1,6 +1,9 @@
 # Changelog
 
 ## 6.0.1.111
+- "revert: move I18nManagerTM to the worker thread",([f576c3644](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f576c364495ab7ffcc178632aefa1add3d182ff0))
+- fix: Resolve Multiinput box crash,([d306178f5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d306178f555fb4581561101705fc3c8621f87be7))
+- [chore]: updated to version 6.0.1.111 (0.72.97),([416a3fb1d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/416a3fb1dc4c065f4cacb51a40bd8180b72d5289))
 - feat: Add PARALLELIZATION_ENABLE build flag for runtime parallelization control,([b2df733dd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b2df733ddc281b1624208422b44ad72840254da4))
 - docs: usage of ALL_CONTAINERS_CLICKABLE.,([b041592bb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b041592bbb29e0c2acac7567e35693e5d76889ac))
 - fix: Custom component named at the beginning of RCT crashes,([50800a854](https://gitcode.com/openharmony-sig/ohos_react_native/commit/50800a8541688fc90f2862fa8b625608e86ddf1e))
