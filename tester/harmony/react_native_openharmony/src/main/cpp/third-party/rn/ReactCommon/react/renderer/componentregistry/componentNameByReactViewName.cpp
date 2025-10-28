@@ -45,6 +45,10 @@ std::string componentNameByReactViewName(std::string viewName) {
       viewName = "RefreshControl";
     } else if (viewName == "RCTSwitch") {
       viewName = "Switch";
+    } else if (viewName == "RCTSafeAreaView") {
+      viewName = "SafeAreaView";
+    } else if (viewName == "RCTMultilineTextInputView") {
+      viewName = "MultilineTextInputView";
     } else {
       DLOG(INFO) << "Skipped removing RCT prefix for component: " << viewName;
     }
