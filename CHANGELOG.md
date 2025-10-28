@@ -1,6 +1,7 @@
 # Changelog
 
 ## 6.0.1.111
+- [chore]: updated to version 6.0.1.111 (0.72.98),([7acc66557](https://gitcode.com/openharmony-sig/ohos_react_native/commit/7acc6655758344613506f019e1b3651139abb42f))
 - "revert: move I18nManagerTM to the worker thread",([f576c3644](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f576c364495ab7ffcc178632aefa1add3d182ff0))
 - fix: Resolve Multiinput box crash,([d306178f5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d306178f555fb4581561101705fc3c8621f87be7))
 - [chore]: updated to version 6.0.1.111 (0.72.97),([416a3fb1d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/416a3fb1dc4c065f4cacb51a40bd8180b72d5289))

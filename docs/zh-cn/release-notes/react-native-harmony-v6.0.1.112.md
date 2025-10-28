@@ -7,7 +7,7 @@
 | react-native-harmony.tgz        | 0.72.98 |
 | react-native-harmony-cli.tgz    | 0.0.40 |
 | react_native_openharmony-6.0.1.111.har              | 0.72.98 |
-| react_native_openharmony_release-6.0.1.111.har      | 6.0.1.111 |
+| react_native_openharmony_release-6.0.1.111.har      | 6.0.1.112 |
 
 配套IDE、SDK版本和手机ROM:
 
