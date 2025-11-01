@@ -114,6 +114,9 @@ void TextInputComponentInstance::onWillDelete(
     keyPressMetrics.text = "";
     keyPressMetrics.eventCount = m_nativeEventCount;
     m_eventEmitter->onKeyPress(keyPressMetrics);
+    // Use the onChange event to synchronize eventCount to ensure normal
+    // rendering during long-press deletion.
+    m_eventEmitter->onChange(getOnChangeMetrics());
   }
 }
 
@@ -199,7 +202,9 @@ facebook::react::OnChangeMetrics
 TextInputComponentInstance::getOnChangeMetrics() {
   auto OnChangeMetrics = facebook::react::OnChangeMetrics();
   OnChangeMetrics.eventCount = this->m_nativeEventCount;
-  OnChangeMetrics.text = this->m_content;
+  OnChangeMetrics.text = m_multiline
+    ? m_textAreaNode.getTextContent()
+    : m_textInputNode.getTextContent();
   return OnChangeMetrics;
 }
 
