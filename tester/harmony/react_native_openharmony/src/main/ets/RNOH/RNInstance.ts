@@ -23,7 +23,7 @@ import type { AnyThreadTurboModuleFactory, RNPackage, RNPackageContext, UITurboM
 import type { AnyThreadTurboModule, UITurboModule } from './TurboModule'
 import { ResponderLockDispatcher } from './ResponderLockDispatcher'
 import { DevToolsController } from './DevToolsController'
-import { RNInstanceError, RNInstanceErrorEventEmitter, RNOHError, RNOHErrorEventEmitter } from './RNOHError'
+import { RNInstanceError, RNInstanceErrorEventEmitter, RNOHError, RNOHErrorEventEmitter, RNOHErrorStack } from './RNOHError'
 import window from '@ohos.window'
 import { DevServerHelper } from './DevServerHelper'
 import { HttpClient, CAPathProvider } from '../HttpClient/HttpClient'
@@ -361,6 +361,21 @@ export interface RNInstance {
    * @returns The RNWindow associated with this RNInstance.
    */
   getRNWindow(): Promise<window.Window>;
+
+  /**
+   * Binds an application-defined string to this RNInstance.
+   * The string will be attached to subsequent RNOH errors reported via
+   * reportRNOHError(...) so that JS runtime errors can be correlated with a specific bundle.
+   *
+   * Note: the string may be truncated to 256 chars before being stored.
+   */
+  setAttachedLabel(attachedLabel: string): void;
+
+  /**
+   * @returns the application-defined string previously bound to this RNInstance
+   * using setAttachedLabel(...). If no string has been bound yet, an empty string or undefined is returned.
+   */
+  getAttachedLabel(): string;
 }
 
 /**
@@ -505,7 +520,9 @@ export class RNInstanceImpl implements RNInstance {
   private unregisterDevToolsMessageListeners: (() => void)[] = [];
   private uiAbilityContext: common.UIAbilityContext = undefined;
   private cacheDir?: string;
-
+  private attachedLabel: string = "";
+  private lastBundleUrl ?: string;
+  private ATTACHEDLABEL_MAX_BYTES = 256;
   /**
    * @deprecated
    */
@@ -877,6 +894,7 @@ export class RNInstanceImpl implements RNInstance {
         bundleURL = bundleURLCur
       }
       this.initialBundleUrl = this.initialBundleUrl ?? bundleURL
+      this.lastBundleUrl = bundleURL;
 
       await this.napiBridge.loadScript(this.id, jsBundle, bundleURL)
       this.napiBridge.setBundlePath(this.id, bundleURL);
@@ -897,6 +915,13 @@ export class RNInstanceImpl implements RNInstance {
         appKeys: jsBundleProvider.getAppKeys()
       })
       this.workerThread?.postMessage("JS_BUNDLE_EXECUTION_FINISH", { rnInstanceId: this.id, bundleURL })
+      this.logger.info(
+        `[RNInstance:${this.name ?? this.id}] JS bundle executed successfully`,
+        {
+          bundleUrl: this.lastBundleUrl ?? '<unknown>',
+          attachedLabel: this.attachedLabel || '',
+        }
+      );
     } catch (err) {
       this.bundleExecutionStatusByBundleURL.delete(bundleURL)
       if (err instanceof JSBundleProviderError) {
@@ -1052,8 +1077,38 @@ export class RNInstanceImpl implements RNInstance {
     return this.rnInstanceErrorEventEmitter.subscribe("NEW_ERROR", listener)
   }
 
+  private toStackString(s: string | RNOHErrorStack | undefined): string {
+    return typeof s === 'string' ? s : (s?.toString() ?? '');
+  }
+
+  private buildErrorHeader(): string {
+    return [
+      '[RNOH ERROR CONTEXT]',
+      `instanceName=${this.getName() ?? '<anonymous>'}`,
+      `instanceId=${this.getId()}`,
+      `bundleUrl=${this.lastBundleUrl ?? this.getInitialBundleUrl() ?? '<unknown>'}`,
+      ...(this.attachedLabel ? [`attachedLabel=${this.attachedLabel}`] : []),
+      ''
+    ].join('\n');
+  }
+
+  private buildReportableError(err: RNOHError): RNOHError {
+    const header = this.buildErrorHeader();
+    const stackStr = this.toStackString(err.getStack());
+    const origExtra = typeof (err as any).getExtraData === 'function'
+      ? (err as any).getExtraData()
+      : undefined;
+
+    return new RNOHError({
+      whatHappened: err.getMessage(),
+      howCanItBeFixed: err.getSuggestions(),
+      customStack: header + stackStr,
+      extraData: origExtra
+    });
+  }
+
   public reportRNOHError(rnohError: RNOHError) {
-    const rnInstanceError = new RNInstanceError(rnohError, { name: this.name, id: this.id });
+    const rnInstanceError = new RNInstanceError(this.buildReportableError(rnohError), { name: this.name, id: this.id });
     this.globalRNOHErrorEventEmitter.emit('NEW_ERROR', rnInstanceError);
     this.rnInstanceErrorEventEmitter.emit('NEW_ERROR', rnInstanceError)
   }
@@ -1125,6 +1180,22 @@ export class RNInstanceImpl implements RNInstance {
       This is usually not a problem and the application should continue to work normally.`, exception);
       return this.uiAbilityContext.windowStage.getMainWindowSync();
     }
+  }
+
+  public setAttachedLabel(attachedLabel: string): void {
+    if (attachedLabel.length <= this.ATTACHEDLABEL_MAX_BYTES) {
+      this.attachedLabel = attachedLabel;
+      return;
+    }
+    const truncated = attachedLabel.slice(0, this.ATTACHEDLABEL_MAX_BYTES);
+    this.attachedLabel = truncated;
+    this.logger.warn(
+      `[RNInstance:${this.getName() ?? this.getId()}] attachedLabel exceeded ${this.ATTACHEDLABEL_MAX_BYTES} chars (was ${attachedLabel.length}); truncated.`
+    );
+  }
+
+  public getAttachedLabel(): string {
+    return this.attachedLabel;
   }
 }
 
