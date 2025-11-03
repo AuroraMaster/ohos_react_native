@@ -675,6 +675,29 @@ Sends messages from ArkTS to C++. It is handled by `ArkTSMessageHub:Observer` or
 | name    | string | Yes  | Message name.  |
 | payload | any    | Yes  | Sent data.|
 
+#### setAttachedLabel
+
+```typescript
+setAttachedLabel(attachedLabel: string): void
+```
+
+Attaches a developer-defined string label to the current RNInstance.
+Subsequent errors reported via reportRNOHError from this instance will automatically include this label (to quickly correlate a specific bundle/scene), making it easier to locate the source in logs and subscriber callbacks.
+
+##### Parameter
+
+| Parameter | Type  | Required| Description      |
+| ------- | ------ | ---- | ---------- |
+| attachedLabel | string | Yes  | The custom label to bind to this instance; values longer than 256 characters emit a warning and are truncated. |
+
+#### getAttachedLabel
+
+```typescript
+getAttachedLabel(): string
+```
+
+Returns the custom label previously set on this RNInstance via setAttachedLabel method.
+
 ## RNOHCoreContext
 
 ### Introduction

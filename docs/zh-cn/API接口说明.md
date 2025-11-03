@@ -821,6 +821,29 @@ registerFont(fontFamily: string, fontResource: Resource | string): void
 | fontFamily   | string    | 是   | 字体名。                   |
 | fontResource | Resource / string    | 是   | 字体资源对象，或字体资源文件的沙箱路径。 |
 
+#### setAttachedLabel
+
+```typescript
+setAttachedLabel(attachedLabel: string): void
+```
+
+将一段开发者自定义的字符串标签挂载到当前 RNInstance。
+之后该实例通过 reportRNOHError 上报的错误中，会自动带上该标签（用于快速关联具体 bundle / 场景），便于在日志与订阅回调中定位来源。
+
+###### 参数
+
+| 参数名       | 类型      | 必填 | 说明                                   |
+| ------------ | --------- | ---- | -------------------------------------- |
+| attachedLabel   | string    | 是   | 要绑定到当前实例的自定义标签文本；超过 256 字符将触发 warning 日志并被截断。|
+
+#### getAttachedLabel
+
+```typescript
+getAttachedLabel(): string
+```
+
+返回当前 RNInstance 上通过 setAttachedLabel方法设置的自定义标签。
+
 ## RNOHCoreContext
 
 ### 基本介绍
