@@ -537,40 +537,145 @@ new MetroJSBundleProvider()
 
 2. 替换 GuidePro\\entry\\src\\main\\cpp\\CMakeLists.txt 文件为以下代码:
 
-```
-project(rnapp) cmake_minimum_required(VERSION 3.4.1) 
-set(CMAKE_SKIP_BUILD_RPATH TRUE) 
-set(OH_MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../oh_modules") 
-set(RNOH_APP_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-  
-set(RNOH_CPP_DIR "${OH_MODULE_DIR}/@rnoh/react-native-openharmony/include") 
-set(RNOH_GENERATED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/generated") 
-set(LOG_VERBOSITY_LEVEL 1) 
-set(CMAKE_ASM_FLAGS "-Wno-error=unused-command-line-argument -Qunused-arguments") 
-set(CMAKE_CXX_FLAGS "-fstack-protector-strong -Wl,-z,relro,-z,now,-z,noexecstack -s -fPIE -pie") 
-set(WITH_HITRACE_SYSTRACE 1) 
-# for other CMakeLists.txt files to use 
-add_compile_definitions(WITH_HITRACE_SYSTRACE)
-  
-include("${RNOH_CPP_DIR}/react-native-harmony.cmake") 
- 
-# RNOH_BEGIN: manual_package_linking_1 
-add_subdirectory("${OH_MODULE_DIR}/@rnoh/sample-package/src/main/cpp" ./sample-package) 
-# RNOH_END: manual_package_linking_1
-  
-file(GLOB GENERATED_CPP_FILES "./generated/*.cpp")
-  
-add_library(rnoh_app SHARED
-   ${GENERATED_CPP_FILES}
-   "./PackageProvider.cpp"
-   "${RNOH_CPP_DIR}/RNOHAppNapiBridge.cpp"
-)  
-target_link_libraries(rnoh_app PUBLIC rnoh)
+    ```CMAKE
+    project(rnapp)
+    cmake_minimum_required(VERSION 3.4.1)
+    set(CMAKE_SKIP_BUILD_RPATH TRUE)
+    set(NATIVERENDER_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+    set(OH_MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../oh_modules")
+    set(RNOH_CPP_DIR "${OH_MODULE_DIR}/@rnoh/react-native-openharmony/src/main/include")
+    set(REACT_COMMON_PATCH_DIR "${RNOH_CPP_DIR}/patches/react_native_core")
 
-# RNOH_BEGIN: manual_package_linking_2 
-target_link_libraries(rnoh_app PUBLIC rnoh_sample_package) 
-# RNOH_END: manual_package_linking_2
-```
+    set(CMAKE_CXX_STANDARD 17)
+    set(LOG_VERBOSITY_LEVEL 1)
+    set(CMAKE_ASM_FLAGS "-Wno-error=unused-command-line-argument -Qunused-arguments")
+    set(RNOH_GENERATED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/generated")
+    set(CMAKE_CXX_FLAGS "-fstack-protector-strong -Wl,-z,relro,-z,now,-z,noexecstack -s -fPIE -pie -DNDEBUG")
+    set(WITH_HITRACE_SYSTRACE 1) # for other CMakeLists.txt files to use
+    add_compile_definitions(WITH_HITRACE_SYSTRACE)
+    # folly的编译选项
+    set(folly_compile_options
+        -DFOLLY_NO_CONFIG=1
+        -DFOLLY_MOBILE=1
+        -DFOLLY_USE_LIBCPP=1
+        -DFOLLY_HAVE_RECVMMSG=1
+        -DFOLLY_HAVE_PTHREAD=1
+        -Wno-comma
+        -Wno-shorten-64-to-32
+        -Wno-documentation
+        -faligned-new
+    )
+    add_compile_options("-Wno-unused-command-line-argument")
+    # 添加头文件目录
+    include_directories(${NATIVERENDER_ROOT_PATH}
+                        ${RNOH_CPP_DIR}
+                        ${REACT_COMMON_PATCH_DIR}
+                        ${RNOH_CPP_DIR}/third-party/folly
+                        ${RNOH_CPP_DIR}/third-party/rn/ReactCommon
+                        ${RNOH_CPP_DIR}/third-party/rn/ReactCommon/react/nativemodule/core
+                        ${RNOH_CPP_DIR}/third-party/rn/ReactCommon/jsi
+                        ${RNOH_CPP_DIR}/third-party/rn/ReactCommon/callinvoker
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/utility/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/stacktrace/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/predef/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/array/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/throw_exception/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/config/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/core/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/preprocessor/include
+                        ${RNOH_CPP_DIR}/third-party/double-conversion
+                        ${RNOH_CPP_DIR}/third-party/rn/ReactCommon/react/renderer/graphics/platform/cxx
+                        ${RNOH_CPP_DIR}/third-party/rn/ReactCommon/runtimeexecutor
+                        ${RNOH_CPP_DIR}/third-party/glog/src
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/mpl/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/type_traits/include
+                        ${RNOH_CPP_DIR}/third-party/rn/ReactCommon/yoga
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/intrusive/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/assert/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/move/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/static_assert/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/container_hash/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/describe/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/mp11/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/iterator/include
+                        ${RNOH_CPP_DIR}/third-party/boost/libs/detail/include
+                        ${RNOH_CPP_DIR}/patches/react_native_core/react/renderer/textlayoutmanager/platform/harmony
+                        )
+
+    configure_file(
+      ${RNOH_CPP_DIR}/third-party/folly/CMake/folly-config.h.cmake
+      ${RNOH_CPP_DIR}/third-party/folly/folly/folly-config.h
+    )
+    file(GLOB GENERATED_CPP_FILES "./generated/*.cpp")
+    # 添加rnoh动态共享包
+    add_library(rnoh SHARED
+        "${RNOH_CPP_DIR}/RNOHOther.cpp"
+        "${RNOH_CPP_DIR}/third-party/folly/folly/lang/SafeAssert.cpp"
+        )
+    # 链接其他so
+    target_link_directories(rnoh PUBLIC ${OH_MODULE_DIR}/@rnoh/react-native-openharmony/libs/arm64-v8a)
+    target_link_libraries(rnoh PUBLIC
+        rnoh_semi
+        libace_napi.z.so
+        libace_ndk.z.so
+        librawfile.z.so
+        libhilog_ndk.z.so
+        libnative_vsync.so
+        libnative_drawing.so
+        libc++_shared.so
+        libhitrace_ndk.z.so
+        react_render_scheduler
+        rrc_image
+        rrc_text
+        rrc_textinput
+        rrc_scrollview
+        react_nativemodule_core
+        react_render_animations
+        jsinspector
+        hermes
+        jsi
+        logger
+        react_config
+        react_debug
+        react_render_attributedstring
+        react_render_componentregistry
+        react_render_core
+        react_render_debug
+        react_render_graphics
+        react_render_imagemanager
+        react_render_mapbuffer
+        react_render_mounting
+        react_render_templateprocessor
+        react_render_textlayoutmanager
+        react_render_telemetry
+        react_render_uimanager
+        react_utils
+        rrc_root
+        rrc_view
+        react_render_leakchecker
+        react_render_runtimescheduler
+        runtimeexecutor
+        )
+
+    if("$ENV{RNOH_C_API_ARCH}" STREQUAL "1")
+        message("Experimental C-API architecture enabled")
+        target_link_libraries(rnoh PUBLIC libqos.so)
+        target_compile_definitions(rnoh PUBLIC C_API_ARCH)
+    endif()
+    # RNOH_END: add_package_subdirectories
+
+    # 添加rnoh_app共享包
+    add_library(rnoh_app SHARED
+        ${GENERATED_CPP_FILES}
+        "./PackageProvider.cpp"
+        "${RNOH_CPP_DIR}/RNOHOther.cpp"
+        "${RNOH_CPP_DIR}/RNOHAppNapiBridge.cpp"
+    )
+
+    target_link_libraries(rnoh_app PUBLIC rnoh)
+
+    target_compile_options(rnoh_app PUBLIC ${folly_compile_options} -DRAW_PROPS_ENABLED -std=c++17)
+    ```
 
 3. 将 GuidePro/entry 的 oh\_modules 文件夹删除，点击 entry 文件夹，再点击顶部菜单栏的 build\>Clean Project 清除项目缓存。
 
@@ -1390,6 +1495,7 @@ export default function App()
 ## 鸿蒙特性
 
 -   **[一镜到底](#一镜到底)**
+-   **[一多适配](#一多适配)**
 
 ### 一镜到底
 
@@ -1433,6 +1539,125 @@ export default function App()
 动效如下图：当页面从Home页切换到Setting页，界面上的目标组件会在切换过程中以动画方式平滑进入下一个页面，而不是瞬时切换：
 
 ![](figures/image-anim.png)
+
+
+### 一多适配
+
+`@hadss/react_native_breakpoints` 是一个为 React Native 应用提供响应式断点布局能力的三方库。它支持多设备、多屏幕尺寸的自适应布局，帮助开发者根据不同设备的屏幕宽度和高度动态调整 UI 组件的显示方式。  
+该库内置了常用的横向和纵向断点划分，并支持自定义断点区间，适用于手机、平板等多种终端。  
+同时，库还提供了断点管理器（BreakpointManager）、断点 Hook（useBreakpointValue/useHeightBreakpointValue）等 API，方便开发者灵活获取和监听当前断点，实现更智能的响应式布局。
+
+主要特性：
+- 支持横向和纵向断点，适配多种屏幕尺寸
+- 支持断点自定义，满足不同业务需求
+- 提供断点监听、断点值获取等便捷 API
+- 兼容 OpenHarmony 及标准 React Native 生态
+- 适用于多端统一布局场景
+
+适合需要多设备适配、响应式布局的 React Native 项目，尤其适合面向OpenHarmony生态的多端开发场景。
+
+## RN应用集成react_native_breakpoints库
+
+### RNJS侧引入react_native_breakpoints库
+
+使用如下命令在RNJS侧引入react_native_breakpoints：
+
+```shell
+npm install @hadss/react_native_breakpoints
+```
+
+<img src="./figures/breakpoint_1.png" alt="image-20251010120400701" style="zoom: 150%;" />
+
+执行上述命令，将会在`package.json`中插入`@hadss/react_native_breakpoints`库的引用。
+
+然后使用codegen命令生成代码。由于codegen依赖于react-native, 请在RNJS侧代码执行，把输出路径指定到对应native的工程路径：
+
+```shell
+npm run codegen
+```
+
+![image-20251010150001518](./figures/breakpoint_2.png)
+
+### RNJS侧使用react_native_breakpoints实现布局自适应
+
+在`App.tsx`文件中构建如下页面，编译成Hap后，在自由多窗下测试，随着窗口大小的变化，红色组件宽高也会随之变化：
+
+```javascript
+import React from 'react';
+import { Text, View, StyleSheet, ScrollView } from 'react-native';
+import { useBreakpointValue, useHeightBreakpointValue } from '@hadss/react_native_breakpoints';
+
+export default function App() {
+  // 横向断点测试，useBreakpointValue是指在宽度变为 xs、sm、md、lg、xl时，对应输出值为320、600、840、1080、1920，这里的数值可以自定义
+  const w = useBreakpointValue({ xs: 320, sm: 600, md: 840, lg: 1080, xl: 1920 });
+
+  // 纵向断点测试，同理useHeightBreakpointValue是指高度变为sm、md、lg时对应输出值为320、600、840，这里的数值可以自定义
+  const h = useHeightBreakpointValue({ sm: 320, md: 600, lg: 840 });
+
+  return (
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>useBreakpointValue（横向）测试</Text>
+      <Text style={styles.item}>w: {String(w)} ({typeof w})</Text>
+
+      <Text style={[styles.header, { marginTop: 24 }]}>useHeightBreakpointValue（纵向）测试</Text>
+      <Text style={styles.item}>h: {String(h)} ({typeof h})</Text>
+    // 这里使用断点值设置宽高，则当窗口大小变化时，View的大小也随之变化。
+      <View style={{width:w, height:h, backgroundColor:'red'}}></View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 24,
+    backgroundColor: 'white',
+    flex: 1,
+  },
+  header: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  item: {
+    fontSize: 16,
+    marginBottom: 8,
+  },
+});
+```
+
+## Native侧集成react_native_breakpoints库
+
+native侧既可以使用`ohpm install @hadss/react_native_breakpoints`直接引入此库，也可以先使用`npm install @hadss/react_native_breakpoints`先下载node_modules，然后在使用本地依赖的方式直接引入har包，不管使用哪种请保持和RNJS侧版本一致，这里将以后者为例，讲解此库的使用。
+
+<img src="./figures/breakpoint_3.png" alt="image-20251010142300818" style="zoom:150%;" />
+
+此步将会生成一个node_modules目录，里面包含react_native_breakpoints.har包，在oh_package.json中引入此har包，如下图所示：
+
+![image-20251010145317588](./figures/breakpoint_4.png)
+
+由于react_native_breakpoints是使用了codegen自动生成代码，因此要在CmakeList.txt中配置相关文件，确保生成的代码被编译进去，配置如下：
+
+![image-20251010145714496](./figures/breakpoint_5.png)
+
+codegen生成的RNOHGeneratedPackage需要配置到PackageProvider里面(如果是基于GuidePro工程开发，可能前面已经配置)：
+
+![image-20251010163241511](./figures/breakpoint_6.png)
+
+同样的也需要将BreakpointsModulePackage配置到ets的createRNpackages的列表里面(如果是基于GuidePro工程开发，可能前面已经配置)：
+
+![image-20251010163115981](./figures/breakpoint_7.png)
+
+## 编译运行
+
+编译RNJS代码生成bundle：
+
+![image-20251010160756709](./figures/breakpoint_8.png)
+
+native侧使用编译出来的bundle，并编译出hap包，运行如下：
+
+<img src="./figures/demo.gif" alt="image-gif"  />
+
+可以看到，当窗口大小变化时，组件的宽高也会随之变化。
 
 ## 性能优化
 
