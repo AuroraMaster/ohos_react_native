@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.72.99
+- feat: Callbacks with Bundle and User's attachedLable INFO,([c16b0a6d1](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c16b0a6d15d0196ac05bbfcf9ca94cbadc29e78e))
+- fix the issue where long-press deletion modifies the value when textInput is bound to a constant.,([64a21ce23](https://gitcode.com/openharmony-sig/ohos_react_native/commit/64a21ce23d1cf6c671af0d4ea94404432200adef))
+- [chore]: updated to version 6.0.1.111 (0.72.98),([7acc66557](https://gitcode.com/openharmony-sig/ohos_react_native/commit/7acc6655758344613506f019e1b3651139abb42f))
+
 ## 0.72.98
 - "revert: move I18nManagerTM to the worker thread",([f576c3644](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f576c364495ab7ffcc178632aefa1add3d182ff0))
 - fix: Resolve Multiinput box crash,([d306178f5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d306178f555fb4581561101705fc3c8621f87be7))
