@@ -9,6 +9,9 @@
 #include "ArkUINode.h"
 #include "NativeNodeApi.h"
 
+namespace rnoh {
+class RefreshNode;
+
 class RefreshNodeDelegate {
  public:
   virtual ~RefreshNodeDelegate() = default;
@@ -22,9 +25,12 @@ class RefreshNodeDelegate {
     REFRESH_STATUS_DONE = 4,
   };
   virtual void onRefreshStateChanged(RefreshStatus state) {};
+  
+  virtual void onRefreshNodeOffsetChange(
+      RefreshNode* refreshNode,
+      float offset) {}
 };
 
-namespace rnoh {
 class RefreshNode : public ArkUINode {
  protected:
   RefreshNodeDelegate* m_refreshNodeDelegate;

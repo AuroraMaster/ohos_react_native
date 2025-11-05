@@ -25,7 +25,7 @@ class PullToRefreshViewComponentInstance
 
   RefreshNode m_refreshNode;
   bool m_enableOnRefreshNativeEvent{true};
-
+  
   ColumnNode m_refreshIndicatorContainerNode;
   StackNode m_refreshIndicatorBackgroundNode;
   LoadingProgressNode m_refreshIndicatorSpinnerNode;
@@ -53,6 +53,7 @@ class PullToRefreshViewComponentInstance
   void onPropsChanged(SharedConcreteProps const& props) override;
   void onRefresh() override;
   void onRefreshStateChanged(RefreshStatus state) override;
+  void onRefreshNodeOffsetChange(RefreshNode* refreshNode, float offset) override;
   facebook::react::Point getCurrentOffset() const override;
 
   bool isRefreshControlComponentInstance() const override {

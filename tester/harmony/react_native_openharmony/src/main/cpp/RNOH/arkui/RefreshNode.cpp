@@ -9,7 +9,8 @@
 
 static constexpr ArkUI_NodeEventType REFRESH_NODE_EVENT_TYPES[] = {
     NODE_REFRESH_ON_REFRESH,
-    NODE_REFRESH_STATE_CHANGE};
+    NODE_REFRESH_STATE_CHANGE,
+    NODE_REFRESH_ON_OFFSET_CHANGE};
 
 namespace rnoh {
 RefreshNode::RefreshNode(const ArkUINode::Context::Shared& context)
@@ -70,14 +71,26 @@ void RefreshNode::onNodeEvent(
     ArkUI_NodeEventType eventType,
     EventArgs& eventArgs) {
   ArkUINode::onNodeEvent(eventType, eventArgs);
-  if (eventType == ArkUI_NodeEventType::NODE_REFRESH_ON_REFRESH &&
-      m_refreshNodeDelegate) {
-    m_refreshNodeDelegate->onRefresh();
+  if (m_refreshNodeDelegate == nullptr) {
+    return;
   }
-  if (eventType == ArkUI_NodeEventType::NODE_REFRESH_STATE_CHANGE &&
-      m_refreshNodeDelegate) {
-    auto state = static_cast<RefreshNodeDelegate::RefreshStatus>(eventArgs[0].i32);
-    m_refreshNodeDelegate->onRefreshStateChanged(state);
+  switch (eventType) {
+    case ArkUI_NodeEventType::NODE_REFRESH_ON_REFRESH: {
+      m_refreshNodeDelegate->onRefresh();
+      break;
+    }
+    case ArkUI_NodeEventType::NODE_REFRESH_STATE_CHANGE: {
+      auto state =
+          static_cast<RefreshNodeDelegate::RefreshStatus>(eventArgs[0].i32);
+      m_refreshNodeDelegate->onRefreshStateChanged(state);
+      break;
+    }
+    case ArkUI_NodeEventType::NODE_REFRESH_ON_OFFSET_CHANGE: {
+      m_refreshNodeDelegate->onRefreshNodeOffsetChange(this, eventArgs[0].f32);
+      break;
+    }
+    default: {
+    }
   }
 }
 } // namespace rnoh

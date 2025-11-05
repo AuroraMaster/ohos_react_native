@@ -15,6 +15,7 @@
 
 namespace rnoh {
 
+class PullToRefreshViewComponentInstance;
 class ScrollViewComponentInstance
     : public CppComponentInstance<facebook::react::ScrollViewShadowNode>,
       public ScrollNodeDelegate {
@@ -48,7 +49,11 @@ class ScrollViewComponentInstance
   std::optional<ChildTagWithOffset> m_firstVisibleView = std::nullopt;
   bool m_enableScrollInteraction = true;
   std::unique_ptr<UIInputEventHandler> m_touchHandler;
-
+  /**
+   * ScrollNode doesn't emit events during pull to refresh action which messes
+   * up sticky headers.
+   */
+  std::optional<float> m_onPullToRefreshOffsetY = std::nullopt;
   // Mimics of implementation in ImageComponentInstance.cpp
   struct ScrollViewRawProps {
     std::optional<std::string> overScrollMode;
@@ -105,6 +110,10 @@ class ScrollViewComponentInstance
   bool wasInInertialScrollingState = false;
 
  public:
+  /**
+   * PullToRefreshViewComponentInstance is tightly coupled with ScrollView.
+   */
+  friend PullToRefreshViewComponentInstance;
   ScrollViewComponentInstance(Context context);
 
   ScrollNode& getLocalRootArkUINode() override;
@@ -124,6 +133,7 @@ class ScrollViewComponentInstance
       std::string const& commandName,
       folly::dynamic const& args) override;
 
+  void onPullToRefreshOffsetChange(float offsetY);
   // ScrollNodeDelegate implementation
   void onScroll() override;
   void onScrollStart() override;

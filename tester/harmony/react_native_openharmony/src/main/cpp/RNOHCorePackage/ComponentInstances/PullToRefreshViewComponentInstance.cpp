@@ -7,6 +7,7 @@
 
 #include "PullToRefreshViewComponentInstance.h"
 #include <react/renderer/components/rncore/Props.h>
+#include "ScrollViewComponentInstance.h"
 
 using namespace rnoh;
 
@@ -190,6 +191,24 @@ void PullToRefreshViewComponentInstance::onRefreshStateChanged(RefreshStatus sta
       break;
   }
 }
+
+void PullToRefreshViewComponentInstance::onRefreshNodeOffsetChange(
+    RefreshNode* refreshNode,
+    float offset) {
+  if (this->getChildren().empty()) {
+    return;
+  }
+  const auto& firstChild = this->getChildren()[0];
+  if (firstChild == nullptr) {
+    return;
+  }
+  auto relatedScrollView =
+      std::dynamic_pointer_cast<ScrollViewComponentInstance>(firstChild);
+  if (relatedScrollView == nullptr) {
+    return;
+  }
+  relatedScrollView->onPullToRefreshOffsetChange(offset);
+};
 
 facebook::react::Point PullToRefreshViewComponentInstance::getCurrentOffset()
     const {

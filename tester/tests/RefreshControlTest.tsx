@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Text,
   View,
+  TouchableHighlight,
 } from 'react-native';
 import {TestSuite} from '@rnoh/testerino';
 import {useCallback, useEffect, useState} from 'react';
@@ -192,6 +193,30 @@ export const RefreshControlTest = () => {
           }
         />
       </TestCase.Example>
+      <TestCase.Example
+        itShould="detect a press during pull to refresh"
+      >
+        <ScrollView
+              style={{height: 256}}
+              refreshControl={
+                <RefreshControl refreshing={true} onRefresh={() => {}} />
+              }>
+              <TouchableHighlight
+                underlayColor={'red'}
+                style={{
+                  width: '100%',
+                  height: 32,
+                  backgroundColor: 'cyan',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => {
+                  console.log('TouchableHighlight pressed');
+                }}>
+                <Text>Press Me</Text>
+              </TouchableHighlight>
+            </ScrollView>
+        </TestCase.Example>
     </TestSuite>
   );
 };
