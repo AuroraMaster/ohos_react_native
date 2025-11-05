@@ -337,21 +337,6 @@ PackageProvider::getPackages(Package::Context ctx) {
  +      "cppFlags": "",
  +    }
   },
-  "buildOptionSet": [
-  {
-    "name": "release",
-    "arkOptions": {
-      "obfuscation": {
-        "ruleOptions": {
-          "enable": true,
-          "files": [
-            "./obfuscation-rules.txt"
-          ]
-        }
-      }
-    }
-  },
-  ],
   "targets": [
   {
     "name": "default"

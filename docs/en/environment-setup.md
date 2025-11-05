@@ -317,21 +317,6 @@ After the execution is complete, the `oh_modules` folder is generated in the pro
    +      "cppFlags": "",
    +    }
     },
-    "buildOptionSet": [
-      {
-        "name": "release",
-        "arkOptions": {
-          "obfuscation": {
-            "ruleOptions": {
-              "enable": true,
-              "files": [
-                "./obfuscation-rules.txt"
-              ]
-            }
-          }
-        }
-      },
-    ],
     "targets": [
       {
         "name": "default"

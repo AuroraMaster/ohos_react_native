@@ -9,7 +9,7 @@
     org: '',
   },
   type: 'module',
-  version: '0.72.98',
+  version: '0.72.99',
   dependencies: {
     "@ppd/ffrt": "^1.1.5"
   },

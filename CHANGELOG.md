@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.0.1.120
+- feat: Callbacks with Bundle and User's attachedLable INFO,([c16b0a6d1](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c16b0a6d15d0196ac05bbfcf9ca94cbadc29e78e))
+- docs: Update the BreakPoint User Manual,([0f6225719](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0f62257199e3f0959c1d7059526be207b98246f5))
+- fix the issue where long-press deletion modifies the value when textInput is bound to a constant.,([64a21ce23](https://gitcode.com/openharmony-sig/ohos_react_native/commit/64a21ce23d1cf6c671af0d4ea94404432200adef))
+- [chore]: updated to version 6.0.1.112 (0.72.98),([b327a5098](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b327a5098f6836a634b6114f702751adb7105759))
+
 ## 6.0.1.111
 - [chore]: updated to version 6.0.1.111 (0.72.98),([7acc66557](https://gitcode.com/openharmony-sig/ohos_react_native/commit/7acc6655758344613506f019e1b3651139abb42f))
 - "revert: move I18nManagerTM to the worker thread",([f576c3644](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f576c364495ab7ffcc178632aefa1add3d182ff0))

@@ -17,7 +17,7 @@ namespace rnoh {
  * @return true if API level >= 21 && user set PARALLEL_OPTIMIZATION_ENABLE, false otherwise.
  */
 inline bool IsParallelizationWorkable() {
-  #ifdef PARALLELIZATION_ENABLED
+  #ifdef PARALLELIZATION_ON
     return IsAtLeastApi21();
   #else
     return false;

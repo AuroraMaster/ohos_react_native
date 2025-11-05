@@ -58,6 +58,13 @@ ScrollViewComponentInstance::ScrollViewComponentInstance(Context context)
   m_scrollNode.setNestedScroll(ARKUI_SCROLL_NESTED_MODE_SELF_FIRST);
 }
 
+//  Called from PullToRefresh
+
+void ScrollViewComponentInstance::onPullToRefreshOffsetChange(float offsetY) {
+  m_onPullToRefreshOffsetY = offsetY;
+  onScroll();
+}
+
 ScrollNode& ScrollViewComponentInstance::getLocalRootArkUINode() {
   return m_scrollNode;
 }
@@ -334,7 +341,13 @@ bool rnoh::ScrollViewComponentInstance::isNestedScroll() {
 
 facebook::react::Point rnoh::ScrollViewComponentInstance::getCurrentOffset()
     const {
-  auto offset = getScrollOffset();
+  auto offset = this->getScrollOffset();
+  /**
+   * The line below fixes touch recognition issue that appeared,
+   * after getScrollOffset started returning a negative offset during pull to
+   * refresh.
+   */
+  offset.y += m_onPullToRefreshOffsetY.value_or(0);
   auto contentViewOffset = getContentViewOffset();
   return offset - contentViewOffset;
 }
@@ -448,6 +461,13 @@ void ScrollViewComponentInstance::onScrollStop() {
     sendEventForNativeAnimations(scrollViewMetrics);
   }
     updateContentClippedSubviews();
+  /**
+   * m_onPullToRefreshOffsetY is cleared here not in onPullToRefreshOffsetChange
+   * to ignore contentOffsetY in the first onScroll after releasing a pointer
+   * during the pull-to-refresh action. That first value causes a flicker in a
+   * sticky component.
+   */
+  m_onPullToRefreshOffsetY = std::nullopt;
 }
 
 float ScrollViewComponentInstance::onScrollFrameBegin(
@@ -926,6 +946,9 @@ facebook::react::Float ScrollViewComponentInstance::adjustOffsetToRTL(
 facebook::react::Point ScrollViewComponentInstance::getScrollOffset() const {
   auto scrollOffset = m_scrollNode.getScrollOffset();
   scrollOffset.x = adjustOffsetToRTL(scrollOffset.x);
+  if (m_onPullToRefreshOffsetY.has_value()) {
+    scrollOffset.y = m_onPullToRefreshOffsetY.value() * (-1);
+  }
   return scrollOffset;
 }
 } // namespace rnoh
