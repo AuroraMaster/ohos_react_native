@@ -568,5 +568,5 @@ endif()
 
 if(PARALLELIZATION_ENABLE)
   message("PARALLELIZATION OPTIMIZATION is enabled!")
-  target_compile_definitions(rnoh PUBLIC PARALLELIZATION_ENABLED)
+  target_compile_definitions(rnoh PUBLIC PARALLELIZATION_ON)
 endif()
