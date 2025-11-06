@@ -12,8 +12,25 @@
 #include "RNOH/arkui/ScrollNode.h"
 #include "RNOH/arkui/StackNode.h"
 #include "RNOHCorePackage/TurboModules/Animated/NativeAnimatedTurboModule.h"
+#include "ScrollView/VelocityTracker.h"
 
 namespace rnoh {
+
+struct Velocity {
+  Float x{0};
+  Float y{0};
+};
+
+class ScrollViewMetricsPlayload {
+ public:
+  Size contentSize;
+  facebook::react::Point contentOffset;
+  facebook::react::EdgeInsets contentInset;
+  Size containerSize;
+  Float zoomScale;
+  Velocity velocity;
+  bool responderIgnoreScroll;
+};
 
 class PullToRefreshViewComponentInstance;
 class ScrollViewComponentInstance
@@ -74,6 +91,9 @@ class ScrollViewComponentInstance
       bool persistentScrollBar,
       bool showsVerticalScrollIndicator,
       bool showsHorizontalScrollIndicator);
+  facebook::jsi::Value scrollViewMetricsPayload(
+    facebook::jsi::Runtime &runtime,
+    const ScrollViewMetricsPlayload &scrollViewMetrics);
   void setScrollSnap(
       bool snapToStart,
       bool snapToEnd,
@@ -83,6 +103,7 @@ class ScrollViewComponentInstance
   bool scrollMovedBySignificantOffset(facebook::react::Point newOffset);
   folly::dynamic getScrollEventPayload(
       facebook::react::ScrollViewMetrics const& scrollViewMetrics);
+  ScrollViewMetricsPlayload createScrollViewMetricsPayload();
 
   void sendEventForNativeAnimations(
       facebook::react::ScrollViewMetrics const& scrollViewMetrics);
@@ -183,10 +204,12 @@ class ScrollViewComponentInstance
   facebook::react::Point getScrollOffset() const;
   facebook::react::Point getContentViewOffset() const;
   ComponentInstance::Weak m_keyboardAvoider;
+  void emitScrollEvent(const std::string& eventName);
   bool isNestedScroll();
   bool isEnableScrollInteraction(bool scrollEnabled);
   bool shouldDisableScrollInteraction();
   std::optional<facebook::react::Point> m_targetOffsetOfScrollToCommand = std::nullopt;
+  rnoh::VelocityTracker m_velocityTracker;
 };
 
 /**
