@@ -148,9 +148,6 @@ void ComponentInstanceProvider::processPreallocationRequest(
   auto componentInstance = m_componentInstanceFactory->create(
       shadowView.tag, shadowView.componentHandle, shadowView.componentName);
   if (componentInstance != nullptr) {
-    if (IsParallelizationWorkable()) {
-      componentInstance->setProps(shadowView.props);
-    }
     std::lock_guard<std::mutex> lock(m_preallocatedComponentInstanceByTagMtx);
     m_preallocatedComponentInstanceByTag.emplace(
         shadowView.tag, componentInstance);
