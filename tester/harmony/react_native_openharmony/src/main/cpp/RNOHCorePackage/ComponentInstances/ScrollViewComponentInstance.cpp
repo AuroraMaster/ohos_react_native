@@ -393,7 +393,7 @@ void ScrollViewComponentInstance::onScroll() {
       wasInScrollStateAtTouchUp) {
     wasInInertialScrollingState = true;
     emitOnScrollEndDragEvent();
-    m_eventEmitter->onMomentumScrollBegin(getScrollViewMetrics());
+    emitScrollEvent("momentumScrollBegin");
     wasInScrollStateAtTouchUp = false;
   }
   m_onScrollCallsAfterFrameBeginCallCounter++;
@@ -418,8 +418,8 @@ void ScrollViewComponentInstance::onScroll() {
             << scrollViewMetrics.contentSize.height
             << "; containerSize: " << scrollViewMetrics.containerSize.width
             << ", " << scrollViewMetrics.containerSize.height << ")";
-    if( m_eventEmitter != nullptr ){
-        m_eventEmitter->onScroll(scrollViewMetrics);
+     if( m_eventEmitter != nullptr ){
+        emitScrollEvent("scroll");
      }
     updateStateWithContentOffset(scrollViewMetrics.contentOffset);
     m_currentOffset = scrollViewMetrics.contentOffset;
@@ -456,7 +456,7 @@ void ScrollViewComponentInstance::onScrollStop() {
   auto scrollViewMetrics = getScrollViewMetrics();
   if (isAtEnd(scrollViewMetrics.contentOffset)) {
     if(m_eventEmitter != nullptr){
-        m_eventEmitter->onScroll(scrollViewMetrics);    
+      emitScrollEvent("scroll");
     }
     sendEventForNativeAnimations(scrollViewMetrics);
   }
@@ -494,9 +494,10 @@ float ScrollViewComponentInstance::onScrollFrameBegin(
     }
     auto scrollViewMetrics = getScrollViewMetrics();
     if (scrollState == ScrollState::SCROLL) {
-      m_eventEmitter->onScrollBeginDrag(scrollViewMetrics);
+      m_velocityTracker.reset();
+      emitScrollEvent("scrollBeginDrag");
     } else if (scrollState == ScrollState::FLING) {
-      m_eventEmitter->onMomentumScrollBegin(scrollViewMetrics);
+      emitScrollEvent("momentumScrollBegin");
     }
   }
   m_scrollState = newScrollState;
@@ -515,12 +516,12 @@ void ScrollViewComponentInstance::emitOnScrollEndDragEvent() {
     disableIntervalMomentum();
   }
   auto scrollViewMetrics = getScrollViewMetrics();
-  m_eventEmitter->onScrollEndDrag(scrollViewMetrics);
+  emitScrollEvent("scrollEndDrag");
   updateStateWithContentOffset(scrollViewMetrics.contentOffset);
 }
 void ScrollViewComponentInstance::emitOnMomentumScrollEndEvent() {
   auto scrollViewMetrics = getScrollViewMetrics();
-  m_eventEmitter->onMomentumScrollEnd(scrollViewMetrics);
+  emitScrollEvent("momentumScrollEnd");
   updateStateWithContentOffset(scrollViewMetrics.contentOffset);
 }
 
@@ -692,6 +693,20 @@ folly::dynamic ScrollViewComponentInstance::getScrollEventPayload(
       "containerSize", containerSize)("zoomScale", scrollViewMetrics.zoomScale)(
       "responderIgnoreScroll", scrollViewMetrics.responderIgnoreScroll);
   return payload;
+}
+
+ScrollViewMetricsPlayload ScrollViewComponentInstance::createScrollViewMetricsPayload() {
+  auto currentOffset = getScrollOffset();
+  auto playload = ScrollViewMetricsPlayload();
+  playload.responderIgnoreScroll = true;
+  playload.zoomScale = 1;
+  playload.contentSize = m_contentSize;
+  playload.contentOffset = getScrollOffset();
+  playload.containerSize = m_containerSize;
+  m_velocityTracker.add(currentOffset.x, currentOffset.y);
+  auto velocity = m_velocityTracker.getVelocity();
+  playload.velocity = {x: velocity.first, y: velocity.second};
+  return playload;
 }
 
 void rnoh::ScrollViewComponentInstance::sendEventForNativeAnimations(
@@ -951,4 +966,78 @@ facebook::react::Point ScrollViewComponentInstance::getScrollOffset() const {
   }
   return scrollOffset;
 }
+
+facebook::jsi::Value ScrollViewComponentInstance::scrollViewMetricsPayload(
+    facebook::jsi::Runtime &runtime,
+    const ScrollViewMetricsPlayload &scrollViewMetrics) {
+  auto payload = facebook::jsi::Object(runtime);
+  {
+    auto contentOffset = facebook::jsi::Object(runtime);
+    contentOffset.setProperty(runtime, "x", scrollViewMetrics.contentOffset.x);
+    contentOffset.setProperty(runtime, "y", scrollViewMetrics.contentOffset.y);
+    payload.setProperty(runtime, "contentOffset", contentOffset);
+  }
+
+  {
+    auto velocityObj = facebook::jsi::Object(runtime);
+    velocityObj.setProperty(runtime, "x", scrollViewMetrics.velocity.x);
+    velocityObj.setProperty(runtime, "y", scrollViewMetrics.velocity.y);
+    payload.setProperty(runtime, "velocity", velocityObj);
+  }
+  
+  {
+    auto contentInset = facebook::jsi::Object(runtime);
+    contentInset.setProperty(
+        runtime, "top", scrollViewMetrics.contentInset.top);
+    contentInset.setProperty(
+        runtime, "left", scrollViewMetrics.contentInset.left);
+    contentInset.setProperty(
+        runtime, "bottom", scrollViewMetrics.contentInset.bottom);
+    contentInset.setProperty(
+        runtime, "right", scrollViewMetrics.contentInset.right);
+    payload.setProperty(runtime, "contentInset", contentInset);
+  }
+
+  {
+    auto contentSize = facebook::jsi::Object(runtime);
+    contentSize.setProperty(
+        runtime, "width", scrollViewMetrics.contentSize.width);
+    contentSize.setProperty(
+        runtime, "height", scrollViewMetrics.contentSize.height);
+    payload.setProperty(runtime, "contentSize", contentSize);
+  }
+
+  {
+    auto containerSize = facebook::jsi::Object(runtime);
+    containerSize.setProperty(
+        runtime, "width", scrollViewMetrics.containerSize.width);
+    containerSize.setProperty(
+        runtime, "height", scrollViewMetrics.containerSize.height);
+    payload.setProperty(runtime, "layoutMeasurement", containerSize);
+  }
+  payload.setProperty(runtime, "zoomScale", scrollViewMetrics.zoomScale);
+  payload.setProperty(runtime, "responderIgnoreScroll", scrollViewMetrics.responderIgnoreScroll);
+
+  return payload;
+}
+
+void ScrollViewComponentInstance::emitScrollEvent(
+    const std::string& eventName) {
+    if (!m_eventEmitter) {
+      return;
+    }
+    auto customPayload = createScrollViewMetricsPayload();
+    if (eventName == "scroll") {
+      m_eventEmitter->dispatchUniqueEvent("scroll", [customPayload, this](facebook::jsi::Runtime &runtime) {
+        return scrollViewMetricsPayload(runtime, customPayload);
+      });
+    } else {
+      m_eventEmitter->dispatchEvent(
+          std::move(eventName),
+          [customPayload, this](facebook::jsi::Runtime &runtime) {
+            return scrollViewMetricsPayload(runtime, customPayload);
+          }
+      );
+    }
+  };
 } // namespace rnoh

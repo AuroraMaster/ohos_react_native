@@ -25,6 +25,10 @@ static constexpr std::array TEXT_INPUT_NODE_EVENT_TYPES = {
 
 namespace rnoh {
 
+// ARKUI_TEXTAREA_TYPE_ONE_TIME_CODE only support 
+// API version >= 20, using const to avoid possible compiling issue. 
+const int32_t TEXT_INPUT_TYPE_ONE_TIME_CODE = 14;
+
 TextInputNode::TextInputNode(const ArkUINode::Context::Shared& context)
     : TextInputNodeBase(context, ArkUI_NodeType::ARKUI_NODE_TEXT_INPUT),
       m_textInputNodeDelegate(nullptr) {
@@ -340,6 +344,12 @@ void TextInputNode::SetContextMenuHidden(bool const& hidden) {
 }
 
 void TextInputNode::setTextContentType(std::string const& textContentType) {
+  if (textContentType == "oneTimeCode") {
+    ArkUI_NumberValue value = {.i32 = TEXT_INPUT_TYPE_ONE_TIME_CODE};
+    ArkUI_AttributeItem item = {&value, sizeof(ArkUI_NumberValue)};
+    m_nodeApi->setAttribute(m_nodeHandle, NODE_TEXT_AREA_TYPE, &item);
+    return;
+  }
   ArkUI_NumberValue type = rnoh::convertContentType(textContentType);
   if (type.i32 == -1) {
     this->setAutoFill(false); // The purpose is to fix the issue where an

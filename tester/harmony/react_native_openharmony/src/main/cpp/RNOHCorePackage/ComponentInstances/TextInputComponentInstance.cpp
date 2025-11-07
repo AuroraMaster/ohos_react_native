@@ -244,6 +244,30 @@ void TextInputComponentInstance::onPropsChanged(
     m_textAreaNode.setAutoFill(convertImportantForAutofill(props->importantForAutofill));
     m_textInputNode.setAutoFill(convertImportantForAutofill(props->importantForAutofill));
   }
+  if (!m_props || props->traits.keyboardType != m_props->traits.keyboardType) {
+    if(m_multiline){
+      if(props->traits.keyboardType == facebook::react::KeyboardType::DecimalPad){
+        m_textAreaNode.setInputType(rnoh::convertTextAreaInputType(facebook::react::KeyboardType::Numeric));
+      }else{
+        m_textAreaNode.setInputType(rnoh::convertTextAreaInputType(props->traits.keyboardType));
+      }
+    }else{
+      m_textInputNode.setInputType(
+        props->traits.secureTextEntry
+            ? ARKUI_TEXTINPUT_TYPE_PASSWORD
+            : rnoh::convertInputType(props->traits.keyboardType));
+      m_textInputNode.setPasswordIconVisibility(false);      
+    }
+  }
+  if (!m_props ||
+      props->traits.secureTextEntry != m_props->traits.secureTextEntry ||
+      props->traits.keyboardType != m_props->traits.keyboardType) {
+    m_textInputNode.setInputType(
+        props->traits.secureTextEntry
+            ? ARKUI_TEXTINPUT_TYPE_PASSWORD
+            : rnoh::convertInputType(props->traits.keyboardType));
+    m_textInputNode.setPasswordIconVisibility(false);        
+  }
   if (!m_props ||
       props->traits.textContentType != m_props->traits.textContentType) {
     m_textInputNode.setTextContentType(props->traits.textContentType);
@@ -325,21 +349,6 @@ void TextInputComponentInstance::onPropsChanged(
       m_textInputNode.setCaretColor(facebook::react::blackColor());
     }
   }
-  if (!m_props || props->traits.keyboardType != m_props->traits.keyboardType) {
-    if(m_multiline){
-      if(props->traits.keyboardType == facebook::react::KeyboardType::DecimalPad){
-        m_textAreaNode.setInputType(rnoh::convertTextAreaInputType(facebook::react::KeyboardType::Numeric));
-      }else{
-        m_textAreaNode.setInputType(rnoh::convertTextAreaInputType(props->traits.keyboardType));
-      }
-    }else{
-      m_textInputNode.setInputType(
-        props->traits.secureTextEntry
-            ? ARKUI_TEXTINPUT_TYPE_PASSWORD
-            : rnoh::convertInputType(props->traits.keyboardType));
-      m_textInputNode.setPasswordIconVisibility(false);      
-    }
-  }
   if (!m_props || props->maxLength != m_props->maxLength) {
     if (!props->maxLength) {
       m_textAreaNode.resetMaxLength();
@@ -397,15 +406,6 @@ void TextInputComponentInstance::onPropsChanged(
     } else {
       m_textInputNode.resetSelectedBackgroundColor();
     }
-  }
-  if (!m_props ||
-      props->traits.secureTextEntry != m_props->traits.secureTextEntry ||
-      props->traits.keyboardType != m_props->traits.keyboardType) {
-    m_textInputNode.setInputType(
-        props->traits.secureTextEntry
-            ? ARKUI_TEXTINPUT_TYPE_PASSWORD
-            : rnoh::convertInputType(props->traits.keyboardType));
-    m_textInputNode.setPasswordIconVisibility(false);        
   }
   if (!m_props || props->traits.caretHidden != m_props->traits.caretHidden) {
     m_textInputNode.setCaretHidden(props->traits.caretHidden);

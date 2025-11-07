@@ -398,7 +398,7 @@ class CppComponentInstance : public ComponentInstance,
     }
         
     if (!isTransformManagedByAnimated) {
-      if (!old || m_transform == defaultTransform) {
+      if (!old) {
         if (props->transform != defaultTransform || abs(m_oldPointScaleFactor - 0.0f) > 0.001f) {
           m_oldPointScaleFactor = m_layoutMetrics.pointScaleFactor;
           this->setTransform(props->transform);

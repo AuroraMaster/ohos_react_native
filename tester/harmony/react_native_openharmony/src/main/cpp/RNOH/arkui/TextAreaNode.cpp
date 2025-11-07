@@ -24,6 +24,10 @@ static constexpr std::array TEXT_AREA_NODE_EVENT_TYPES = {
 
 namespace rnoh {
 
+// ARKUI_TEXTAREA_TYPE_ONE_TIME_CODE only support 
+// API version >= 20, using const to avoid possible compiling issue. 
+const int32_t TEXT_AREA_TYPE_ONE_TIME_CODE = 14;
+
 TextAreaNode::TextAreaNode(const ArkUINode::Context::Shared& context)
     : TextInputNodeBase(context, ArkUI_NodeType::ARKUI_NODE_TEXT_AREA),
       m_textAreaNodeDelegate(nullptr) {
@@ -270,7 +274,13 @@ void TextAreaNode::SetContextMenuHidden(bool const& hidden) {
 }
 
 void TextAreaNode::setTextContentType(std::string const& textContentType){
-   ArkUI_NumberValue type = rnoh::convertContentType(textContentType); 
+  if (textContentType == "oneTimeCode") {
+    ArkUI_NumberValue value = {.i32 = TEXT_AREA_TYPE_ONE_TIME_CODE};
+    ArkUI_AttributeItem item = {&value, sizeof(ArkUI_NumberValue)};
+    m_nodeApi->setAttribute(m_nodeHandle, NODE_TEXT_AREA_TYPE, &item);
+    return;
+  }
+  ArkUI_NumberValue type = rnoh::convertContentType(textContentType); 
   if (type.i32 == -1) { 
     this->setAutoFill(false); // The purpose is to fix the issue where an autofill bubble still pops up when textContentType is dynamically changed to none.
   } else {
