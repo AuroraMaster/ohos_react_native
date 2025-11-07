@@ -24,24 +24,37 @@ export class AppStateTurboModule extends AnyThreadTurboModule {
 
   private subscribeListeners() {
     const applicationContext = this.ctx.uiAbilityContext.getApplicationContext();
-    let applicationStateChangeCallback: ApplicationStateChangeCallback = {
-      onApplicationForeground: () => {
-        this.state = "FOREGROUND"
-        this.ctx.rnInstance.emitDeviceEvent("appStateDidChange", { app_state: this.getAppState() });
-      },
-      onApplicationBackground: () => {
-        this.state = "BACKGROUND"
-        this.ctx.rnInstance.emitDeviceEvent("appStateDidChange", { app_state: this.getAppState() });
-      },
-    }
-    let appStateFocusCallback: Callback<emitter.EventData> = (eventData: emitter.EventData) => {
+    const foregroundEvent = `FOREGROUND_${this.ctx.rnInstance.getId()}`;
+    const backgroundEvent = `BACKGROUND_${this.ctx.rnInstance.getId()}`;
+    const focusEvent = `APP_STATE_FOCUS_${this.ctx.rnInstance.getId()}`;
+    const blurEvent = `APP_STATE_BLUR_${this.ctx.rnInstance.getId()}`;
+
+    const applicationForegroundCallback: Callback<emitter.EventData> = (eventData: emitter.EventData) => {
+      this.state = "FOREGROUND";
+      this.ctx.rnInstance.emitDeviceEvent("appStateDidChange", {
+        app_state: this.getAppState()
+      });
+    };
+
+    const applicationBackgroundCallback: Callback<emitter.EventData> = (eventData: emitter.EventData) => {
+      this.state = "BACKGROUND";
+      this.ctx.rnInstance.emitDeviceEvent("appStateDidChange", {
+        app_state: this.getAppState()
+      });
+    };
+
+    const appStateFocusCallback: Callback<emitter.EventData> = (eventData: emitter.EventData) => {
       this.ctx.rnInstance.emitDeviceEvent("appStateFocusChange", true);
     };
-    let appStateBLURCallback: Callback<emitter.EventData> = (eventData: emitter.EventData) => {
+
+    const appStateBlurCallback: Callback<emitter.EventData> = (eventData: emitter.EventData) => {
       this.ctx.rnInstance.emitDeviceEvent("appStateFocusChange", false);
     };
-    emitter.on("APP_STATE_FOCUS", appStateFocusCallback);
-    emitter.on("APP_STATE_BLUR", appStateBLURCallback);
+
+    emitter.on(foregroundEvent, applicationForegroundCallback);
+    emitter.on(backgroundEvent, applicationBackgroundCallback);
+    emitter.on(focusEvent, appStateFocusCallback);
+    emitter.on(blurEvent, appStateBlurCallback);
 
     let envCallback: EnvironmentCallback = {
       onConfigurationUpdated: () => {
@@ -56,14 +69,14 @@ export class AppStateTurboModule extends AnyThreadTurboModule {
 
     let envCallbackID: number;
     if (applicationContext != undefined) {
-      applicationContext.on('applicationStateChange', applicationStateChangeCallback);
       envCallbackID = applicationContext.on('environment', envCallback);
     }
     this.cleanUpCallbacks.push(() => {
-      emitter.off("APP_STATE_FOCUS", appStateFocusCallback);
-      emitter.off("APP_STATE_BLUR", appStateBLURCallback);
+      emitter.off(foregroundEvent);
+      emitter.off(backgroundEvent);
+      emitter.off(focusEvent);
+      emitter.off(blurEvent);
       applicationContext.off("environment", envCallbackID);
-      applicationContext.off('applicationStateChange', applicationStateChangeCallback);
     });
   }
 

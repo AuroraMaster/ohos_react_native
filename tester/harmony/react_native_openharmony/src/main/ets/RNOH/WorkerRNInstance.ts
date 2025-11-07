@@ -85,6 +85,10 @@ export class WorkerRNInstance implements AnyThreadRNInstance {
   setBunleUrl(bundleURL: string) {
     this.initialBundleUrl = this.initialBundleUrl ?? bundleURL
   }
+
+  getId(): number {
+    return this.id
+  }
 }
 
 /**

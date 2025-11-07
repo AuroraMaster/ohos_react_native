@@ -984,6 +984,8 @@ export class RNInstanceImpl implements RNInstance {
     }
     this.lifecycleState = LifecycleState.READY
     this.lifecycleEventEmitter.emit("FOREGROUND")
+    const foregroundEventName = `FOREGROUND_${this.id}`;
+    emitter.emit(foregroundEventName)
     this.postMessageToCpp("FOREGROUND", {})
   }
 
@@ -992,6 +994,8 @@ export class RNInstanceImpl implements RNInstance {
       return
     }
     this.lifecycleState = LifecycleState.PAUSED
+    const backgroundEventName = `BACKGROUND_${this.id}`;
+    emitter.emit(backgroundEventName)
     this.lifecycleEventEmitter.emit("BACKGROUND")
     this.postMessageToCpp("BACKGROUND", {})
   }
@@ -1016,10 +1020,12 @@ export class RNInstanceImpl implements RNInstance {
   public onWindowStageChange(windowStageEvent: window.WindowStageEventType) {
     if (windowStageEvent == window.WindowStageEventType.ACTIVE) {
       this.stageEventEmitter.emit("APP_STATE_FOCUS");
-      emitter.emit("APP_STATE_FOCUS");
+      const appStateFocusEventName = `APP_STATE_FOCUS_${this.id}`;
+      emitter.emit(appStateFocusEventName);
     } else if (windowStageEvent == window.WindowStageEventType.INACTIVE) {
       this.stageEventEmitter.emit("APP_STATE_BLUR");
-      emitter.emit("APP_STATE_BLUR");
+      const appStateBlurEventName = `APP_STATE_BLUR_${this.id}`;
+      emitter.emit(appStateBlurEventName);
     }
   }
 
