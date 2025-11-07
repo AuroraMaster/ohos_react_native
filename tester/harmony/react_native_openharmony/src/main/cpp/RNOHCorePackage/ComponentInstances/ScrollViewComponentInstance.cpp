@@ -501,11 +501,13 @@ float ScrollViewComponentInstance::onScrollFrameBegin(
     }
   }
   m_scrollState = newScrollState;
-  // When disableIntervalMomentum is used, we should set the
+  // When disableIntervalMomentum is used and the finger
+  // lifts off the screen, we should set the
   // offset in onScrollFrameBegin to 0. otherwise, in
   // nested-scroll scenarios, conflicting scroll events will
   // cause disableIntervalMomentum to be ignored.
-  if (!m_snapToOffsets.empty() && m_disableIntervalMomentum) {
+  if (!m_snapToOffsets.empty() && m_disableIntervalMomentum &&
+      newScrollState == ScrollState::FLING) {
     return 0;
   }
   return offset;
