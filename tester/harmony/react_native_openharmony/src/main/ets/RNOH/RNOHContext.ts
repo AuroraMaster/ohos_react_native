@@ -276,6 +276,8 @@ export interface AnyThreadRNInstance extends Partial<RNInstance> {
   getAssetsDest(): string;
 
   getInitialBundleUrl(): string | undefined
+
+  getId(): number
 }
 
 /**
