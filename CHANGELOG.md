@@ -1,6 +1,18 @@
 # Changelog
 
+## 6.0.1.130
+- fix: appStateTM receives events only from its own RN instance,([49be80f51](https://gitcode.com/openharmony-sig/ohos_react_native/commit/49be80f51e42b6f91e6085077563c485fe9af553))
+- fix:Fix when disableIntervalMomentum is set on the ScrollView, the ScrollView does not follow the finger while scrolling and only continues to scroll after the finger lifts off the screen.,([8ede25bff](https://gitcode.com/openharmony-sig/ohos_react_native/commit/8ede25bfff671a3c39805fb9584e5c04a7a905e1))
+- [Feat]: Add velocity to ScrollView,([f3091dd66](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f3091dd661fe03cccf6b9e3aeaad563f4029909e))
+- fix:Remove setProps from ComponentInstanceProvider,([b4fccec93](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b4fccec93753778e5393da64fa04536be4ae4288))
+- feat: Add support for oneTimeCode in textContentType,([6c9052b44](https://gitcode.com/openharmony-sig/ohos_react_native/commit/6c9052b445bbc9629de96e29ab7a4353ab750fcf))
+- fix: RN page interaction issue after parallel on,([65936348b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/65936348b5e3f03b6e7f4195d64bc6771c040391))
+- docs: turn off the obfuscation feature.,([e9db49995](https://gitcode.com/openharmony-sig/ohos_react_native/commit/e9db49995a1c572e30e076b583970902636f0a17))
+- fix: receive negative offsetY in onScroll during pull to refresh to match iOS And handle touches correctly during pull-to-refresh,([2cbf38d02](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2cbf38d02a311649652042a28bac754b6fc57869))
+- [chore]: updated to version 6.0.1.120(0.72.99),([05aa07dcd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/05aa07dcd66152a608304937bf5cf2898ed66f86))
+
 ## 6.0.1.120
+- docs:  fix RNInstance API-Description in en/zh-cn,([94e74cc52](https://gitcode.com/openharmony-sig/ohos_react_native/commit/94e74cc521b60238bf7f4cb8851c0a5996a2842a))
 - feat: Callbacks with Bundle and User's attachedLable INFO,([c16b0a6d1](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c16b0a6d15d0196ac05bbfcf9ca94cbadc29e78e))
 - docs: Update the BreakPoint User Manual,([0f6225719](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0f62257199e3f0959c1d7059526be207b98246f5))
 - fix the issue where long-press deletion modifies the value when textInput is bound to a constant.,([64a21ce23](https://gitcode.com/openharmony-sig/ohos_react_native/commit/64a21ce23d1cf6c671af0d4ea94404432200adef))
