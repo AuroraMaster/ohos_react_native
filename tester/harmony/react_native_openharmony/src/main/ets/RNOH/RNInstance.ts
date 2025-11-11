@@ -917,10 +917,10 @@ export class RNInstanceImpl implements RNInstance {
       this.workerThread?.postMessage("JS_BUNDLE_EXECUTION_FINISH", { rnInstanceId: this.id, bundleURL })
       this.logger.info(
         `[RNInstance:${this.name ?? this.id}] JS bundle executed successfully`,
-        {
+        JSON.stringify({
           bundleUrl: this.lastBundleUrl ?? '<unknown>',
           attachedLabel: this.attachedLabel || '',
-        }
+        })
       );
     } catch (err) {
       this.bundleExecutionStatusByBundleURL.delete(bundleURL)
