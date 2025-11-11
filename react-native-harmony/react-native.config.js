@@ -5,13 +5,21 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-const { config: harmonyConfig } = require('@rnoh/react-native-harmony-cli')
+try {
+  const { config: harmonyConfig } = require('@rnoh/react-native-harmony-cli');
+} catch (err) {
+  console.warn(
+    '[WARNING] react-native-harmony failed to load CLI Config from @rnoh/react-native-harmony-cli. Error message: ',
+    err?.message
+  );
+  throw err;
+}
 
 /**
  * @type {import("@react-native-community/cli-types").Config}
  */
 const config = {
   commands: harmonyConfig.commands,
-}
+};
 
-module.exports = config
+module.exports = config;

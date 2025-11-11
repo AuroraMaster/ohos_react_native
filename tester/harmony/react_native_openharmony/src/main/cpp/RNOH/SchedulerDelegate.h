@@ -27,15 +27,17 @@ class SchedulerDelegate final : public facebook::react::SchedulerDelegate {
   using ShadowNode = facebook::react::ShadowNode;
   using ShadowView = facebook::react::ShadowView;
   using SurfaceId = facebook::react::SurfaceId;
-  using PreallocationRequest = ComponentInstancePreallocationRequestQueue::Request;
+  using PreallocationRequest =
+      ComponentInstancePreallocationRequestQueue::Request;
 
  public:
   SchedulerDelegate(
-      MountingManager::Shared mountingManager,
+      MountingManager::Weak mountingManager,
       TaskExecutor::Shared taskExecutor,
       ComponentInstancePreallocationRequestQueue::Weak
           weakPreallocationRequestQueue)
-      : m_mountingManager(mountingManager), m_taskExecutor(taskExecutor),
+      : m_mountingManager(std::move(mountingManager)),
+        m_taskExecutor(taskExecutor),
         m_weakPreallocationRequestQueue(
             std::move(weakPreallocationRequestQueue)){};
     
@@ -45,7 +47,6 @@ class SchedulerDelegate final : public facebook::react::SchedulerDelegate {
 
   void schedulerDidFinishTransaction(
       MountingCoordinator::Shared mountingCoordinator) override;
-    
 
   void schedulerDidDispatchCommand(
       const ShadowView& shadowView,

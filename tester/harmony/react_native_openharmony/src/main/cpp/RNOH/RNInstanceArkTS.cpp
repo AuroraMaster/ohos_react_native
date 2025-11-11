@@ -22,7 +22,6 @@
 #include "RNOH/ShadowViewRegistry.h"
 #include "RNOH/TurboModuleFactory.h"
 #include "RNOH/TurboModuleProvider.h"
-#include "RNOH/SchedulerDelegate.h"
 
 using namespace facebook;
 using namespace rnoh;
@@ -46,7 +45,7 @@ void RNInstanceArkTS::start() {
 }
 
 void RNInstanceArkTS::setJavaScriptExecutorFactory(
-      std::shared_ptr<facebook::react::JSExecutorFactory> jsExecutorFactory) {
+    std::shared_ptr<facebook::react::JSExecutorFactory> jsExecutorFactory) {
   DLOG(INFO) << "RNInstanceArkTS::setJavaScriptExecutorFactory";
   m_jsExecutorFactory = jsExecutorFactory;
 }
@@ -107,8 +106,10 @@ void RNInstanceArkTS::initializeScheduler(
 
   m_animationDriver = std::make_shared<react::LayoutAnimationDriver>(
       this->instance->getRuntimeExecutor(), m_contextContainer, this);
-    m_schedulerDelegate = std::make_unique<rnoh::SchedulerDelegate>(
-      m_mountingManager, taskExecutor, ComponentInstancePreallocationRequestQueue::Weak());
+  m_schedulerDelegate = std::make_unique<rnoh::SchedulerDelegate>(
+      MountingManager::Weak(m_mountingManager, m_isAboutToBeDestroyed),
+      taskExecutor,
+      ComponentInstancePreallocationRequestQueue::Weak());
   this->scheduler = std::make_shared<react::Scheduler>(
       schedulerToolbox, m_animationDriver.get(), m_schedulerDelegate.get());
   turboModuleProvider->setScheduler(this->scheduler);
@@ -178,8 +179,8 @@ void RNInstanceArkTS::startSurface(
       surfaceHandler->setProps(std::move(initialProps));
       auto layoutConstraints = surfaceHandler->getLayoutConstraints();
       layoutConstraints.layoutDirection = react::LayoutDirection::LeftToRight;
-      layoutConstraints.minimumSize =
-          layoutConstraints.maximumSize = {.width = maxWidth, .height = maxHeight};
+      layoutConstraints.minimumSize = layoutConstraints.maximumSize = {
+          .width = maxWidth, .height = maxHeight};
       auto layoutContext = surfaceHandler->getLayoutContext();
       layoutContext.viewportOffset = {viewportOffsetX, viewportOffsetY};
       layoutContext.pointScaleFactor = pixelRatio;

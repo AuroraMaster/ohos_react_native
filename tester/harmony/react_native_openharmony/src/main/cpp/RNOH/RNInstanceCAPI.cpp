@@ -161,7 +161,7 @@ void RNInstanceCAPI::initializeScheduler(
   m_animationDriver = std::make_shared<react::LayoutAnimationDriver>(
       this->instance->getRuntimeExecutor(), m_contextContainer, this);
   m_schedulerDelegate = std::make_unique<rnoh::SchedulerDelegate>(
-      m_mountingManager,
+      MountingManager::Weak(m_mountingManager, m_isAboutToBeDestroyed),
       this->taskExecutor,
       m_componentInstancePreallocationRequestQueue);
   this->scheduler = std::make_shared<react::Scheduler>(
