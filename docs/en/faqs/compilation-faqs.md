@@ -146,7 +146,14 @@ Add the following code to `entry/build-profile.json5`:
 
 - Solution
 
-    The root directory of the native project is too deep or the project name is too long. You are advised to shorten the directory level of the native project or shorten the project name.
+    Add the following lines to harmony/entry/src/main/cpp/CMakeLists.txt to force CMake + Ninja to pass all build and link arguments via @xxx.rsp response files, completely avoiding "command-line too long" errors:
+     ```
+    set(CMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS 1)
+    set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS 1)
+    set(CMAKE_C_RESPONSE_FILE_FLAG "@")
+    set(CMAKE_CXX_RESPONSE_FILE_FLAG "@")
+    set(CMAKE_NINJA_FORCE_RESPONSE_FILE 1 CACHE INTERNAL "")
+    ```
 
 ### hvigor ERROR: Failed :entry:default@HotReloadArkTS...
 

@@ -158,7 +158,15 @@ Tid:xxxx, Name:RNOH_BACKGROUND
 
 - 解决
 
-    native 工程根目录太深或者工程名称过长，建议将 native 工程目录级别缩短或者尝试将工程命名缩短。
+    强制 CMake + Ninja 在「编译 & 链接」全程用 @xxx.rsp 响应文件传参，彻底绕过命令行长度过限问题。
+    在harmony/entry/src/main/cpp/CMakeLists.txt中添加
+    ```
+    set(CMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS 1)
+    set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS 1)
+    set(CMAKE_C_RESPONSE_FILE_FLAG "@")
+    set(CMAKE_CXX_RESPONSE_FILE_FLAG "@")
+    set(CMAKE_NINJA_FORCE_RESPONSE_FILE 1 CACHE INTERNAL "")
+    ```
 
 ## hvigor ERROR: Failed :entry:default@HotReloadArkTS...
 
