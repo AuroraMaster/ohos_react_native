@@ -547,6 +547,9 @@ void NativeAnimatedTurboModule::runUpdates(long long frameTimeNanos) {
         });
   } catch (std::exception& e) {
     LOG(ERROR) << "Error in animation update: " << e.what();
+    if (!IsAtLeastApi20()) {
+        this->requestAnimationFrame();
+    }
   }
 }
 
