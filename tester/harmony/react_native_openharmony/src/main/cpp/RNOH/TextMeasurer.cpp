@@ -195,6 +195,12 @@ std::vector<OH_Drawing_LineMetrics> TextMeasurer::getLineMetrics(
   for (int i = 0; i < data.size(); i++) {
     data[i].width = static_cast<Float>(data[i].width) / m_scale;
     data[i].height = static_cast<Float>(data[i].height) / m_scale;
+    data[i].ascender = static_cast<Float>(data[i].ascender) / m_scale;
+    data[i].capHeight = static_cast<Float>(data[i].capHeight) / m_scale;
+    data[i].descender = static_cast<Float>(data[i].descender) / m_scale;
+    data[i].x = static_cast<Float>(data[i].x) / m_scale;
+    data[i].y = static_cast<Float>(data[i].y) / m_scale;
+    data[i].xHeight = static_cast<Float>(data[i].xHeight) / m_scale;
   }
   return data;
 }

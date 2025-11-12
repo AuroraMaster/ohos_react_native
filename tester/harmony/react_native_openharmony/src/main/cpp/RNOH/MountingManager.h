@@ -26,7 +26,25 @@ class MountingManager {
 
  public:
   using Shared = std::shared_ptr<MountingManager>;
-  using Weak = std::weak_ptr<MountingManager>;
+  class Weak {
+   public:
+    Weak() = default;
+    explicit Weak(
+        std::weak_ptr<MountingManager> weakPtr,
+        std::weak_ptr<std::atomic<bool>> willBeDestroyed)
+        : m_weakPtr(weakPtr), m_willBeDestroyed(willBeDestroyed) {}
+
+    std::shared_ptr<MountingManager> lock() const noexcept {
+      auto willBeDestroyed = m_willBeDestroyed.lock();
+      if (!willBeDestroyed || willBeDestroyed->load()) {
+        return nullptr;
+      }
+      return m_weakPtr.lock();
+    }
+   private:
+    std::weak_ptr<MountingManager> m_weakPtr;
+    std::weak_ptr<std::atomic<bool>> m_willBeDestroyed;
+  };
 
   virtual ~MountingManager() noexcept = default;
 
@@ -60,7 +78,9 @@ class MountingManager {
       facebook::react::ComponentDescriptor const& componentDescriptor) = 0;
 
   virtual void clearPreallocatedViews() = 0;
-  virtual void clearPreallocatedViews(facebook::react::ShadowViewMutationList mutations) = 0;
+  
+  virtual void clearPreallocatedViews(
+      facebook::react::ShadowViewMutationList mutations) = 0;
   virtual void clearPreallocationRequestQueue() = 0;
 };
 } // namespace rnoh
