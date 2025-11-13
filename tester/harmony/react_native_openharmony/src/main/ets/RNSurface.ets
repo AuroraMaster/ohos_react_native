@@ -293,6 +293,9 @@ struct ContentAdaptiveSurface {
     .width(this.rootComponentSize?.width)
     .height(this.rootComponentSize?.height)
     .onAreaChange((oldArea, newArea) => {
+      if (this.surfaceHandle.isDestroyed()) {
+        return;
+      }
       this.surfaceOffsetX = newArea.globalPosition.x as number
       this.surfaceOffsetY = newArea.globalPosition.y as number
       this.surfaceContext!.surfaceOffsetX = this.surfaceOffsetX
@@ -414,6 +417,9 @@ struct ParentBoundSurface {
 
   handleAreaChange(_oldValue: Area, newValue: Area) {
     const stopTracing = this.logger.clone("handleAreaChange").startTracing()
+    if (this.surfaceHandle.isDestroyed()) {
+      return;
+    }
     this.surfaceWidth = newValue.width as number
     this.surfaceHeight = newValue.height as number
     this.surfaceOffsetX = newValue.globalPosition.x as number
