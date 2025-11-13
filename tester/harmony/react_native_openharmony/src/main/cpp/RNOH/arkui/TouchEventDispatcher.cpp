@@ -108,6 +108,8 @@ bool isAncestorHandlingTouches(
   auto tmpTouchTarget = touchTarget;
   while (tmpTouchTarget && tmpTouchTarget != rootTarget) {
     if (tmpTouchTarget->isHandlingTouches()) {
+      LOG(INFO) << "TOUCH_EVENT TouchEventDispatcher::isAncestorHandlingTouches::tag:"
+          << tmpTouchTarget->getTouchTargetTag();
       return true;
     }
     tmpTouchTarget = tmpTouchTarget->getTouchTargetParent();
@@ -359,7 +361,7 @@ void TouchEventDispatcher::sendEvent(
     m_previousEvent = touchEvent;
     switch (action) {
       case UI_TOUCH_EVENT_ACTION_DOWN:
-        DLOG(INFO) << "TouchEventDispatcher::sendEvent DOWN";
+        LOG(INFO) << "TOUCH_EVENT TouchEventDispatcher::sendEvent DOWN";
         eventTarget->getTouchEventEmitter()->onTouchStart(touchEvent);
         break;
       case UI_TOUCH_EVENT_ACTION_MOVE:
@@ -367,12 +369,12 @@ void TouchEventDispatcher::sendEvent(
         eventTarget->getTouchEventEmitter()->onTouchMove(touchEvent);
         break;
       case UI_TOUCH_EVENT_ACTION_UP:
-        DLOG(INFO) << "TouchEventDispatcher::sendEvent UP";
+        LOG(INFO) << "TOUCH_EVENT TouchEventDispatcher::sendEvent UP";
         eventTarget->getTouchEventEmitter()->onTouchEnd(touchEvent);
         break;
       case UI_TOUCH_EVENT_ACTION_CANCEL:
       default:
-        DLOG(INFO) << "TouchEventDispatcher::sendEvent CANCEL";
+        LOG(INFO) << "TOUCH_EVENT TouchEventDispatcher::sendEvent CANCEL";
         eventTarget->getTouchEventEmitter()->onTouchCancel(touchEvent);
         break;
     }

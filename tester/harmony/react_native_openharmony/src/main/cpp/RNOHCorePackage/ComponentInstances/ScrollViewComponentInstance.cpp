@@ -1034,6 +1034,7 @@ void ScrollViewComponentInstance::emitScrollEvent(
         return scrollViewMetricsPayload(runtime, customPayload);
       });
     } else {
+      LOG(INFO)<<"TOUCH_EVENT ScrollViewComponentInstance::emitScrollEvent::"<<eventName;
       m_eventEmitter->dispatchEvent(
           std::move(eventName),
           [customPayload, this](facebook::jsi::Runtime &runtime) {

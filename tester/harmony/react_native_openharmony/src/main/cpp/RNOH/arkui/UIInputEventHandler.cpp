@@ -27,7 +27,14 @@ static void receiveEvent(ArkUI_NodeEvent* event) {
               ArkUI_UIInputEvent_Type::ARKUI_UIINPUTEVENT_TYPE_TOUCH) {
         return;
       }
-
+      auto action = OH_ArkUI_UIInputEvent_GetAction(inputEvent);
+      if (action == UI_TOUCH_EVENT_ACTION_DOWN ||
+          action == UI_TOUCH_EVENT_ACTION_CANCEL ||
+          action == UI_TOUCH_EVENT_ACTION_UP) {
+        LOG(INFO) << "TOUCH_EVENT UIInputEventHandler::receiveEvent::action:" << action
+            << ";x:" << int32_t(OH_ArkUI_PointerEvent_GetX(inputEvent))
+            << ";y:" << int32_t(OH_ArkUI_PointerEvent_GetY(inputEvent));
+      }
       target->onTouchEvent(inputEvent);
       return;
     }
