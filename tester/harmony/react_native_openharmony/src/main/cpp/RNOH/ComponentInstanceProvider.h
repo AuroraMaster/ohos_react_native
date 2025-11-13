@@ -53,6 +53,8 @@ class ComponentInstanceProvider
       facebook::react::ComponentHandle componentHandle,
       std::string componentName);
 
+  bool isContainComponentInstance(facebook::react::Tag tag);
+
   ComponentInstance::Shared createArkTSComponent(
       facebook::react::Tag tag,
       facebook::react::ComponentHandle componentHandle,
