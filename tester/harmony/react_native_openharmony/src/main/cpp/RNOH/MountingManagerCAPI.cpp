@@ -125,11 +125,20 @@ auto MountingManagerCAPI::getValidMutations(MutationList const& mutations)
 bool MountingManagerCAPI::isCAPIComponent(
     facebook::react::ShadowView const& shadowView) {
   std::string componentName = shadowView.componentName;
-  if (m_arkTsComponentNames.count(componentName) > 0) {
-    return false;
-  } else {
+  if (m_cApiComponentNames.count(componentName) > 0) {
     return true;
   }
+  if (m_arkTsComponentNames.count(componentName) > 0) {
+    return false;
+  }
+  auto componentInstance = m_componentInstanceProvider->isContainComponentInstance(
+      shadowView.tag);
+  if (componentInstance) {
+    m_cApiComponentNames.insert(std::move(componentName));
+    return true;
+  }
+  m_arkTsComponentNames.insert(std::move(componentName));
+  return false;
 }
 
 void MountingManagerCAPI::dispatchCommand(

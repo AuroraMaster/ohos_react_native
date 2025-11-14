@@ -41,9 +41,7 @@ class ScrollViewTouchHandler : public UIInputEventHandler {
 };
 
 void ScrollViewComponentInstance::onTouchEventActionUp() {
-  if (m_scrollState == ScrollState::SCROLL) {
-    wasInScrollStateAtTouchUp = true;
-  }
+  m_isPointerLikelyUp = true;
 }
 
 ScrollViewComponentInstance::ScrollViewComponentInstance(Context context)
@@ -389,14 +387,6 @@ void ScrollViewComponentInstance::setNestedScrollMode(
 }
 
 void ScrollViewComponentInstance::onScroll() {
-  if (m_onScrollCallsAfterFrameBeginCallCounter == 1 &&
-      wasInScrollStateAtTouchUp) {
-    wasInInertialScrollingState = true;
-    emitOnScrollEndDragEvent();
-    emitScrollEvent("momentumScrollBegin");
-    wasInScrollStateAtTouchUp = false;
-  }
-  m_onScrollCallsAfterFrameBeginCallCounter++;
   auto scrollViewMetrics = getScrollViewMetrics();
   sendEventForNativeAnimations(scrollViewMetrics);
   if (!isContentSmallerThanContainer(m_props) && m_allowScrollPropagation &&
@@ -439,9 +429,8 @@ void ScrollViewComponentInstance::onScrollStart() {
 void ScrollViewComponentInstance::onScrollStop() {
   m_allowNextScrollEvent = true;
 
-  if (m_scrollState == ScrollState::FLING || wasInInertialScrollingState) {
+  if (m_scrollState == ScrollState::FLING) {
     emitOnMomentumScrollEndEvent();
-    wasInInertialScrollingState = false;
   } else if (m_scrollState == ScrollState::SCROLL) {
     emitOnScrollEndDragEvent();
   } else if (m_scrollState == ScrollState::CANCELING) {
@@ -472,8 +461,16 @@ void ScrollViewComponentInstance::onScrollStop() {
 
 float ScrollViewComponentInstance::onScrollFrameBegin(
     float offset,
-    int32_t scrollState) {
-  m_onScrollCallsAfterFrameBeginCallCounter = 0;
+    int32_t arkUIScrollState) {
+  auto scrollState = arkUIScrollState;
+  // During overscroll bounce events, ArkUI's onScrollFrameBegin interface returns a Scroll state,
+  // while React Native requires a Fling state to trigger momentum begin/end.
+  if (m_isPointerLikelyUp && isOutOfBound(offset) && arkUIScrollState == ScrollState::SCROLL) {
+    scrollState = ScrollState::FLING;
+  }
+  // This is just an approximate judgment.
+  // If you need an accurate result, you should assign the value in onTouchEvent.
+  m_isPointerLikelyUp = arkUIScrollState != ScrollState::SCROLL;
   if (!m_props->scrollEnabled || shouldDisableScrollInteraction()) {
     m_recentScrollFrameOffset = 0;
     m_scrollState = ScrollState::CANCELING;
@@ -484,7 +481,6 @@ float ScrollViewComponentInstance::onScrollFrameBegin(
   auto newScrollState = static_cast<ScrollState>(scrollState);
   if (m_scrollState != newScrollState) {
     if (m_scrollState == ScrollState::SCROLL) {
-      wasInScrollStateAtTouchUp = false;
       emitOnScrollEndDragEvent();
     } else if (m_scrollState == ScrollState::FLING) {
       if (!m_scrollStartFling) {
@@ -744,6 +740,12 @@ bool ScrollViewComponentInstance::isAtEnd(
     return currentOffset.y <= 0.001 ||
         m_contentSize.height - m_containerSize.height - currentOffset.y < 0.001;
   }
+}
+
+bool ScrollViewComponentInstance::isOutOfBound(float offset) {
+  auto scrollViewMetrics = getScrollViewMetrics();
+  auto contentOffset = scrollViewMetrics.contentOffset + facebook::react::Point{offset, offset};
+  return isAtEnd(contentOffset);
 }
 
 bool ScrollViewComponentInstance::isCloseToTargetOffset(
@@ -1034,6 +1036,7 @@ void ScrollViewComponentInstance::emitScrollEvent(
         return scrollViewMetricsPayload(runtime, customPayload);
       });
     } else {
+      LOG(INFO)<<"TOUCH_EVENT ScrollViewComponentInstance::emitScrollEvent::"<<eventName;
       m_eventEmitter->dispatchEvent(
           std::move(eventName),
           [customPayload, this](facebook::jsi::Runtime &runtime) {

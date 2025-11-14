@@ -86,6 +86,12 @@ ComponentInstance::Shared ComponentInstanceProvider::getComponentInstance(
   }
 }
 
+bool ComponentInstanceProvider::isContainComponentInstance(facebook::react::Tag tag) {
+    std::lock_guard<std::mutex> lock(m_preallocatedComponentInstanceByTagMtx);
+    auto componentInstanceIt = m_preallocatedComponentInstanceByTag.find(tag);
+    return componentInstanceIt != m_preallocatedComponentInstanceByTag.end();
+}
+
 ComponentInstance::Shared ComponentInstanceProvider::createArkTSComponent(
     facebook::react::Tag tag,
     facebook::react::ComponentHandle componentHandle,

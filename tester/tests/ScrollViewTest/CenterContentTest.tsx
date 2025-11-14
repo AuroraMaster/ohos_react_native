@@ -5,6 +5,7 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
+import { useState } from 'react';
 import {TestSuite} from '@rnoh/testerino';
 import {TestCase} from '../../components';
 import {
@@ -88,8 +89,35 @@ export function CenterContentTest() {
           expect(state).to.be.true;
         }}
       />
+      <TestCase.Example
+        modal
+        itShould="Slowly scroll near the bottom, then click 'Collapse'. Click 'Expand' — the subview will open"
+      >
+        <OnPressAfterChildSizeChange />
+      </TestCase.Example>
     </TestSuite>
   );
+}
+
+const OnPressAfterChildSizeChange = () => {
+  const [show, setShow] = useState(true)
+  return (
+    <View style={{height: 400, width: '100%'}}>
+      <ScrollView style={styles.scrollView} centerContent={true}>
+        {show && <View style={{height: 600, backgroundColor: 'lightblue'}} />}
+        <TouchableOpacity
+          style={{
+            padding: 20,
+            backgroundColor: 'lightgreen'
+          }}
+          onPress={() => {
+            setShow(prev => !prev)
+          }}>
+          <Text>{show ? 'Collapse' : 'Expand'}</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({

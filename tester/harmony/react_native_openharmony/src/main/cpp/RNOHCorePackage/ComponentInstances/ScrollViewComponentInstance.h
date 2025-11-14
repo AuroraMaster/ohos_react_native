@@ -52,6 +52,7 @@ class ScrollViewComponentInstance
   bool m_persistentScrollbar = false;
   long long m_lastScrollDispatchTime = 0;
   bool m_allowNextScrollEvent = false;
+  bool m_isPointerLikelyUp = true;
   bool m_scrollStartFling = false;
   facebook::react::Float m_scrollEventThrottle = 0;
   bool m_isNativeResponderBlocked = false;
@@ -118,18 +119,6 @@ class ScrollViewComponentInstance
 
   void updateContentClippedSubviews();
 
-  /**
-   * `onScrollFrameBegin` is not always called but is needed to detect when
-   * the user stops dragging. The properties
-   * `m_onScrollCallsAfterFrameBeginCallCounter` and
-   * `wasInDraggingStateAtTouchUp` are part of a workaround. The fix assumes
-   * `onScrollFrameBegin` follows `onScroll` during active scrolling if not, the
-   * user has either stopped dragging or is overscrolling.
-   */
-  int m_onScrollCallsAfterFrameBeginCallCounter = 0;
-  bool wasInScrollStateAtTouchUp = false;
-  bool wasInInertialScrollingState = false;
-
  public:
   /**
    * PullToRefreshViewComponentInstance is tightly coupled with ScrollView.
@@ -159,7 +148,7 @@ class ScrollViewComponentInstance
   void onScroll() override;
   void onScrollStart() override;
   void onScrollStop() override;
-  float onScrollFrameBegin(float offset, int32_t scrollState) override;
+  float onScrollFrameBegin(float offset, int32_t arkUIScrollState) override;
   void onAppear() override;
 
   void onFinalizeUpdates() override;
@@ -191,6 +180,7 @@ class ScrollViewComponentInstance
   void updateOffsetAfterChildChange(facebook::react::Point offset);
   bool isContentSmallerThanContainer(SharedConcreteProps const& props);
   bool isAtEnd(facebook::react::Point currentOffset);
+  bool isOutOfBound(float offset);
   /**
    * When the `onEndReachedThreshold` of VirtualizedList is set to 0,
    * due to the rebound effect of the Scroll component, 
