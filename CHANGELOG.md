@@ -1,5 +1,19 @@
 # Changelog
 
+## 6.0.1.140
+- fix: isCAPIComponent fix,([10d7ecc13](https://gitcode.com/openharmony-sig/ohos_react_native/commit/10d7ecc133d6722ad9032e5e34ee9532ae01ebc2))
+- fix the issue where child nodes fail to respond to touch-related events due to redundant onMomentumScrollBegin calls.,([b9d62dcef](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b9d62dcef18f12683d49c3a67b69b4727fe86abd))
+- fix: Resolve RNSurface JSCarsh,([7cc16e107](https://gitcode.com/openharmony-sig/ohos_react_native/commit/7cc16e107a468ff2e2a3475e5a623164dca7ed11))
+- fix: Add touch event logging to facilitate analysis of unresponsive touch issues.,([3ff6b3071](https://gitcode.com/openharmony-sig/ohos_react_native/commit/3ff6b307198c273f0483f5ff2de43dcddbc8daf9))
+- [Fix]: fix multi bundle failed.,([d3f84ccb5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d3f84ccb598365cd7444863ef862b89879c8ed76))
+- fix: vsync thread block because throw error,([4c8b9749b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4c8b9749bdbf2b047283059132de4d55946c9b48))
+- fix: an issue where the unit of the return value of the onTextLayout callback function of the Text component was incorrect.,([f9d40446a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f9d40446a9f863424fec39c630997d6fead59a24))
+- fix: fix the log format for successful bundle loading,([2451aca8b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2451aca8bc609520500b39ac0254bb070f931f96))
+- fix: the issue where ALL_CONTAINERS_CLICKABLE sometimes does not take effect.,([69bcc78df](https://gitcode.com/openharmony-sig/ohos_react_native/commit/69bcc78df145025e511a6e25d1adb37e6e9f07c7))
+- fix:  fix a crash caused by removing a NAPI reference on JS thread,([7be372aa1](https://gitcode.com/openharmony-sig/ohos_react_native/commit/7be372aa13c45ed811b44f6cad9eb64b244d3064))
+- doc:update compilation-faqs.md,([552b17da4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/552b17da441ca872eccd12472035042f8b9ecdb8))
+- [chore]: updated to version 6.0.1.130(0.72.100),([df25f4025](https://gitcode.com/openharmony-sig/ohos_react_native/commit/df25f402505ea1075a5916fede354d9f6efcebc5))
+
 ## 6.0.1.130
 - fix: appStateTM receives events only from its own RN instance,([49be80f51](https://gitcode.com/openharmony-sig/ohos_react_native/commit/49be80f51e42b6f91e6085077563c485fe9af553))
 - fix:Fix when disableIntervalMomentum is set on the ScrollView, the ScrollView does not follow the finger while scrolling and only continues to scroll after the finger lifts off the screen.,([8ede25bff](https://gitcode.com/openharmony-sig/ohos_react_native/commit/8ede25bfff671a3c39805fb9584e5c04a7a905e1))
