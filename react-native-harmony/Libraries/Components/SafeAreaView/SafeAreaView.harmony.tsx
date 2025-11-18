@@ -1,6 +1,6 @@
 import type { TurboModule } from "react-native/Libraries/TurboModule/RCTExport";
 import { Dimensions, TurboModuleRegistry, View, ViewProps } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useLayoutEffect } from "react";
 import React from "react";
 
 import RCTDeviceEventEmitter from "react-native/Libraries/EventEmitter/RCTDeviceEventEmitter.js";
@@ -104,7 +104,7 @@ export default React.forwardRef<View, ViewProps>(
       [setTopInset, setLeftInset, setRightInset, setBottomInset, measurement.pageY]
     );
 
-    useEffect(() => {
+    useLayoutEffect(() => {
       measureView();
     }, []);
 
