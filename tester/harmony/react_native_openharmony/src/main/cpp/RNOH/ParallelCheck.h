@@ -18,7 +18,7 @@ namespace rnoh {
  */
 inline bool IsParallelizationWorkable() {
   #ifdef PARALLELIZATION_ON
-    return IsAtLeastApi21();
+    return IsAtLeastApi22();
   #else
     return false;
   #endif
