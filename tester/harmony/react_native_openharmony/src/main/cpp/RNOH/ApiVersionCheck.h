@@ -15,7 +15,7 @@ constexpr int API_LEVEL_14 = 14;
 constexpr int API_LEVEL_15 = 15;
 constexpr int API_LEVEL_20 = 20;
 constexpr int API_LEVEL_21 = 21;
-
+constexpr int API_LEVEL_22 = 22;
 /**
  * @internal
  * @brief Lazily check if API level is at least the given level.
@@ -53,5 +53,9 @@ inline bool IsAtLeastApi15() {
 
 inline bool IsAtLeastApi21() {
   return IsAtLeastApi<API_LEVEL_21>();
+}
+
+inline bool IsAtLeastApi22() {
+  return IsAtLeastApi<API_LEVEL_22>();
 }
 } // namespace rnoh
