@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.0.2.110
+
+- feat: Add API version 22 check,([258c98cd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/258c98cd04842960754692b495d214f78c5aa788))
+- Fix: SafeAreaView measurement,([298967d1](https://gitcode.com/openharmony-sig/ohos_react_native/commit/298967d188989709b9d2cab4069dec00fa43e0bd))
+
 ## 6.0.1.140
 - fix: isCAPIComponent fix,([10d7ecc13](https://gitcode.com/openharmony-sig/ohos_react_native/commit/10d7ecc133d6722ad9032e5e34ee9532ae01ebc2))
 - fix the issue where child nodes fail to respond to touch-related events due to redundant onMomentumScrollBegin calls.,([b9d62dcef](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b9d62dcef18f12683d49c3a67b69b4727fe86abd))
