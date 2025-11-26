@@ -128,8 +128,8 @@ export function AnimatedTest() {
         </TestCase.Example>
       </TestSuite>
       <TestCase.Example itShould="test event animated crash when detach native event">
-          <AnimatedDetachNativeEventCrashTest />
-        </TestCase.Example>
+        <AnimatedDetachNativeEventCrashTest />
+      </TestCase.Example>
       <TestSuite name="forkEvent + unforkEvent">
         <TestCase.Example itShould="stop updating current offset after detaching listener (fork/unfork event)">
           <AnimatedForkUnforkEventTest />
@@ -140,6 +140,9 @@ export function AnimatedTest() {
           <AnimatedAttachNativeEventTest />
         </TestCase.Example>
       </TestSuite>
+      <TestCase.Example itShould="move square immediately when pressing button, after the loading animation ends">
+        <RemoveNodeAndStartNewAnimatedExample />
+      </TestCase.Example>
     </TestSuite>
   );
 }
@@ -156,7 +159,7 @@ const AnimatedDetachNativeEventCrashTest = () => {
   useEffect(() => {
     if (ref !== null) {
       // @ts-ignore
-      
+
       detach = Animated.attachNativeEvent(ref.current, 'onScroll', [
         {nativeEvent: {contentOffset: {y: animatedValue, x: animatedValue}}},
       ]);
@@ -166,7 +169,7 @@ const AnimatedDetachNativeEventCrashTest = () => {
     if (ref !== null) {
       detach.detach();
     }
-  }
+  };
 
   return (
     <View
@@ -176,10 +179,7 @@ const AnimatedDetachNativeEventCrashTest = () => {
         position: 'relative',
         overflow: 'hidden',
       }}>
-      <Button
-        label={'detach Native Event'}
-        onPress={detachNativeEvent}
-      />
+      <Button label={'detach Native Event'} onPress={detachNativeEvent} />
       <ScrollView
         ref={ref}
         style={{width: '100%', height: '100%'}}

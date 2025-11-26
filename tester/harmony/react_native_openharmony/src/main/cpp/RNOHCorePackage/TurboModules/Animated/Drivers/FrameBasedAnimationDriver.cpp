@@ -92,7 +92,7 @@ void FrameBasedAnimationDriver::runAnimationStep(long long frameTimeNanos) {
 
     animatedValue.setVelocity(velocity);
     animatedValue.setValue(nextValue);
-  } catch (std::out_of_range& _e) {
+  } catch (const AnimatedNodeNotFoundError& _e) {
     // if a node is not found we skip over it and proceed with the
     // animation to maintain consistency with other platforms
     m_hasFinished = true;

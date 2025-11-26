@@ -13,6 +13,7 @@
 #include <jsi/jsi.h>
 #include <react/renderer/core/ReactPrimitives.h>
 
+#include "AnimatedErrors.h"
 #include "Drivers/AnimationDriver.h"
 #include "Drivers/EventAnimationDriver.h"
 #include "Nodes/AnimatedNode.h"
@@ -29,6 +30,8 @@ class EventAnimationDriver;
 
 class AnimatedNodesManager {
  public:
+  using EndCallback = AnimationDriver::AnimationEndCallback;
+
   AnimatedNodesManager(
       const std::function<void(int)>& scheduleUpdateFn,
       const std::function<void()>& scheduleStartFn,
@@ -77,7 +80,7 @@ class AnimatedNodesManager {
       facebook::react::Tag animationId,
       facebook::react::Tag nodeTag,
       folly::dynamic const& config,
-      std::function<void(bool)>&& endCallback);
+      EndCallback&& endCallback);
   void stopAnimation(facebook::react::Tag animationId);
 
   PropUpdatesList runUpdates(long long frameTimeNanos);

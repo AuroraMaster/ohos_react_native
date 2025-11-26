@@ -6,6 +6,7 @@
  */
 
 #include "DecayAnimationDriver.h"
+#include "RNOHCorePackage/TurboModules/Animated/AnimatedNodesManager.h"
 
 namespace rnoh {
 
@@ -77,7 +78,7 @@ void DecayAnimationDriver::runAnimationStep(long long frameTimeNanos) {
     m_lastValue = value;
     animatedValue.setValue(value);
     animatedValue.setVelocity(std::abs(velocity));
-  } catch (std::out_of_range& _e) {
+  } catch (const AnimatedNodeNotFoundError& _e) {
     // if a node is not found we skip over it and proceed with the
     // animation to maintain consistency with other platforms
     m_hasFinished = true;
