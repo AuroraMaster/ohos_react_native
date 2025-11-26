@@ -22,116 +22,129 @@ RNInstanceInternal::RNInstanceInternal(
     std::shared_ptr<TaskExecutor> taskExecutor,
     SharedNativeResourceManager nativeResourceManager,
     std::string hspModuleName)
-    :  m_id(id),
-       m_contextContainer(std::move(contextContainer)),
-       taskExecutor(std::move(taskExecutor)),
-       m_isAboutToBeDestroyed(std::make_shared<std::atomic<bool>>(false)),
-       m_nativeResourceManager(std::move(nativeResourceManager)),
-       m_hspModuleName(hspModuleName)
-{
-    instance = std::make_shared<facebook::react::Instance>();
-    scheduler = nullptr;
+    : m_id(id),
+      m_contextContainer(std::move(contextContainer)),
+      taskExecutor(std::move(taskExecutor)),
+      m_isAboutToBeDestroyed(std::make_shared<std::atomic<bool>>(false)),
+      m_nativeResourceManager(std::move(nativeResourceManager)),
+      m_hspModuleName(hspModuleName) {
+  instance = std::make_shared<facebook::react::Instance>();
+  scheduler = nullptr;
 }
 
-void RNInstanceInternal::loadScriptFromBuffer(std::vector<uint8_t> bundle,
+void RNInstanceInternal::loadScriptFromBuffer(
+    std::vector<uint8_t> bundle,
     std::string const sourceURL,
-    std::function<void(const std::string)> onFinish)
-{
-    this->loadScript(
-        JSBigStringHelpers::fromBuffer(std::move(bundle)), sourceURL, onFinish);
+    std::function<void(const std::string)> onFinish) {
+  auto jsBundle = JSBigStringHelpers::fromBuffer(std::move(bundle));
+  if (jsBundle) {
+    DLOG(INFO) << "Loaded bundle from buffer";
+  }
+
+  // NOTE: bundle needs to be null terminated to be handled correctly by
+  // hermes. The bundle passed here in an std::vector is not null terminated,
+  // and tightly packed (e.g. bundle.size() == bundle.capacity()), making any
+  // push_back cause a relocation. We cannot avoid a copy, hence we create
+  // another JSBigString whose underlying container is an std::string,
+  // guaranteed to be null-terminated by the standard.
+  if (jsBundle->c_str()[jsBundle->size()] != 0) {
+    jsBundle = std::make_unique<facebook::react::JSBigStdString>(
+        std::string{jsBundle->c_str(), jsBundle->c_str() + jsBundle->size()});
+  }
+  this->loadScript(std::move(jsBundle), sourceURL, onFinish);
 }
 
-void RNInstanceInternal::loadScriptFromFile(std::string const fileUrl,
-    std::function<void(const std::string)> onFinish)
-{
-    auto jsBundle = JSBigStringHelpers::fromFilePath(fileUrl);
+void RNInstanceInternal::loadScriptFromFile(
+    std::string const fileUrl,
+    std::function<void(const std::string)> onFinish) {
+  auto jsBundle = JSBigStringHelpers::fromFilePath(fileUrl);
+  if (jsBundle) {
+    DLOG(INFO) << "Loaded bundle from file";
+  }
+  this->loadScript(std::move(jsBundle), fileUrl, onFinish);
+}
+
+void RNInstanceInternal::loadScriptFromRawFile(
+    std::string const rawFileUrl,
+    std::function<void(const std::string)> onFinish) {
+  // Magic value used to indicate hermes bytecode
+  const uint64_t hermesMagic = 0x1F1903C103BC1FC6;
+  try {
+    auto jsBundle = JSBigStringHelpers::fromRawFilePath(
+        rawFileUrl, m_nativeResourceManager.get());
+    uint64_t extractedMagic{};
+    if (jsBundle->size() >= sizeof(uint64_t)) {
+      const char* source = jsBundle->c_str();
+      std::copy(
+          source,
+          source + sizeof(uint64_t),
+          reinterpret_cast<uint8_t*>(&extractedMagic));
+    }
     if (jsBundle) {
-        DLOG(INFO) << "Loaded bundle from file";
+      DLOG(INFO) << "Loaded bundle from rawfile resource";
     }
-    this->loadScript(std::move(jsBundle), fileUrl, onFinish);
-}
-
-void RNInstanceInternal::loadScriptFromRawFile(std::string const rawFileUrl,
-    std::function<void(const std::string)> onFinish)
-{
-    // Magic value used to indicate hermes bytecode
-    const uint64_t hermesMagic = 0x1F1903C103BC1FC6;
-    try {
-        auto jsBundle = JSBigStringHelpers::fromRawFilePath(
-            rawFileUrl, m_nativeResourceManager.get());
-        uint64_t extractedMagic{};
-        if (jsBundle->size() >= sizeof(uint64_t)) {
-            const char* source = jsBundle->c_str();
-            std::copy(source,
-                source + sizeof(uint64_t),
-                reinterpret_cast<uint8_t *>(&extractedMagic));
-        }
-        if (jsBundle) {
-            DLOG(INFO) << "Loaded bundle from rawfile resource";
-        }
-        if (extractedMagic == hermesMagic) {
-            this->loadScript(std::move(jsBundle), rawFileUrl, onFinish);
-        } else {
-            // NOTE: JS needs to be null terminated to be handled correctly by
-            // hermes. Buffers read from a rawfile aren't null terminated, so we
-            // pass the buffer as a string.
-            std::string s(jsBundle->c_str(), jsBundle->c_str() + jsBundle->size());
-            this->loadScript(
-                std::make_unique<facebook::react::JSBigStdString>(std::move(s)),
-                rawFileUrl,
-                onFinish);
-        }
-    } catch (const std::runtime_error& e) {
-        LOG(ERROR) << e.what();
+    if (extractedMagic == hermesMagic) {
+      this->loadScript(std::move(jsBundle), rawFileUrl, onFinish);
+    } else {
+      // NOTE: bundle needs to be null terminated to be handled correctly by
+      // hermes. Buffers read from a rawfile aren't null terminated, so we
+      // pass the buffer as a string.
+      std::string s(jsBundle->c_str(), jsBundle->c_str() + jsBundle->size());
+      this->loadScript(
+          std::make_unique<facebook::react::JSBigStdString>(std::move(s)),
+          rawFileUrl,
+          onFinish);
     }
+  } catch (const std::runtime_error& e) {
+    LOG(ERROR) << e.what();
+  }
 }
 
 void RNInstanceInternal::loadScript(
     std::unique_ptr<react::JSBigString const> jsBundle,
     std::string const sourceURL,
-    std::function<void(const std::string)> onFinish)
-{
-    if (m_bundlePath.empty()) {
-        m_bundlePath = sourceURL;
-    }
+    std::function<void(const std::string)> onFinish) {
+  if (m_bundlePath.empty()) {
+    m_bundlePath = sourceURL;
+  }
 
-    getTaskExecutor()->runTask(TaskThread::JS,
-        [weakInstance = std::weak_ptr(instance),
-            jsBundle = std::move(jsBundle),
-            sourceURL = std::move(sourceURL),
-            onFinish = std::move(onFinish)] mutable {
+  getTaskExecutor()->runTask(
+      TaskThread::JS,
+      [weakInstance = std::weak_ptr(instance),
+       jsBundle = std::move(jsBundle),
+       sourceURL = std::move(sourceURL),
+       onFinish = std::move(onFinish)] mutable {
         auto instance = weakInstance.lock();
         if (!instance) {
-            // the instance was destroyed before this could run, return an
-            // error
-            onFinish(
-                "The instance was destroyed before the JS bundle could be loaded.");
-            return;
+          // the instance was destroyed before this could run, return an
+          // error
+          onFinish(
+              "The instance was destroyed before the JS bundle could be loaded.");
+          return;
         }
         try {
-            instance->loadScriptFromString(
-                std::move(jsBundle), sourceURL, true);
-            onFinish("");
-        } catch (std::exception const &e) {
-            LOG(ERROR) << "The bundle failed to load for the following message and stack: " << e.what();
-            try {
-                std::rethrow_if_nested(e);
-                onFinish(e.what());
-            } catch (const std::exception &nested) {
-                onFinish(e.what() + std::string("\n") + nested.what());
-            }
+          instance->loadScriptFromString(std::move(jsBundle), sourceURL, true);
+          onFinish("");
+        } catch (std::exception const& e) {
+          LOG(ERROR)
+              << "The bundle failed to load for the following message and stack: "
+              << e.what();
+          try {
+            std::rethrow_if_nested(e);
+            onFinish(e.what());
+          } catch (const std::exception& nested) {
+            onFinish(e.what() + std::string("\n") + nested.what());
+          }
         }
-    });
+      });
 }
 
-void RNInstanceInternal::setBundlePath(std::string const &path)
-{
-    m_bundlePath = path;
+void RNInstanceInternal::setBundlePath(std::string const& path) {
+  m_bundlePath = path;
 }
 
-std::string RNInstanceInternal::getBundlePath()
-{
-    return m_bundlePath;
+std::string RNInstanceInternal::getBundlePath() {
+  return m_bundlePath;
 }
 
 std::string RNInstanceInternal::getHspModuleName() {
@@ -139,17 +152,16 @@ std::string RNInstanceInternal::getHspModuleName() {
 }
 
 NativeResourceManager const *RNInstanceInternal::getNativeResourceManager()
-    const
-{
-    RNOH_ASSERT(m_nativeResourceManager != nullptr);
-    return m_nativeResourceManager.get();
+    const {
+  RNOH_ASSERT(m_nativeResourceManager != nullptr);
+  return m_nativeResourceManager.get();
 }
 
 void RNInstanceInternal::onCreate() {
   m_weakSelf = RNInstance::SafeWeak(shared_from_this(), m_isAboutToBeDestroyed);
 }
 
- void RNInstanceInternal::markSelfAboutToDestroyed() {
+void RNInstanceInternal::markSelfAboutToDestroyed() {
   if (m_isAboutToBeDestroyed) {
     m_isAboutToBeDestroyed->store(true);
   }
