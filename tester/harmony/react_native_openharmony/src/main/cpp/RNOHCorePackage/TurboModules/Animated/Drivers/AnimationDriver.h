@@ -9,7 +9,7 @@
 
 #include <folly/dynamic.h>
 
-#include "RNOHCorePackage/TurboModules/Animated/AnimatedNodesManager.h"
+#include "RNOHCorePackage/TurboModules/Animated/AnimatedErrors.h"
 #include "RNOHCorePackage/TurboModules/Animated/Nodes/ValueAnimatedNode.h"
 
 namespace rnoh {
@@ -18,7 +18,7 @@ class AnimatedNodesManager;
 
 class AnimationDriver {
  public:
-  using AnimationEndCallback = std::function<void(bool)>;
+  using AnimationEndCallback = std::function<void(bool, std::optional<double>)>;
 
   AnimationDriver(
       facebook::react::Tag animationId,
@@ -27,7 +27,13 @@ class AnimationDriver {
       AnimationEndCallback&& endCallback);
   virtual ~AnimationDriver() {
     if (endCallback_) {
-      endCallback_(false);
+      std::optional<double> value = std::nullopt;
+      try {
+        value = getAnimatedValue().getValueAsDouble();
+      } catch (const AnimatedNodeNotFoundError& _e) {
+        // If the node does not exist, the value is not returned.
+      }
+      endCallback_(false, value);
     }
   };
 

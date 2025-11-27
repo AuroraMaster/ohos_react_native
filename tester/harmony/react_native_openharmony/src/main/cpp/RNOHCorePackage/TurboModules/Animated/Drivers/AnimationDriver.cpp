@@ -6,6 +6,7 @@
  */
 
 #include "AnimationDriver.h"
+#include "RNOHCorePackage/TurboModules/Animated/AnimatedNodesManager.h"
 
 using namespace facebook;
 

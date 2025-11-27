@@ -6,6 +6,7 @@
  */
 
 #include "SpringAnimationDriver.h"
+#include "RNOHCorePackage/TurboModules/Animated/AnimatedNodesManager.h"
 
 namespace rnoh {
 
@@ -73,7 +74,7 @@ void SpringAnimationDriver::runAnimationStep(long long frameTimeNanos) {
         m_hasFinished = true;
       }
     }
-  } catch (std::out_of_range& _e) {
+  } catch (const AnimatedNodeNotFoundError& _e) {
     // if a node is not found we skip over it and proceed with the
     // animation to maintain consistency with other platforms
     m_hasFinished = true;

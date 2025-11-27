@@ -9,6 +9,7 @@
 #include "RNOH/ArkTSBridge.h"
 
 #include <jsi/jsi/JSIDynamic.h>
+#include "AnimatedNodesManager.h"
 #include "RNOH/RNInstance.h"
 #include "RNOH/RNInstanceCAPI.h"
 
@@ -121,16 +122,20 @@ jsi::Value startAnimatingNode(
         animationId,
         args[1].getNumber(),
         config,
-        [self, &rt, animationId](bool finished) {
-          self->emitAnimationEndedEvent(rt, animationId, finished);
+        [self, &rt, animationId](bool finished, std::optional<double> value) {
+          self->emitAnimationEndedEvent(rt, animationId, finished, value);
         });
     return facebook::jsi::Value::undefined();
   }
   auto callback = std::make_shared<jsi::Function>(
       std::move(args[3].getObject(rt).getFunction(rt)));
-  auto endCallback = [&rt, callback = std::move(callback)](bool finished) {
+  auto endCallback = [&rt, callback = std::move(callback)](
+                         bool finished, std::optional<double> value) {
     auto result = jsi::Object(rt);
     result.setProperty(rt, "finished", jsi::Value(finished));
+    if (value.has_value()) {
+      result.setProperty(rt, "value", value.value());
+    }
     callback->call(rt, {std::move(result)});
   };
   self->startAnimatingNode(
@@ -438,16 +443,17 @@ void NativeAnimatedTurboModule::startAnimatingNode(
     react::Tag animationId,
     react::Tag nodeTag,
     folly::dynamic const& config,
-    std::function<void(bool)>&& endCallback) {
-  auto jsThreadCallback = [jsInvoker = this->jsInvoker_,
-                           endCallback =
-                               std::move(endCallback)](bool finished) mutable {
-    // callbacks passed from JS need to be called through the jsInvoker
-    // to ensure proper handling by React
-    jsInvoker->invokeAsync([finished, endCallback = std::move(endCallback)] {
-      endCallback(finished);
-    });
-  };
+    EndCallback&& endCallback) {
+  auto jsThreadCallback =
+      [jsInvoker = this->jsInvoker_, endCallback = std::move(endCallback)](
+          bool finished, std::optional<double> value) mutable {
+        // callbacks passed from JS need to be called through the jsInvoker
+        // to ensure proper handling by React
+        jsInvoker->invokeAsync(
+            [finished, value, endCallback = std::move(endCallback)] {
+              endCallback(finished, value);
+            });
+      };
   auto lock = acquireLock();
   m_animatedNodesManager.startAnimatingNode(
       animationId, nodeTag, config, std::move(jsThreadCallback));
@@ -572,10 +578,10 @@ void NativeAnimatedTurboModule::setNativeProps(
     return;
   }
 #endif
-  // NOTE: in ArkTS architecture, we used to construct the `transform` property
-  // in a way incompatible with RN's RawProps. With C-API we fix it in the
-  // TransformAnimatedNode, but we pass it the old way to ArkTS to preserve
-  // compatibility.
+  // NOTE: in ArkTS architecture, we used to construct the `transform`
+  // property in a way incompatible with RN's RawProps. With C-API we fix it
+  // in the TransformAnimatedNode, but we pass it the old way to ArkTS to
+  // preserve compatibility.
   auto clonedProps = props;
   if (auto it = props.find("transform"); it != props.items().end()) {
     auto& transform = it->second;
@@ -594,15 +600,19 @@ void NativeAnimatedTurboModule::setNativeProps(
 void NativeAnimatedTurboModule::emitAnimationEndedEvent(
     facebook::jsi::Runtime& rt,
     facebook::react::Tag animationId,
-    bool finished) {
+    bool finished,
+    std::optional<double> value) {
   emitDeviceEvent(
       rt,
       "onNativeAnimatedModuleAnimationFinished",
-      [animationId, finished](
+      [animationId, finished, value](
           facebook::jsi::Runtime& rt, std::vector<jsi::Value>& args) {
         jsi::Object param(rt);
         param.setProperty(rt, "animationId", animationId);
         param.setProperty(rt, "finished", finished);
+        if (value.has_value()) {
+          param.setProperty(rt, "value", value.value());
+        }
         args.emplace_back(std::move(param));
       });
 }

@@ -6,6 +6,7 @@
  */
 
 #include "EventAnimationDriver.h"
+#include "RNOHCorePackage/TurboModules/Animated/AnimatedNodesManager.h"
 
 namespace rnoh {
 

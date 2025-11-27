@@ -10,7 +10,7 @@
 
 import type {EventSubscription} from 'react-native/Libraries/vendor/emitter/EventEmitter';
 import type {EventConfig} from 'react-native/Libraries/Animated/AnimatedEvent';
-import type {AnimationConfig, EndCallback} from 'react-native/Libraries/Animated/animations/Animation';
+import type {AnimationConfig, EndCallback} from './Animation';
 import type {
   AnimatedNodeConfig,
   AnimatingNodeConfig,

@@ -7,12 +7,11 @@
 
 #pragma once
 
-#include "RNOHCorePackage/TurboModules/Animated/AnimatedNodesManager.h"
 #include "RNOHCorePackage/TurboModules/Animated/Nodes/ValueAnimatedNode.h"
 
-class AnimatedNodesManager;
-
 namespace rnoh {
+
+class AnimatedNodesManager;
 
 class EventAnimationDriver {
  public:

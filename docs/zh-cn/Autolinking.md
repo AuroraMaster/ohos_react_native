@@ -15,7 +15,7 @@ npm install <library-with-native-dependencies> --save
 
 ## RNOH框架（框架维护者）
 
-0.72分支从0.72.94版本（对应 `@react-native-oh/react-native-harmony-cli` 版本是0.0.40）开始可使用完整的 Autolinking 功能。
+0.72分支从0.72.101版本（对应 `@react-native-oh/react-native-harmony-cli` 版本是0.0.40）开始可使用完整的 Autolinking 功能。
 
 在这个功能上，RNOH框架主要是向开发者提供一个 `@rnoh/hvigor-plugin` 的 hvigor 插件（它位于RNOH前端工程 `node_modules/@react-native-oh/react-native-harmony-cli/harmony` 目录下），这个插件会通过调用 `@react-native-oh/react-native-harmony-cli` 中的 `link-harmony` 命令完成 har 包的安装、so的链接以及Package注册等手动链接所需执行的操作。
 
