@@ -19,6 +19,7 @@ file(GLOB react_render_core_SRC CONFIGURE_DEPENDS
     *.cpp
     ${REACT_COMMON_DIR}/react/renderer/core/*.cpp)
 list(REMOVE_ITEM react_render_core_SRC
+    ${REACT_COMMON_DIR}/react/renderer/core/LayoutableShadowNode.cpp
     ${REACT_COMMON_DIR}/react/renderer/core/RawProps.cpp
     ${REACT_COMMON_DIR}/react/renderer/core/RawPropsParser.cpp)
 # RNOH patch end
