@@ -212,11 +212,6 @@ void rnoh::ScrollViewComponentInstance::onPropsChanged(
   if (rawProps.nestedScrollEnabled.has_value()) {
      m_rawProps.nestedScrollEnabled = rawProps.nestedScrollEnabled;
   }
-  auto newEnableScrollInteraction = isEnableScrollInteraction(props && props->scrollEnabled);
-  if (newEnableScrollInteraction != m_enableScrollInteraction) {
-    m_enableScrollInteraction = newEnableScrollInteraction;
-    m_scrollNode.setEnableScrollInteraction(m_enableScrollInteraction);
-  }  
     
   if (m_rawProps.endFillColor != rawProps.endFillColor) {
     m_rawProps.endFillColor = rawProps.endFillColor;
@@ -622,6 +617,19 @@ bool ScrollViewComponentInstance::scrollMovedBySignificantOffset(
 
 void ScrollViewComponentInstance::onFinalizeUpdates() {
   ComponentInstance::onFinalizeUpdates();
+  
+  {
+    /**
+     * "isEnableScrollInteraction" checks if this component is a nested scroll component.
+     * onPropsChanged is executed before INSERT mutations resulting, so this block of code must be here, after INSERT
+     * mutations are processed..
+     */
+    auto newEnableScrollInteraction = isEnableScrollInteraction(m_props && m_props->scrollEnabled);
+    if (newEnableScrollInteraction != m_enableScrollInteraction) {
+      m_enableScrollInteraction = newEnableScrollInteraction;
+      m_scrollNode.setEnableScrollInteraction(m_enableScrollInteraction);
+    }
+  }
 
   // when parent isn't refresh node, set the position
   auto parent = this->getParent().lock();
