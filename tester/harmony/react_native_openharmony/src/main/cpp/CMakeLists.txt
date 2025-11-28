@@ -485,6 +485,7 @@ set(RNOH_SOURCE
     "${RNOH_CPP_DIR}/RNOHCorePackage/ComponentInstances/SwitchComponentInstance.cpp"
     "${RNOH_CPP_DIR}/RNOHCorePackage/ComponentInstances/PullToRefreshViewComponentInstance.cpp"
     "${RNOH_CPP_DIR}/RNOHCorePackage/ComponentInstances/CustomNodeComponentInstance.cpp"
+    "${RNOH_CPP_DIR}/RNOHCorePackage/ComponentDescriptors/ModalHostViewComponentDescriptor.cpp"
     "${RNOH_CPP_DIR}/RNOH/Performance/NativeTracing.cpp"
     "${RNOH_CPP_DIR}/RNOH/Performance/HarmonyReactMarker.cpp"
     "${RNOH_CPP_DIR}/RNOH/Performance/OHReactMarkerListener.cpp"
