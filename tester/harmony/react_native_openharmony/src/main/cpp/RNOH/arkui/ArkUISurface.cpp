@@ -268,4 +268,12 @@ Surface::LayoutContext ArkUISurface::getLayoutContext() {
   m_threadGuard.assertThread();
   return Surface::LayoutContext::from(m_surfaceHandler.getLayoutContext());
 }
+
+DisplayMetrics ArkUISurface::getDisplayMetrics() {
+  DisplayMetrics result;
+  m_taskExecutor->runSyncTask(TaskThread::MAIN, [this, &result] {
+    result = ArkTSBridge::getInstance()->getDisplayMetrics();
+  });
+  return result;
+}
 } // namespace rnoh

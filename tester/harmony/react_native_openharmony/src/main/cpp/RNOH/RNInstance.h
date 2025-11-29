@@ -25,6 +25,7 @@
 #include "RNOH/TaskExecutor/TaskExecutor.h"
 #include "RNOH/TouchTarget.h"
 #include "RNOH/arkui/UIInputEventHandler.h"
+#include "RNOH/ArkTSBridge.h"
 
 namespace rnoh {
 class TurboModule;
@@ -52,6 +53,7 @@ class Surface {
   using Weak = std::weak_ptr<Surface>;
 
   virtual LayoutContext getLayoutContext() = 0;
+  virtual DisplayMetrics getDisplayMetrics() = 0;
 };
 
 class RNInstance {

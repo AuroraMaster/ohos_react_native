@@ -87,6 +87,7 @@ class ArkUISurface
   void setDisplayMode(facebook::react::DisplayMode displayMode);
     
   Surface::LayoutContext getLayoutContext() override;
+  DisplayMetrics getDisplayMetrics() override;
 
  private:
   facebook::react::SurfaceId m_surfaceId;

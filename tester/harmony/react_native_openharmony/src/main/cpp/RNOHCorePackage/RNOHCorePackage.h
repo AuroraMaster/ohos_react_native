@@ -8,6 +8,7 @@
 #pragma once
 #include <react/renderer/components/image/ImageComponentDescriptor.h>
 #include <react/renderer/components/modal/ModalHostViewComponentDescriptor.h>
+#include "RNOHCorePackage/ComponentDescriptors/ModalHostViewComponentDescriptorProvider.h"
 #include <react/renderer/components/rncore/ComponentDescriptors.h>
 #include <react/renderer/components/scrollview/ScrollViewComponentDescriptor.h>
 #include <react/renderer/components/text/ParagraphComponentDescriptor.h>
@@ -217,8 +218,7 @@ class RNOHCorePackage : public Package {
             facebook::react::ScrollViewComponentDescriptor>(),
         facebook::react::concreteComponentDescriptorProvider<
             facebook::react::PullToRefreshViewComponentDescriptor>(),
-        facebook::react::concreteComponentDescriptorProvider<
-            facebook::react::ModalHostViewComponentDescriptor>(),
+      createModalHostViewComponentDescriptorProvider(),
         facebook::react::concreteComponentDescriptorProvider<
             facebook::react::SwitchComponentDescriptor>(),
         facebook::react::concreteComponentDescriptorProvider<

@@ -27,6 +27,14 @@
                 <filteritem type="filepath" name=".*/android/.*" desc="生成文件，不手动修改" />
                 <filteritem type="filepath" name=".*/ios/.*" desc="生成文件，不手动修改" />
                 <filteritem type="filepath" name="docs/.*" desc="文档、demo工程" />
+                <filteritem 
+                    type="filepath"
+                    name="tester/harmony/react_native_openharmony/src/main/cpp/RNOHCorePackage/ComponentDescriptors/ModalHostViewComponentDescriptor.h"
+                    desc="Upstream code with modifications using the original license header" />
+                <filteritem 
+                    type="filepath"
+                    name="tester/harmony/react_native_openharmony/src/main/cpp/RNOHCorePackage/ComponentDescriptors/ModalHostViewComponentDescriptorProvider.h"
+                    desc="Upstream code with modifications using the original license header" />
 				<filteritem type="filepath" name="tester/assets/.*" desc="Project binary assets"/>
                 <filteritem type="filepath" name="tester/harmony/react_native_openharmony/src/main/cpp/RNOH/TouchTarget.cpp" desc="上游社区代码，无需检测" />
                 <filteritem type="filepath" name="tester/harmony/react_native_openharmony/src/main/ets/RNOH/RNTypes.ts" desc="上游社区代码，无需检测" />
@@ -48,6 +56,8 @@
             </filefilter>
             <filefilter name="copyrightPolicyFilter" desc="">
                 <filteritem type="filepath" name="tester/benchmarks/stresstest/.*" desc="上游社区代码，无需检测" />
+                            <filefilter name="copyrightPolicyFilter" desc="">
+            </filefilter>
             </filefilter>
             <filefilter name="binaryFileTypePolicyFilter" desc="">
                 <filteritem type="filename" name="rnoh-testerino-.*.tgz" desc="测试工程依赖" />

@@ -123,6 +123,8 @@ void RNInstanceCAPI::initializeScheduler(
   DLOG(INFO) << "RNInstanceCAPI::initializeScheduler";
   auto reactConfig = std::make_shared<react::EmptyReactNativeConfig>();
   m_contextContainer->insert("ReactNativeConfig", std::move(reactConfig));
+  m_contextContainer->insert<std::weak_ptr<RNInstance>>(
+      "RNOH::RNInstance", weak_from_this());
 
   react::EventBeat::Factory eventBeatFactory =
       [taskExecutor = std::weak_ptr(taskExecutor),
