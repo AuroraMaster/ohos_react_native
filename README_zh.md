@@ -26,6 +26,7 @@
 > 如果是编译源码，在拉取工程后需要在工程的根目录执行`git submodule update --init --recursive`命令，拉取三方库依赖。
 
 1. 打开终端（命令行工具）并导航到react-native-harmony-cli目录，然后执行 `npm i && npm pack`。
+1. 在终端中导航到react-native-harmony目录，然后执行 `npm i && npm pack`。
 1. 在终端中导航到react-native-harmony-sample-package目录，然后执行 `npm i && npm pack`。
 1. 导航到tester目录，然后执行 `npm run i` （不是 npm i）。
 1. 在tester目录中运行 `npm start` 以启动Metro服务器。
