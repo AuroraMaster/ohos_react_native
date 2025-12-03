@@ -282,6 +282,8 @@ export class NetworkingTurboModule extends AnyThreadTurboModule {
         header: query.headers,
         extraData: extraData,
         timeout: query.timeout,
+        readTimeout: query.timeout,
+        connectTimeout: query.timeout,
         multiFormDataList: multiFormDataList,
         onReceiveProgress: onReceiveProgress,
         onSendProgress: onSendProgress,
