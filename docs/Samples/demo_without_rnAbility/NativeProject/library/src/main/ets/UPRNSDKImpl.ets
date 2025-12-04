@@ -59,11 +59,24 @@ export class UPRNSDKImpl {
   }
 
   public async onAppSetup(windowStage: window.WindowStage) {
-    const mainWindow = await windowStage.getMainWindow();
-    const onWindowSizeChange = (windowSize: window.Size) => {
-      this.rnInstancesCoordinator?.onWindowSizeChange(windowSize);
+    try {
+      const mainWindow = await windowStage.getMainWindow();
+      this.rnInstancesCoordinator?.setMainWindow(mainWindow);
+      const onWindowSizeChange = (windowSize: window.Size) => {
+        this.rnInstancesCoordinator?.onWindowSizeChange(windowSize)
+      }
+      const onWindowReactChange = (data: window.RectChangeOptions) => {
+        this.rnInstancesCoordinator?.onWindowRectChange(data)
+      }
+      const onWindowStageChange = (windowStageEvent: window.WindowStageEventType) => {
+        this.rnInstancesCoordinator?.onWindowStageChange(windowStageEvent)
+      }
+      mainWindow.on('windowSizeChange', onWindowSizeChange)
+      mainWindow.on('windowRectChange', onWindowReactChange)
+      windowStage.on('windowStageEvent', onWindowStageChange)
+    } catch (err) {
+      this.logger.error("Failed to setup window", JSON.stringify(err))
     }
-    mainWindow.on('windowSizeChange', onWindowSizeChange);
   }
 
   protected createLogger(): RNOHLogger {
