@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.72.103
+
+- Update documentation with version releases,([d246c950b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d246c950bb59eb88fad4b9cb5c8d4545b5cd1b77))
+- fix: values from animated props aren't set correctly after finishing animation with native driver, leading to wrong values in measure.,([b7075f51a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b7075f51a330733c59d67ccb44e6c969c047d7e0))
+- fix: Ensure buffer-loaded bundles passed to Hermes are null-terminated,([940268dae](https://gitcode.com/openharmony-sig/ohos_react_native/commit/940268dae1d3e73edc536a8afe32c618f7cb506d))
+- [chore]: updated to version 6.0.2.110(0.72.102),([ce6324426](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ce632442647b9e7fb53fd2d03ef3c5170d312437))
+
 ## 0.72.102
 
 - feat: Add API version 22 check,([258c98cd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/258c98cd04842960754692b495d214f78c5aa788))
