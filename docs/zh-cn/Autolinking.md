@@ -127,3 +127,61 @@ npm install <library-with-native-dependencies> --save
     - **excludeNpmPackages**：指定不执行 `Autolinking` 的三方库列表；
 
     - **includeNpmPackages**: 指定需要执行 `Autolinking` 的三方库列表。
+
+    添加完成后，会由hvigor插件配合@react-native-oh/react-native-harmony-cli自动完成以下文件的添加和内容修改：
+
+    - 新增RNOHPackagesFactory.ets、RNOHPackagesFactory.h和autolinking.cmake文件，用来完成so的链接和Package的注册。
+    - 在指定的oh-package.json5中添加依赖，完成har包的安装。
+
+3. 添加AutoLinking配置：
+<br>CMakeLists.txt文件中增加autolink配置：
+
+    ```ts
+    include("${CMAKE_CURRENT_SOURCE_DIR}/autolinking.cmake")
+    autolink_libraries(rnoh_app)
+    ```
+
+    PackageProvider.cpp文件中增加autolink配置：
+
+    - 导入RNOHPackagesFactory.h中的package对象；
+
+    - 合并手动link的package。
+  
+    ```cpp
+    #include "RNOH/PackageProvider.h"
+    #include "RNOHPackagesFactory.h"
+    ...
+
+    using namespace rnoh;
+
+    std::vector<std::shared_ptr<Package>> PackageProvider::getPackages(
+        Package::Context ctx) {
+      const std::vector<std::shared_ptr<Package>> ManualLinkingPackage = {
+        ...
+      }; // 手动link的package
+      auto packages = createRNOHPackages(ctx); // autolinking
+      for (const auto& pkg : ManualLinkingPackage) {
+        packages.push_back(pkg); // 逐一添加手动link的package
+      }
+      return packages;
+    }
+    ```
+
+    RNPackagesFactory.ets文件中增加autolink配置：
+
+    - 导入RNOHPackagesFactory.ets中的package对象；
+
+    - 合并手动link的package。
+
+    ```ts
+    import type { RNPackageContext, RNOHPackage } from '@rnoh/react-native-openharmony';
+    import { createRNOHPackages as createRNOHPackagesAutolinking } from "./RNOHPackagesFactory"
+
+    export function getRNOHPackages(ctx: RNPackageContext): RNOHPackage[] {
+      return [
+        ...createRNOHPackagesAutolinking(ctx),
+        // 添加手动link的package
+        // ...
+      ];
+    }
+    ```

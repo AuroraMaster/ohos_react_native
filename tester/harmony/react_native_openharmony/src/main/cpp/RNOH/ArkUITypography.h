@@ -231,7 +231,6 @@ class ArkUITypographyBuilder final {
   bool m_isInitTextAlign{};
   bool m_halfleading;
   std::string m_defaultFontFamilyName;
-  std::vector<OH_Drawing_PlaceholderSpan> m_placeholderSpan;
   
   size_t utf16Length(const std::string& str) {
   size_t len = 0;
@@ -396,6 +395,10 @@ class ArkUITypographyBuilder final {
     OH_ArkUI_StyledString_AddText(
         m_styledString.get(), fragment.string.c_str());
     m_fragmentLengths.emplace_back(utf16Length(fragment.string));
+    // Pop to clear style from stack, preventing attachments from inheriting it.
+    // If this function grows more complex (early returns, error handling), consider
+    // using RAII to guarantee `PopTextStyle` is called.
+    OH_ArkUI_StyledString_PopTextStyle(m_styledString.get());
   }
 
   void addAttachment(
@@ -412,7 +415,6 @@ class ArkUITypographyBuilder final {
     // push placeholder to handler
     OH_ArkUI_StyledString_AddPlaceholder(
         m_styledString.get(), &inlineView);
-    m_placeholderSpan.emplace_back(inlineView);
     m_attachmentCount++;
   }
 

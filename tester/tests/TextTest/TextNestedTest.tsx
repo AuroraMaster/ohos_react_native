@@ -5,7 +5,14 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import {StyleSheet, Text, TextStyle, TouchableOpacity, View} from 'react-native';
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TextStyle,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {TestSuite} from '@rnoh/testerino';
 import {TestCase} from '../../components';
 import {Button} from '../../components';
@@ -349,6 +356,24 @@ export function TextNestedTest() {
           expect(state).to.be.true;
         }}
       />
+      <TestCase.Example itShould="attachment does not inherit backgroundColor">
+        <Text>
+          <Text
+            style={{
+              fontSize: 14,
+              color: '#333',
+              backgroundColor: 'black',
+            }}>
+            美团外卖为您提供优质服务
+          </Text>
+          <Image
+            source={{
+              uri: 'https://p0.meituan.net/ingee/f438232c90d1b85f03ea6136196a78fe379.png',
+            }}
+            style={{width: 12, height: 12}}
+          />
+        </Text>
+      </TestCase.Example>
     </TestSuite>
   );
 }
@@ -437,7 +462,6 @@ const TextPressNestedTest = () => {
         style={{
           backgroundColor: 'lightblue',
           height: 250,
-
         }}>
         <Text
           style={{
