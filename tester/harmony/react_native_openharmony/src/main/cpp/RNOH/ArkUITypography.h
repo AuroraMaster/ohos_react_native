@@ -199,6 +199,7 @@ class ArkUITypographyBuilder final {
       m_textAlign = fragment.textAttributes.alignment;
       m_isInitTextAlign = true;
     }
+    m_fragmentLengths.emplace_back(utf16Length(fragment.string));
     if (!fragment.isAttachment()) {
       addTextFragment(fragment);
     } else {
@@ -394,7 +395,6 @@ class ArkUITypographyBuilder final {
         m_styledString.get(), textStyle.get());
     OH_ArkUI_StyledString_AddText(
         m_styledString.get(), fragment.string.c_str());
-    m_fragmentLengths.emplace_back(utf16Length(fragment.string));
     // Pop to clear style from stack, preventing attachments from inheriting it.
     // If this function grows more complex (early returns, error handling), consider
     // using RAII to guarantee `PopTextStyle` is called.

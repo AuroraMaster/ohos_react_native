@@ -356,6 +356,43 @@ export function TextNestedTest() {
           expect(state).to.be.true;
         }}
       />
+      <TestCase.Manual
+        itShould="pass after pressing area above the attachment"
+        initialState={false}
+        arrange={({setState, reset}) => {
+          return (
+            <NestedTextAttachmentTest
+              onPress={() => {
+                alert('text pressed');
+                setState(true);
+              }}
+              reset={reset}
+            />
+          );
+        }}
+        assert={({expect, state}) => {
+          expect(state).to.be.true;
+        }}
+      />
+      <TestCase.Manual
+        itShould="pass after pressing the last character"
+        initialState={false}
+        arrange={({setState, reset}) => {
+          return (
+            <NestedTextAttachmentTest
+              attachmentWidth={0}
+              onPress={() => {
+                alert('text pressed');
+                setState(true);
+              }}
+              reset={reset}
+            />
+          );
+        }}
+        assert={({expect, state}) => {
+          expect(state).to.be.true;
+        }}
+      />
       <TestCase.Example itShould="attachment does not inherit backgroundColor">
         <Text>
           <Text
@@ -522,6 +559,31 @@ const TextPressNestedTest = () => {
           <Text>{hasAttachment ? 'HasAttachment' : 'NoAttachment'}</Text>
         </TouchableOpacity>
       </View>
+    </View>
+  );
+};
+
+const NestedTextAttachmentTest = ({
+  attachmentWidth = 80,
+  onPress,
+  reset,
+}: {
+  attachmentWidth: number;
+  onPress: () => void;
+  reset: () => void;
+}) => {
+  return (
+    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+      <Text>
+        <Text style={{color: 'blue'}} onPress={onPress}>
+          Blue text
+          <View
+            style={{width: attachmentWidth, height: 1, backgroundColor: 'red'}}
+          />
+          Hello world
+        </Text>
+      </Text>
+      <Button label="Reset" onPress={reset} />
     </View>
   );
 };
