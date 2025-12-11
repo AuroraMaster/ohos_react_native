@@ -353,13 +353,10 @@ TextComponentInstance::getTouchTargetChildren() {
 
   auto const& fragments = m_state->getData().attributedString.getFragments();
 
-  auto attachmentCount = 0;
   std::vector<TouchTarget::Shared> result;
   for (auto const& fragment : fragments) {
-    if (!fragment.isAttachment()) {
-      result.push_back(
-          m_fragmentTouchTargetByTag.at(fragment.parentShadowView.tag));
-    }
+    result.push_back(
+        m_fragmentTouchTargetByTag.at(fragment.parentShadowView.tag));
   }
   result.insert(result.end(), m_children.begin(), m_children.end());
   return result;
@@ -397,9 +394,6 @@ void TextComponentInstance::updateFragmentTouchTargets(
   FragmentTouchTargetByTag touchTargetByTag;
   size_t textFragmentCount = 0;
   for (auto const& fragment : fragments) {
-    if (fragment.isAttachment()) {
-      continue;
-    }
     auto index = textFragmentCount;
     auto eventEmitter =
         std::dynamic_pointer_cast<const facebook::react::TouchEventEmitter>(
