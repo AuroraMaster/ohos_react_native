@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.72.104
+
+- [chore]: updated to version 6.0.2.120(0.72.103),([52d353d0d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/52d353d0d9bc38b068de4076f037bc9a123649b1))
+- fix: Invalid timeout issue for network request settings exceeding 60 seconds,([b9e8b3122](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b9e8b312282b426b2bf1f5df227329f7c2c2b9bc))
+- fix: initial screen size for Modal,([cda568a66](https://gitcode.com/openharmony-sig/ohos_react_native/commit/cda568a66743d1f2faf7dc88959634005f12e96d))
+- fix: measure with transform,([f53e662a4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f53e662a4978e8646dfb46d3ffec1f9b03ec8878))
+- fix: incorrect nested scroll behavior in the example with reanimated,([a78f02451](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a78f02451ebdaa944b3da8fc8a3d1d1030b61de7))
+
 ## 0.72.103
 
 - Update documentation with version releases,([d246c950b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d246c950bb59eb88fad4b9cb5c8d4545b5cd1b77))
