@@ -91,7 +91,7 @@ export abstract class RNAbility extends UIAbility {
   private rnInstancesCoordinator!: RNInstancesCoordinator
   private logger!: RNOHLogger
 
-  onCreate(want: Want) {
+  onCreate(want: Want, launchParam: AbilityConstant.LaunchParam) {
     this.logger = this.createLogger().clone("RNAbility")
     this.rnInstancesCoordinator = RNInstancesCoordinator.create({
       logger: this.createLogger(),

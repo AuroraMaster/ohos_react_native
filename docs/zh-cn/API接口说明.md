@@ -86,7 +86,7 @@ protected defaultBackPressHandler(): void
 #### onCreate
 
 ```typescript
-onCreate(want: Want): void
+onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void
 ```
 
 Create 状态为在应用加载过程中，`UIAbility` 实例创建完成时触发，系统会调用[onCreate()](https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/js-apis-app-ability-uiability-V5#uiabilityoncreate)回调。可以在该回调中进行页面初始化操作，例如变量定义资源加载等，用于后续的 UI 展示。
@@ -98,6 +98,7 @@ Create 状态为在应用加载过程中，`UIAbility` 实例创建完成时触�
 | 参数名 | 类型                                                         | 说明                       |
 | ------ | ------------------------------------------------------------ | -------------------------- |
 | want   | [Want](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/want-overview-V5) | 用于在应用组件之间传递信息。 |
+| launchParam   | [AbilityConstant.LaunchParam](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-app-ability-abilityconstant#launchparam) | 应用启动参数，包含应用启动原因、应用上次退出原因等。 |
 
 
 #### onCreateDefaultHttpClient

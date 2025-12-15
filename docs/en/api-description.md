@@ -87,7 +87,7 @@ Handles the back press event. This method is called when the React application d
 #### onCreate
 
 ```typescript
-onCreate(want: Want): void
+onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void
 ```
 
 Creates a UIAbility instance. The system calls the [onCreate()](https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-uiability-V5#uiabilityoncreate) callback. In this callback, you can perform page initialization operations, for example, defining variables or loading resources.
@@ -99,6 +99,7 @@ In this implementation, the `RNInstancesCoordinator` and `RNOHCoreContext` insta
 | Parameter| Type                                                        | Description                      |
 | ------ | ------------------------------------------------------------ | -------------------------- |
 | want   | [Want](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/want-overview-V5) | Used to transfer information between application components.|
+| launchParam   | [AbilityConstant.LaunchParam](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-app-ability-abilityconstant#launchparam) | Parameters for application launch, including the reason for application launch and the reason for the last application exit.|
 
 
 #### onCreateDefaultHttpClient
