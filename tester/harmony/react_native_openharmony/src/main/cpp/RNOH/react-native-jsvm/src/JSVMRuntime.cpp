@@ -109,9 +109,8 @@ Value JSVMRuntime::evaluateJavaScript(const std::shared_ptr<const Buffer> &buffe
       const uint8_t* data;
       size_t len;
       CALL_JSVM_AND_THROW(OH_JSVM_CreateCodeCache(env, *script, &data, &len));
-      // Memory leaks! OH_JSVM_ReleaseCache not available on NEXT-DB3
-      auto buffer = std::make_shared<std::vector<uint8_t>>(data, data + len);
-      UpdateCodeCache(name, *buffer);
+      UpdateCodeCache(name, {data, data + len});
+      CALL_JSVM_AND_THROW(OH_JSVM_ReleaseCache(env, data, JSVM_CACHE_TYPE_JS));
     }
 
     return JSVMConverter::JSVMToJsi(env, *result);
