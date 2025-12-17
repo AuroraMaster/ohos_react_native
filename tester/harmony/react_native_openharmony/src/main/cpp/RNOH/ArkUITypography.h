@@ -376,11 +376,11 @@ class ArkUITypographyBuilder final {
               int(fragment.textAttributes.fontWeight.value())));
     }
     std::vector<const char*> fontFamilies;
-    if (!m_defaultFontFamilyName.empty() && m_defaultFontFamilyName != "default") {
-      fontFamilies.emplace_back(m_defaultFontFamilyName.c_str());
-    }
     if (!fragment.textAttributes.fontFamily.empty()) {
       fontFamilies.emplace_back(fragment.textAttributes.fontFamily.c_str());
+    }
+    if (!m_defaultFontFamilyName.empty() && m_defaultFontFamilyName != "default") {
+      fontFamilies.emplace_back(m_defaultFontFamilyName.c_str());
     }
     if (fontFamilies.size() > 0) {
       OH_Drawing_SetTextStyleFontFamilies(textStyle.get(), fontFamilies.size(), fontFamilies.data());
