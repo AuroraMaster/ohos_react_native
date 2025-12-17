@@ -650,6 +650,11 @@ export function TextInputTest() {
         automatically move past the space after encountering one.">
         <TextInputBankCardNumber />
       </TestCase.Example>
+      <TestCase.Example
+        modal
+        itShould="the cursor position relative to the end does not change when typing quickly.">
+        <ChangeTextWithSetTimeout />
+      </TestCase.Example>
     </TestSuite>
   );
 }
@@ -1151,6 +1156,23 @@ const TextInputBankCardNumber = () => {
         style={styles.textInput}
         onChangeText={handleChangeText}
         value={value}
+      />
+    </View>
+  )
+}
+
+const ChangeTextWithSetTimeout = () => {
+  const [value, setValue] = useState('')
+  return (
+    <View>
+      <TextInput
+        value={value}
+        style={styles.textInput}
+        onChangeText={text => {
+          setTimeout(() => {
+            setValue(text)
+          })
+        }}
       />
     </View>
   )

@@ -13,6 +13,8 @@
 
 namespace rnoh {
 
+std::size_t charToByteIndex(const std::string& content, std::size_t position);
+
 class TextInputNodeBase : public ArkUINode {
  protected:
   TextInputNodeBase(const ArkUINode::Context::Shared& context, ArkUI_NodeType nodeType);

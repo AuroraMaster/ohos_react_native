@@ -14,6 +14,7 @@ static constexpr std::array TEXT_INPUT_NODE_EVENT_TYPES = {
     NODE_TEXT_INPUT_ON_PASTE,
     NODE_TEXT_INPUT_ON_CUT,
     NODE_TEXT_INPUT_ON_CHANGE,
+    NODE_TEXT_INPUT_ON_CHANGE_WITH_PREVIEW_TEXT,
     NODE_TEXT_INPUT_ON_SUBMIT,
     NODE_ON_FOCUS,
     NODE_ON_BLUR,
@@ -94,15 +95,10 @@ void TextInputNode::onNodeEvent(
     ArkUI_NodeEventType eventType,
     std::string_view eventString) {
   if (eventType == ArkUI_NodeEventType::NODE_TEXT_INPUT_ON_CHANGE) {
-    if (m_textInputNodeDelegate != nullptr) {
-      std::string text(eventString);
-      if (m_setTextContent == true && text==m_textContent){ //it does not trigger onChange when using setTextContent
-        m_setTextContent = false;
-      } else{
-        m_setTextContent = false;
-        m_textInputNodeDelegate->onChange(std::move(text));
-      }
-    }
+    // If your app requires a minimum API version of 15, you can delete this code,
+    // as changes to the input field will be handled via NODE_TEXT_INPUT_ON_CHANGE_WITH_PREVIEW_TEXT.
+    std::string text(eventString);
+    onChange(text);
   } else if (eventType == ArkUI_NodeEventType::NODE_TEXT_INPUT_ON_PASTE) {
     if (m_textInputNodeDelegate != nullptr) {
       m_textInputNodeDelegate->onPasteOrCut();
@@ -132,6 +128,30 @@ void TextInputNode::onNodeEvent(
     maybeThrow(OH_ArkUI_NodeEvent_SetReturnNumberValue(event, ret, 1));
     m_textInputNodeDelegate->onWillDelete(
         this, static_cast<int>(round(arkUiValues[0].f32)), arkUiValues[1].i32);
+  }
+  if (eventType == ArkUI_NodeEventType::NODE_TEXT_INPUT_ON_CHANGE_WITH_PREVIEW_TEXT) {
+    auto changeEvent = OH_ArkUI_NodeEvent_GetTextChangeEvent(event);
+    auto position = changeEvent->number;
+    std::string content(changeEvent->pStr);
+    std::string extendStr(changeEvent->pExtendStr);
+    
+    if (position >= 0) {
+      auto bytePos = charToByteIndex(content, position);
+      content.insert(bytePos, extendStr);
+    }
+    onChange(content, extendStr);
+  }
+}
+
+void TextInputNode::onChange(const std::string& text, const std::string& extendStr) {
+  if (m_textInputNodeDelegate != nullptr) {
+    if (m_setTextContent == true && text == m_textContent) {
+      // it does not trigger onChange when using setTextContent
+      m_setTextContent = false;
+    } else {
+      m_setTextContent = false;
+      m_textInputNodeDelegate->onChange(std::move(text), std::move(extendStr));
+    }
   }
 }
 
