@@ -330,11 +330,11 @@ void MountingManagerCAPI::finalizeMutationUpdates(
       }
     }
     if (componentInstance != nullptr) {
-      componentInstancesToFinalize.insert(componentInstance);
+      if (componentInstancesToFinalize.find(componentInstance) == componentInstancesToFinalize.end()) {
+        componentInstance->finalizeUpdates();
+        componentInstancesToFinalize.insert(componentInstance);
+      }
     }
-  }
-  for (const auto& componentInstance : componentInstancesToFinalize) {
-    componentInstance->finalizeUpdates();
   }
 }
 

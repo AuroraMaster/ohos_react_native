@@ -973,7 +973,7 @@ facebook::react::Float ScrollViewComponentInstance::adjustOffsetToRTL(
 facebook::react::Point ScrollViewComponentInstance::getScrollOffset() const {
   auto scrollOffset = m_scrollNode.getScrollOffset();
   scrollOffset.x = adjustOffsetToRTL(scrollOffset.x);
-  if (m_onPullToRefreshOffsetY.has_value()) {
+  if (m_onPullToRefreshOffsetY.has_value() && m_onPullToRefreshOffsetY.value()) {
     scrollOffset.y = m_onPullToRefreshOffsetY.value() * (-1);
   }
   return scrollOffset;
