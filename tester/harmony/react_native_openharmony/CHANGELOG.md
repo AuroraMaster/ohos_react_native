@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.72.105
+
+- [chore]: updated to version 6.0.2.130(0.72.104),([68e5a0535](https://gitcode.com/openharmony-sig/ohos_react_native/commit/68e5a0535d6a2d63eaa49d0441971831c804b766))
+- fix: include attachments in nested text touch targets,([60b944419](https://gitcode.com/openharmony-sig/ohos_react_native/commit/60b944419252c3d2efe8cbf42493add3d980ba44))
+- Attachments inherit text backgroundColor,([082fb6bc6](https://gitcode.com/openharmony-sig/ohos_react_native/commit/082fb6bc653335163ba699f0e6fb5629bd3a84e8))
+
 ## 0.72.104
 
 - [chore]: updated to version 6.0.2.120(0.72.103),([52d353d0d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/52d353d0d9bc38b068de4076f037bc9a123649b1))
@@ -171,9 +177,9 @@
 ## 0.72.83
 - fix:crash due to destruction on main thread,([1298e437](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1298e4371589dc8431cebb1312263e5092859680))
 - Improve the stability and abstraction of the API（72）.,([07ba8fba](https://gitcode.com/openharmony-sig/ohos_react_native/commit/07ba8fbaf0e74700553cca87f3af5ea420ec1f4b))
-- ​​fix: the issue where RNGH third-party library gestures are not working in RNSurface adaptive scenarios​.,([0531b718](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0531b718ec3cec2961d0bec8be5ea03cf51f1f48))
+- ​fix: the issue where RNGH third-party library gestures are not working in RNSurface adaptive scenarios​.,([0531b718](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0531b718ec3cec2961d0bec8be5ea03cf51f1f48))
 - fix: In the TextInput component, when entering a bank card number, the cursor does not automatically move past the space after encountering one.,([0e12e352](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0e12e35222c54d03a96f2fed820c9d72916433b9))
-- ​​fix the componentInstance null pointer issue​.,([f8f98fa0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f8f98fa09b559c3c091cbe747bbc7a9e7d4f16c6))
+- ​fix the componentInstance null pointer issue​.,([f8f98fa0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f8f98fa09b559c3c091cbe747bbc7a9e7d4f16c6))
 - fix: C TextInput/TextArea with negative lineHeight behave differently from ArkTS TextInput/TextArea,([68304199](https://gitcode.com/openharmony-sig/ohos_react_native/commit/6830419992dd145b232b02c23db6c29bf48ed0c4))
 - fix: If accessible={true}, then focusable={true}.,([a32caf3c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a32caf3c836044061c38d55222902dc4276e19a1))
 - [chore]: updated to version 6.0.0.500(0.72.81),([d869bdfb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d869bdfb098c8c0342608330292bb4d72f119df8))
@@ -197,7 +203,7 @@
 
 ## 0.72.77
 - fix: eventCount does not increase when pressing backspace with empty content in TextInput 72,([af5810eb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/af5810eb82bef54af99168d02eab22592cf63847))
-- fix:​​ Modal fails to appear on the right side when the RN page is displayed on the right in a Navigation split-screen layout.,([f3e9ce7b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f3e9ce7b0d1b7d649bf43ee0ec8a5a004493b84a))
+- fix: Modal fails to appear on the right side when the RN page is displayed on the right in a Navigation split-screen layout.,([f3e9ce7b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f3e9ce7b0d1b7d649bf43ee0ec8a5a004493b84a))
 - Fix: TextInput::onKeyPress doesn't get triggered when backspace is pressed in an empty TextInput,([30a08b05](https://gitcode.com/openharmony-sig/ohos_react_native/commit/30a08b05331061fc9dc675283ae1306692f1bc49))
 - chore: updated to version 6.0.0.401(0.72.76),([c87de53e](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c87de53e99a10f0be3932b288f8413ec85562fd4))
 
