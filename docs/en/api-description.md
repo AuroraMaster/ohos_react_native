@@ -87,7 +87,7 @@ Handles the back press event. This method is called when the React application d
 #### onCreate
 
 ```typescript
-onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void
+onCreate(want: Want, launchParam?: AbilityConstant.LaunchParam): void
 ```
 
 Creates a UIAbility instance. The system calls the [onCreate()](https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-uiability-V5#uiabilityoncreate) callback. In this callback, you can perform page initialization operations, for example, defining variables or loading resources.
