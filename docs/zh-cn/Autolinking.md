@@ -137,6 +137,8 @@ npm install <library-with-native-dependencies> --save
 <br>CMakeLists.txt文件中增加autolink配置：
 
     ```ts
+    # OH_MODULES_DIR根据实际路径修改
+    set(OH_MODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../oh_modules")  
     include("${CMAKE_CURRENT_SOURCE_DIR}/autolinking.cmake")
     autolink_libraries(rnoh_app)
     ```
