@@ -407,4 +407,8 @@ export class RNInstancesCoordinator {
       rnInstance.onNewWant(want.uri);
     })
   }
+
+  public updatePackagerClientConfig(config: JSPackagerClientConfig) {
+    this.jsPackagerClient.updateConnect(config);
+  }
 }

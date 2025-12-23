@@ -18,12 +18,14 @@ export interface JSPackagerClientConfig {
 export class JSPackagerClient {
   private webSocket: ReconnectingWebSocket;
   private logger: RNOHLogger;
+  private currentConfig: JSPackagerClientConfig;
 
   constructor(logger: RNOHLogger, private devToolsController: DevToolsController, private devMenu:DevMenu) {
     this.logger = logger.clone("JSPackagerClient");
   }
 
   public connectToMetroMessages(config: JSPackagerClientConfig) {
+    this.currentConfig = config;
     const url = this.buildUrl(config);
 
     const onMessage = (data) => {
@@ -57,5 +59,15 @@ export class JSPackagerClient {
 
   private buildUrl(config: JSPackagerClientConfig): string {
     return `ws://${config.host}:${config.port}/message`;
+  }
+
+  public updateConnect(config?: JSPackagerClientConfig) {
+    if (this.webSocket) {
+      this.webSocket.close()
+    }
+    const updateConfig = config ?? this.currentConfig;
+    if (updateConfig) {
+      this.connectToMetroMessages(updateConfig)
+    }
   }
 }

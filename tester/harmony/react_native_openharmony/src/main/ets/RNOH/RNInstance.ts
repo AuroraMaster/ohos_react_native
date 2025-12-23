@@ -34,6 +34,7 @@ import { WorkerThread } from "./WorkerThread"
 import font from "@ohos.font"
 import { common } from '@kit.AbilityKit'
 import { emitter } from '@kit.BasicServicesKit';
+import type { JSPackagerClientConfig } from './JSPackagerClient'
 
 export type Resource = Exclude<font.FontOptions["familySrc"], string>
 
@@ -88,6 +89,10 @@ export type StageChangeEventArgsByEventName = {
 
 
 export type BundleExecutionStatus = "RUNNING" | "DONE"
+
+interface RNInstancesCoordinator {
+  updatePackagerClientConfig: (config: JSPackagerClientConfig) => void;
+}
 
 const rootDescriptor = {
   isDynamicBinder: false,
@@ -904,6 +909,12 @@ export class RNInstanceImpl implements RNInstance {
         this.callRNFunction("HMRClient", "setup",
           ["harmony", hotReloadConfig.bundleEntry, hotReloadConfig.host, hotReloadConfig.port, true])
         this.logger.info("Configured hot reloading")
+        const updateConfig = {
+          host: hotReloadConfig.host,
+          port: hotReloadConfig.port
+        }
+        const curInstancesCoordinator = AppStorage.get('RNInstancesCoordinator') as RNInstancesCoordinator;
+        curInstancesCoordinator?.updatePackagerClientConfig(updateConfig)
       }
       const isRemoteBundle = bundleURL.startsWith("http")
       if (this.shouldEnableDebugger && isRemoteBundle) {

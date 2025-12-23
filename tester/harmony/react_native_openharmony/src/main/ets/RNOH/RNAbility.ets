@@ -109,6 +109,7 @@ export abstract class RNAbility extends UIAbility {
       } : undefined,
       defaultHttpClient: this.onCreateDefaultHttpClient()
     })
+    AppStorage.setOrCreate('RNInstancesCoordinator', this.rnInstancesCoordinator)
     AppStorage.setOrCreate('RNOHCoreContext', this.rnInstancesCoordinator.getRNOHCoreContext())
   }
 
