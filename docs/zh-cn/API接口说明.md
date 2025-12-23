@@ -86,7 +86,7 @@ protected defaultBackPressHandler(): void
 #### onCreate
 
 ```typescript
-onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void
+onCreate(want: Want, launchParam?: AbilityConstant.LaunchParam): void
 ```
 
 Create 状态为在应用加载过程中，`UIAbility` 实例创建完成时触发，系统会调用[onCreate()](https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/js-apis-app-ability-uiability-V5#uiabilityoncreate)回调。可以在该回调中进行页面初始化操作，例如变量定义资源加载等，用于后续的 UI 展示。

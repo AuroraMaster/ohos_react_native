@@ -641,8 +641,12 @@ void NativeAnimatedTurboModule::handleComponentEvent(
     std::string const& eventName,
     folly::dynamic payload) {
   auto lock = acquireLock();
-  auto propUpdates =
-      m_animatedNodesManager.handleEvent(tag, eventName, payload);
-  setNativeProps(propUpdates);
+  try {
+    auto propUpdates =
+        m_animatedNodesManager.handleEvent(tag, eventName, payload);
+    setNativeProps(propUpdates);
+  } catch (std::exception& e) {
+    LOG(ERROR) << "handleEvent Error in animation update: " << e.what();
+  }
 }
 } // namespace rnoh
