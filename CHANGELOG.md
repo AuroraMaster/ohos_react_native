@@ -1,5 +1,15 @@
 # Changelog
 
+## 6.0.2.150
+
+- [chore]: updated to version 6.0.2.140(0.72.105),([ce019df78](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ce019df78a9f425373899e838c7759f244b3bbd4))
+- Priority replacement for Unicode in font matching.,([828a8d870](https://gitcode.com/openharmony-sig/ohos_react_native/commit/828a8d870257d87f82e0923cc16c3881e3739f40))
+- feat: Optimize calls to finalizeMutationUpdates method,([ea555a954](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ea555a954bd0ea7974d0bf82c86580d6d21e4b2f))
+- fix: When ScrollView is used in conjunction with pullfresh, if you pull down for the first time and then scroll down again, it will not reach the top,([d84798db5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d84798db5d348f486a9b7230cb9c0bf0ea90294a))
+- fix: the cursor jumping issue.,([72a5769fb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/72a5769fb1cdc90f7d8cdb97931b33273d81aafa))
+- fix: jsvm code cache leak,([da12e3a5b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/da12e3a5bba1308341c64f6865c7074421f4e096))
+- fix: Add the launchParam parameter in the onCreate of RNAbility.,([866d7268c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/866d7268ca5918ffa721c5f505d27ab926dd8f71))
+
 ## 6.0.2.140
 
 - [chore]: updated to version 6.0.2.130(0.72.104),([68e5a0535](https://gitcode.com/openharmony-sig/ohos_react_native/commit/68e5a0535d6a2d63eaa49d0441971831c804b766))
@@ -211,10 +221,10 @@
 - fix:crash due to destruction on main thread,([1298e437](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1298e4371589dc8431cebb1312263e5092859680))
 - Improve the stability and abstraction of the API（72）.,([07ba8fba](https://gitcode.com/openharmony-sig/ohos_react_native/commit/07ba8fbaf0e74700553cca87f3af5ea420ec1f4b))
 - [doc]: improve 3 documents.,([46f24236](https://gitcode.com/openharmony-sig/ohos_react_native/commit/46f242364140c6f949c3ab58a336c755de7957c0))
-- ​fix: the issue where RNGH third-party library gestures are not working in RNSurface adaptive scenarios​.,([0531b718](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0531b718ec3cec2961d0bec8be5ea03cf51f1f48))
+- fix: the issue where RNGH third-party library gestures are not working in RNSurface adaptive scenarios​.,([0531b718](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0531b718ec3cec2961d0bec8be5ea03cf51f1f48))
 - chore: modify metro version,([4680ee90](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4680ee906fbfde30f43af45c6b2634bf59fcf3d6))
 - fix: In the TextInput component, when entering a bank card number, the cursor does not automatically move past the space after encountering one.,([0e12e352](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0e12e35222c54d03a96f2fed820c9d72916433b9))
-- ​fix the componentInstance null pointer issue​.,([f8f98fa0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f8f98fa09b559c3c091cbe747bbc7a9e7d4f16c6))
+- fix the componentInstance null pointer issue​.,([f8f98fa0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f8f98fa09b559c3c091cbe747bbc7a9e7d4f16c6))
 - fix: C TextInput/TextArea with negative lineHeight behave differently from ArkTS TextInput/TextArea,([68304199](https://gitcode.com/openharmony-sig/ohos_react_native/commit/6830419992dd145b232b02c23db6c29bf48ed0c4))
 - fix: If accessible={true}, then focusable={true}.,([a32caf3c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a32caf3c836044061c38d55222902dc4276e19a1))
 - [chore]: updated to version 6.0.0.500(0.72.81),([d869bdfb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d869bdfb098c8c0342608330292bb4d72f119df8))
