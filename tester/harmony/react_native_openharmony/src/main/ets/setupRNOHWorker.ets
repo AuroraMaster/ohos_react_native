@@ -18,7 +18,6 @@ import {
   RNOHError,
   WorkerRNInstanceInternal,
   WorkerTurboModule,
-  SafeAreaInsetsProvider,
   AnyThreadTurboModule,
 } from "./RNOH/ts"
 import { RNOHCorePackage } from "./RNOHCorePackage/Package"
@@ -186,7 +185,6 @@ export async function setupRNOHWorker(config: RNOHWorkerConfig) {
                   rnInstance,
                   httpClient: rnInstanceConfig.httpClient ?? new DefaultHttpClient({ logger: workerLogger }),
                   caPathProvider: rnInstanceConfig.caPathProvider ?? ((url: string) => ''),
-                  safeAreaInsetsProvider: new SafeAreaInsetsProvider(uiAbilityContext),
                   launchUri
                 },
                 uiTaskRunner: uiTaskRunner

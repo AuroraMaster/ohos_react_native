@@ -106,7 +106,7 @@ export class RNOHCoreContext {
 
   dispatchBackPress(): void {
     this._rnohCoreContextDeps.rnInstanceRegistry.forEach(rnInstance =>
-    rnInstance.onBackPress(),
+      rnInstance.onBackPress(),
     );
   }
 
@@ -289,7 +289,6 @@ export interface AnyThreadTurboModuleContext {
   rnInstance: AnyThreadRNInstance;
   httpClient: HttpClient;
   caPathProvider: CAPathProvider;
-  safeAreaInsetsProvider: SafeAreaInsetsProvider;
   launchUri?: string;
 }
 
@@ -298,7 +297,7 @@ export interface AnyThreadTurboModuleContext {
  */
 export class UITurboModuleContext
   extends RNOHContext
-implements AnyThreadTurboModuleContext {
+  implements AnyThreadTurboModuleContext {
   constructor(rnohContext: RNOHContext) {
     super(rnohContext._rnohContextDeps);
   }
@@ -324,7 +323,6 @@ export type WorkerTurboModuleContextDependencies = {
   rnInstance: WorkerRNInstance;
   httpClient: HttpClient;
   caPathProvider: CAPathProvider;
-  safeAreaInsetsProvider: SafeAreaInsetsProvider;
   launchUri?: string;
 };
 
@@ -358,10 +356,6 @@ export class WorkerTurboModuleContext implements AnyThreadTurboModuleContext {
 
   get caPathProvider() {
     return this._workerTurboModuleContextDeps.caPathProvider;
-  }
-
-  get safeAreaInsetsProvider() {
-    return this._workerTurboModuleContextDeps.safeAreaInsetsProvider;
   }
 
   get launchUri(): string | undefined {
