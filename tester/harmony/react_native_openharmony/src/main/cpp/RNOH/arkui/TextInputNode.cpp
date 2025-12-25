@@ -150,6 +150,7 @@ void TextInputNode::onChange(const std::string& text, const std::string& extendS
       m_setTextContent = false;
     } else {
       m_setTextContent = false;
+      m_textInputNodeDelegate->onChange(std::move(text));
       m_textInputNodeDelegate->onChange(std::move(text), std::move(extendStr));
     }
   }

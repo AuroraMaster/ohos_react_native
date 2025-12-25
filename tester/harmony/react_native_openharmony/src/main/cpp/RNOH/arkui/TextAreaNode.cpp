@@ -154,6 +154,7 @@ void TextAreaNode::onChange(const std::string& text, const std::string& extendSt
       m_setTextContent = false;
     } else {
       m_setTextContent = false;
+      m_textAreaNodeDelegate->onChange(std::move(text));
       m_textAreaNodeDelegate->onChange(std::move(text), std::move(extendStr));
     }
   }
