@@ -152,15 +152,15 @@ npm install <library-with-native-dependencies> --save
     ```cpp
     #include "RNOH/PackageProvider.h"
     #include "RNOHPackagesFactory.h"
-    // ...
+    // ... 如果之前有手动链接的库，在这里引入
 
     using namespace rnoh;
 
     std::vector<std::shared_ptr<Package>> PackageProvider::getPackages(
         Package::Context ctx) {
       const std::vector<std::shared_ptr<Package>> ManualLinkingPackage = {
-        // ...
-      }; // 手动link的package
+        // ... 如果之前有手动link的package，放在这里
+      }; 
       auto packages = createRNOHPackages(ctx); // autolinking
       for (const auto& pkg : ManualLinkingPackage) {
         packages.push_back(pkg); // 逐一添加手动link的package
