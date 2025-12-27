@@ -22,6 +22,11 @@ if(DEFINED PACKAGE_FIND_FILE)
   include(${PACKAGE_FIND_FILE})
 endif()
 
+if(PARALLELIZATION_ENABLE)
+  message("PARALLELIZATION OPTIMIZATION is enabled!")
+  add_compile_definitions(PARALLELIZATION_ON)
+endif()
+
 add_compile_options("-Wno-error=unused-command-line-argument")
 
 include_directories(${NATIVERENDER_ROOT_PATH}
@@ -567,9 +572,4 @@ endif()
 
 if(ALL_CONTAINERS_CLICKABLE)
   target_compile_definitions(rnoh PUBLIC ALL_CONTAINERS_CLICKABLE)
-endif()
-
-if(PARALLELIZATION_ENABLE)
-  message("PARALLELIZATION OPTIMIZATION is enabled!")
-  target_compile_definitions(rnoh PUBLIC PARALLELIZATION_ON)
 endif()

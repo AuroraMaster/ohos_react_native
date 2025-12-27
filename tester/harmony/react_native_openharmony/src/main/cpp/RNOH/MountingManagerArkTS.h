@@ -56,7 +56,7 @@ class MountingManagerArkTS final : public MountingManager {
 
   void didMount(MutationList const& mutations) override;
     
-  void handleMutation(Mutation const& mutation) {}
+  void handleMutation(Mutation const& mutation) override {}
 
   void finalizeMutationUpdates(MutationList const& mutations) override;
 
