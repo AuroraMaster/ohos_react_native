@@ -20,13 +20,15 @@
 
 #include "bindingUtils.h"
 // RNOH patch begin
-#include "ffrt/cpp/pattern/job_partner.h"
+#ifdef PARALLELIZATION_ON
+#include <ffrt/cpp/pattern/job_partner.h>
 #include "RNOH/FFRTConfig.h"
 inline auto g_prehot = ffrt::submit_h(
     [] {},
     {},
     {},
     ffrt::task_attr().name("prehot").qos(ffrt::qos_user_initiated));
+#endif
 // RNOH patch end
 
 namespace facebook::react {
@@ -216,7 +218,8 @@ jsi::Value UIManagerBinding::get(
           }
         });
   }
-  // RNOH patch begin
+// RNOH patch begin
+#ifdef PARALLELIZATION_ON
   if (methodName == "batchCreateNode") {
     return jsi::Function::createFromHostFunction(
         runtime,
@@ -267,162 +270,154 @@ jsi::Value UIManagerBinding::get(
           auto pnode = jsi::String::createFromAscii(runtime, "node");
           auto pcobj = jsi::String::createFromAscii(runtime, "cobj");
 
-          constexpr bool test_flame =
-              false; // [opt] switch for profiling flame graph by repeating 1000 times
-                auto job_partner =
-                    ffrt::job_partner<rnoh::ScenarioID::SHADOW_TREE_PARALLELIZATION>::get_partner_of_this_thread(
-                        ffrt::job_partner_attr()
-                            .max_parallelism(rnoh::MAX_THREAD_NUM_SHADOW_TREE)
-                            .qos(rnoh::THREAD_PRIORITY_LEVEL_5));
+          auto job_partner =
+              ffrt::job_partner<rnoh::ScenarioID::SHADOW_TREE_PARALLELIZATION>::get_partner_of_this_thread(
+                  ffrt::job_partner_attr()
+                      .max_parallelism(rnoh::MAX_THREAD_NUM_SHADOW_TREE)
+                      .qos(rnoh::THREAD_PRIORITY_LEVEL_5));
 
-          for (size_t ii = 0; ii < (test_flame ? 1000 : 1); ++ii) {
-            constexpr uint64_t GROUP_NUM = 2; // [opt] switch for number of groups
-            constexpr uint64_t GROUP_NUM2 = 100; // [opt] switch for number of subgroups
-            constexpr uint64_t stack_size = 32 * 1024;
-            static std::array<char, stack_size> stack[GROUP_NUM * GROUP_NUM2];
-
-            uint64_t group = (arrayLength + GROUP_NUM - 1) / GROUP_NUM;
-            {
-              SystraceSection s(
-                  "UIManagerBinding::batchCreateNode:", arrayLength);
-              size_t ijob = 0;
-              for (size_t i = 0; i < arrayLength; ++i) {
-                auto nodeParamObj = nodeParamsArray.getValueAtIndex(runtime, i)
-                                        .getObject(runtime);
-                nodes.emplace_back(nodeParamObj.getProperty(runtime, pnode)
-                                       .getObject(runtime));
-                auto tag =
-                    tagFromValue(nodeParamObj.getProperty(runtime, ptag));
-                params.emplace_back(
-                    tag,
-                    stringFromValue(
-                        runtime,
-                        nodeParamObj.getProperty(runtime, puiViewClassName)),
-                    surfaceIdFromValue(
-                        runtime,
-                        nodeParamObj.getProperty(runtime, prenderLanes)),
-                    std::make_shared<RawProps>(
-                        runtime,
-                        nodeParamObj.getProperty(runtime, pupdatePayload)),
-                    eventTargetFromValue(
-                        runtime,
-                        nodeParamObj.getProperty(runtime, pworkInProgress),
-                        tag));
-                auto p = &params[i];
-                if (!p->eventTarget) {
-                  react_native_assert(false);
-                  return jsi::Value::undefined();
-                }
-
-                // Handle small scale directly
-                if (arrayLength < GROUP_NUM * GROUP_NUM2) {
-                  auto sn = uiManager->createNode(
-                      p->tag,
-                      p->name,
-                      p->surfaceId,
-                      *p->rawProps,
-                      p->eventTarget);
-                  nodes[i].setProperty(
-                      runtime, pcobj, valueFromShadowNode(runtime, sn));
-                  continue;
-                }
-
-                if ((i % group) == (group - 1) || i == (arrayLength - 1)) {
-                  job_partner->submit(
-                      [&runtime,
-                       &params,
-                       &nodes,
-                       &pcobj,
-                       uiManager,
-                       i,
-                       group,
-                       &job_partner,
-                       stack_base = &stack[ijob * GROUP_NUM2]] {
-                        auto istart = i / group * group;
-                        auto num = i - istart + 1;
-                        uint64_t group2 = (num + GROUP_NUM2 - 1) /
-                            GROUP_NUM2; // Number of calculations per group
-                        uint64_t group_num2 =
-                            (num + group2 - 1) / group2; // Actual number of groups
-
-                        // Assign the first group_num2 - 1 groups to others
-                        for (uint64_t g2 = 0; g2 < group_num2 - 1; g2++) {
-                          job_partner->submit(
-                              [&runtime,
-                               &params,
-                               &nodes,
-                               &pcobj,
-                               uiManager,
-                               istart,
-                               g2,
-                               group2,
-                               &job_partner] {
-                                auto is = istart + g2 * group2;
-                                for (uint64_t j = is; j < is + group2; j++) {
-                                  auto p = &params[j];
-                                  auto sn = uiManager->createNode(
-                                      p->tag,
-                                      p->name,
-                                      p->surfaceId,
-                                      *p->rawProps,
-                                      p->eventTarget);
-                                  auto& node = nodes[j];
-                                  if (job_partner->this_thread_is_master()) {
+          constexpr uint64_t GROUP_NUM = 2; // [opt] switch for number of groups
+          constexpr uint64_t GROUP_NUM2 = 100; // [opt] switch for number of subgroups
+          constexpr uint64_t stack_size = 32 * 1024;
+          static std::array<char, stack_size> stack[GROUP_NUM * GROUP_NUM2];
+          uint64_t group = (arrayLength + GROUP_NUM - 1) / GROUP_NUM;
+          {
+            SystraceSection s(
+                "UIManagerBinding::batchCreateNode:", arrayLength);
+            size_t ijob = 0;
+            for (size_t i = 0; i < arrayLength; ++i) {
+              auto nodeParamObj = nodeParamsArray.getValueAtIndex(runtime, i)
+                                      .getObject(runtime);
+              nodes.emplace_back(nodeParamObj.getProperty(runtime, pnode)
+                                     .getObject(runtime));
+              auto tag =
+                  tagFromValue(nodeParamObj.getProperty(runtime, ptag));
+              params.emplace_back(
+                  tag,
+                  stringFromValue(
+                      runtime,
+                      nodeParamObj.getProperty(runtime, puiViewClassName)),
+                  surfaceIdFromValue(
+                      runtime,
+                      nodeParamObj.getProperty(runtime, prenderLanes)),
+                  std::make_shared<RawProps>(
+                      runtime,
+                      nodeParamObj.getProperty(runtime, pupdatePayload)),
+                  eventTargetFromValue(
+                      runtime,
+                      nodeParamObj.getProperty(runtime, pworkInProgress),
+                      tag));
+              auto p = &params[i];
+              if (!p->eventTarget) {
+                react_native_assert(false);
+                return jsi::Value::undefined();
+              }
+              // Handle small scale directly
+              if (arrayLength < GROUP_NUM * GROUP_NUM2) {
+                auto sn = uiManager->createNode(
+                    p->tag,
+                    p->name,
+                    p->surfaceId,
+                    *p->rawProps,
+                    p->eventTarget);
+                nodes[i].setProperty(
+                    runtime, pcobj, valueFromShadowNode(runtime, sn));
+                continue;
+              }
+              if ((i % group) == (group - 1) || i == (arrayLength - 1)) {
+                job_partner->submit(
+                    [&runtime,
+                     &params,
+                     &nodes,
+                     &pcobj,
+                     uiManager,
+                     i,
+                     group,
+                     &job_partner,
+                     stack_base = &stack[ijob * GROUP_NUM2]] {
+                      auto istart = i / group * group;
+                      auto num = i - istart + 1;
+                      uint64_t group2 = (num + GROUP_NUM2 - 1) /
+                          GROUP_NUM2; // Number of calculations per group
+                      uint64_t group_num2 =
+                          (num + group2 - 1) / group2; // Actual number of groups
+                      // Assign the first group_num2 - 1 groups to others
+                      for (uint64_t g2 = 0; g2 < group_num2 - 1; g2++) {
+                        job_partner->submit(
+                            [&runtime,
+                             &params,
+                             &nodes,
+                             &pcobj,
+                             uiManager,
+                             istart,
+                             g2,
+                             group2,
+                             &job_partner] {
+                              auto is = istart + g2 * group2;
+                              for (uint64_t j = is; j < is + group2; j++) {
+                                auto p = &params[j];
+                                auto sn = uiManager->createNode(
+                                    p->tag,
+                                    p->name,
+                                    p->surfaceId,
+                                    *p->rawProps,
+                                    p->eventTarget);
+                                auto& node = nodes[j];
+                                if (job_partner->this_thread_is_master()) {
+                                  node.setProperty(
+                                      runtime,
+                                      pcobj,
+                                      valueFromShadowNode(runtime, sn));
+                                } else
+                                  job_partner->submit_to_master([&] {
                                     node.setProperty(
                                         runtime,
                                         pcobj,
                                         valueFromShadowNode(runtime, sn));
-                                  } else
-                                    job_partner->submit_to_master([&] {
-                                      node.setProperty(
-                                          runtime,
-                                          pcobj,
-                                          valueFromShadowNode(runtime, sn));
-                                    });
-                                }
-                              },
-                              &stack_base[g2 + 1],
-                              stack_size);
-                        }
-
-                        // Process the last group in this thread（JS）
-                        auto is = istart + (group_num2 - 1) * group2;
-                        for (uint64_t j = is; j <= i; j++) {
-                          auto p = &params[j];
-                          auto sn = uiManager->createNode(
-                              p->tag,
-                              p->name,
-                              p->surfaceId,
-                              *p->rawProps,
-                              p->eventTarget);
-                          auto& node = nodes[j];
-                          if (job_partner->this_thread_is_master()) {
+                                  });
+                              }
+                            },
+                            &stack_base[g2 + 1],
+                            stack_size);
+                      }
+                      // Process the last group in this thread（JS）
+                      auto is = istart + (group_num2 - 1) * group2;
+                      for (uint64_t j = is; j <= i; j++) {
+                        auto p = &params[j];
+                        auto sn = uiManager->createNode(
+                            p->tag,
+                            p->name,
+                            p->surfaceId,
+                            *p->rawProps,
+                            p->eventTarget);
+                        auto& node = nodes[j];
+                        if (job_partner->this_thread_is_master()) {
+                          node.setProperty(
+                              runtime,
+                              pcobj,
+                              valueFromShadowNode(runtime, sn));
+                        } else
+                          job_partner->submit_to_master([&] {
                             node.setProperty(
                                 runtime,
                                 pcobj,
                                 valueFromShadowNode(runtime, sn));
-                          } else
-                            job_partner->submit_to_master([&] {
-                              node.setProperty(
-                                  runtime,
-                                  pcobj,
-                                  valueFromShadowNode(runtime, sn));
-                            });
-                        }
-                      },
-                      &stack[ijob * GROUP_NUM2],
-                      stack_size);
-                  ijob++;
-                }
+                          });
+                      }
+                    },
+                    &stack[ijob * GROUP_NUM2],
+                    stack_size);
+                ijob++;
               }
-              job_partner->wait();
             }
+            job_partner->wait();
           }
 
           return jsi::Value::undefined();
         });
   }
-  // RNOH patch end
+#endif
+// RNOH patch end
   // Semantic: Clones the node with *same* props and *same* children.
   if (methodName == "cloneNode") {
     return jsi::Function::createFromHostFunction(
@@ -440,42 +435,7 @@ jsi::Value UIManagerBinding::get(
                   *shadowNodeFromValue(runtime, arguments[0])));
         });
   }
-  // RNOH patch begin
-  if (methodName == "batchCloneNode") {
-    return jsi::Function::createFromHostFunction(
-        runtime,
-        name,
-        1,
-        [uiManager](
-            jsi::Runtime& runtime,
-            jsi::Value const& /*thisValue*/
-            ,
-            jsi::Value const* arguments,
-            size_t /*count*/) noexcept -> jsi::Value {
-          SystraceSection s("UIManagerBinding::batchCloneNode");
-          auto tagPairsArray = arguments[0].asObject(runtime).asArray(runtime);
-          size_t arrayLength = tagPairsArray.length(runtime);
-          std::vector<jsi::Object> nodes;
-          nodes.reserve(arrayLength);
-          auto poldProps = jsi::String::createFromAscii(runtime, "oldProps");
-          auto pnode = jsi::String::createFromAscii(runtime, "node");
-          auto pcobj = jsi::String::createFromAscii(runtime, "cobj");
 
-          for (size_t i = 0; i < arrayLength; ++i) {
-            auto tagPairObj =
-                tagPairsArray.getValueAtIndex(runtime, i).getObject(runtime);
-            nodes.emplace_back(
-                tagPairObj.getProperty(runtime, pnode).getObject(runtime));
-            auto oldProps = shadowNodeFromValue(
-                runtime, tagPairObj.getProperty(runtime, poldProps));
-            auto sn = uiManager->cloneNode(*oldProps);
-            nodes[i].setProperty(
-                runtime, pcobj, valueFromShadowNode(runtime, sn));
-          }
-          return jsi::Value::undefined();
-        });
-  }
-  // RNOH patch end
   if (methodName == "setIsJSResponder") {
     return jsi::Function::createFromHostFunction(
         runtime,
@@ -543,43 +503,7 @@ jsi::Value UIManagerBinding::get(
                   ShadowNode::emptySharedShadowNodeSharedList()));
         });
   }
-  // RNOH patch begin
-  if (methodName == "batchCloneNodeWithNewChildren") {
-    return jsi::Function::createFromHostFunction(
-        runtime,
-        name,
-        1,
-        [uiManager](
-            jsi::Runtime& runtime,
-            jsi::Value const& /*thisValue*/
-            ,
-            jsi::Value const* arguments,
-            size_t /*count*/) noexcept -> jsi::Value {
-          SystraceSection s("UIManagerBinding::batchCloneNodeWithNewChildren");    
-          auto tagPairsArray = arguments[0].asObject(runtime).asArray(runtime);
-          size_t arrayLength = tagPairsArray.length(runtime);
-          std::vector<jsi::Object> nodes;
-          nodes.reserve(arrayLength);
-          auto poldProps = jsi::String::createFromAscii(runtime, "oldProps");
-          auto pnode = jsi::String::createFromAscii(runtime, "node");
-          auto pcobj = jsi::String::createFromAscii(runtime, "cobj");
 
-          for (size_t i = 0; i < arrayLength; ++i) {
-            auto tagPairObj =
-                tagPairsArray.getValueAtIndex(runtime, i).getObject(runtime);
-            nodes.emplace_back(
-                tagPairObj.getProperty(runtime, pnode).getObject(runtime));
-            auto oldProps = shadowNodeFromValue(
-                runtime, tagPairObj.getProperty(runtime, poldProps));
-            auto sn = uiManager->cloneNode(
-                *oldProps, ShadowNode::emptySharedShadowNodeSharedList());
-            nodes[i].setProperty(
-                runtime, pcobj, valueFromShadowNode(runtime, sn));
-          }
-          return jsi::Value::undefined();
-        });
-  }
-  // RNOH patch end
   // Semantic: Clones the node with *given* props and *same* children.
   if (methodName == "cloneNodeWithNewProps") {
     return jsi::Function::createFromHostFunction(
@@ -600,45 +524,7 @@ jsi::Value UIManagerBinding::get(
                   &rawProps));
         });
   }
-  // RNOH patch begin
-  if (methodName == "batchCloneNodeWithNewProps") {
-    return jsi::Function::createFromHostFunction(
-        runtime,
-        name,
-        1,
-        [uiManager](
-            jsi::Runtime& runtime,
-            jsi::Value const& /*thisValue*/
-            ,
-            jsi::Value const* arguments,
-            size_t /*count*/) noexcept -> jsi::Value {
-          SystraceSection s("UIManagerBinding::batchCloneNodeWithNewProps");
-          auto tagPairsArray = arguments[0].asObject(runtime).asArray(runtime);
-          size_t arrayLength = tagPairsArray.length(runtime);
-          std::vector<jsi::Object> nodes;
-          nodes.reserve(arrayLength);
-          auto poldProps = jsi::String::createFromAscii(runtime, "oldProps");
-          auto pnewProps = jsi::String::createFromAscii(runtime, "newProps");
-          auto pnode = jsi::String::createFromAscii(runtime, "node");
-          auto pcobj = jsi::String::createFromAscii(runtime, "cobj");
 
-          for (size_t i = 0; i < arrayLength; ++i) {
-            auto tagPairObj =
-                tagPairsArray.getValueAtIndex(runtime, i).getObject(runtime);
-            nodes.emplace_back(
-                tagPairObj.getProperty(runtime, pnode).getObject(runtime));
-            auto oldProps = shadowNodeFromValue(
-                runtime, tagPairObj.getProperty(runtime, poldProps));
-            auto newProps =
-                RawProps(runtime, tagPairObj.getProperty(runtime, pnewProps));
-            auto sn = uiManager->cloneNode(*oldProps, nullptr, &newProps);
-            nodes[i].setProperty(
-                runtime, pcobj, valueFromShadowNode(runtime, sn));
-          }
-          return jsi::Value::undefined();
-        });
-  }
-  // RNOH patch end
   // Semantic: Clones the node with *given* props and *empty* children.
   if (methodName == "cloneNodeWithNewChildrenAndProps") {
     return jsi::Function::createFromHostFunction(
@@ -659,49 +545,7 @@ jsi::Value UIManagerBinding::get(
                   &rawProps));
         });
   }
-  // RNOH patch begin
-  if (methodName == "batchCloneNodeWithNewChildrenAndProps") {
-    return jsi::Function::createFromHostFunction(
-        runtime,
-        name,
-        1,
-        [uiManager](
-            jsi::Runtime& runtime,
-            jsi::Value const& /*thisValue*/
-            ,
-            jsi::Value const* arguments,
-            size_t /*count*/) noexcept -> jsi::Value {
-          SystraceSection s(
-              "UIManagerBinding::batchCloneNodeWithNewChildrenAndProps");
-          auto tagPairsArray = arguments[0].asObject(runtime).asArray(runtime);
-          size_t arrayLength = tagPairsArray.length(runtime);
-          std::vector<jsi::Object> nodes;
-          nodes.reserve(arrayLength);
-          auto poldProps = jsi::String::createFromAscii(runtime, "oldProps");
-          auto pnewProps = jsi::String::createFromAscii(runtime, "newProps");
-          auto pnode = jsi::String::createFromAscii(runtime, "node");
-          auto pcobj = jsi::String::createFromAscii(runtime, "cobj");
 
-          for (size_t i = 0; i < arrayLength; ++i) {
-            auto tagPairObj =
-                tagPairsArray.getValueAtIndex(runtime, i).getObject(runtime);
-            nodes.emplace_back(
-                tagPairObj.getProperty(runtime, pnode).getObject(runtime));
-            auto oldProps = shadowNodeFromValue(
-                runtime, tagPairObj.getProperty(runtime, poldProps));
-            auto newProps =
-                RawProps(runtime, tagPairObj.getProperty(runtime, pnewProps));
-            auto sn = uiManager->cloneNode(
-                *oldProps,
-                ShadowNode::emptySharedShadowNodeSharedList(),
-                &newProps);
-            nodes[i].setProperty(
-                runtime, pcobj, valueFromShadowNode(runtime, sn));
-          }
-          return jsi::Value::undefined();
-        });
-  }
-  // RNOH patch end
   if (methodName == "appendChild") {
     return jsi::Function::createFromHostFunction(
         runtime,
@@ -718,7 +562,8 @@ jsi::Value UIManagerBinding::get(
           return jsi::Value::undefined();
         });
   }
-  // RNOH patch begin
+// RNOH patch begin
+#ifdef PARALLELIZATION_ON
   if (methodName == "batchAppendChild") {
     return jsi::Function::createFromHostFunction(
         runtime,
@@ -750,7 +595,8 @@ jsi::Value UIManagerBinding::get(
           return jsi::Value::undefined();
         });
   }
-  // RNOH patch end
+#endif
+// RNOH patch end
   if (methodName == "createChildSet") {
     return jsi::Function::createFromHostFunction(
         runtime,

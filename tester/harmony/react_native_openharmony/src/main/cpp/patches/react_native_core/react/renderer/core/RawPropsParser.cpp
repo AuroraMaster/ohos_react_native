@@ -14,7 +14,9 @@
 
 #include <glog/logging.h>
 // RNOH patch add header file
-#include "ffrt/cpp/pattern/job_partner.h"
+#ifdef PARALLELIZATION_ON
+#include <ffrt/cpp/pattern/job_partner.h>
+#endif
 
 namespace facebook::react {
 
@@ -114,8 +116,9 @@ void RawPropsParser::preparse(RawProps const& rawProps) const noexcept {
       return;
 
     case RawProps::Mode::JSI: {
-      // RNOH patch begin
-      auto f = [&] {
+// RNOH patch begin
+#ifdef PARALLELIZATION_ON
+      auto parsePropsTask = [&] {
         auto& runtime = *rawProps.runtime_;
         if (!rawProps.value_.isObject()) {
           LOG(ERROR) << "Preparse props: rawProps value is not object";
@@ -147,8 +150,39 @@ void RawPropsParser::preparse(RawProps const& rawProps) const noexcept {
         }
       };
 
-      ffrt::job_partner<>::submit_to_master(f);
-      // RNOH patch end
+      ffrt::job_partner<>::submit_to_master(parsePropsTask);
+#else
+      auto &runtime = *rawProps.runtime_;
+      if (!rawProps.value_.isObject()) {
+        LOG(ERROR) << "Preparse props: rawProps value is not object";
+      }
+      react_native_assert(rawProps.value_.isObject());
+      auto object = rawProps.value_.asObject(runtime);
+
+      auto names = object.getPropertyNames(runtime);
+      auto count = names.size(runtime);
+      auto valueIndex = RawPropsValueIndex{0};
+
+      for (size_t i = 0; i < count; i++) {
+        auto nameValue = names.getValueAtIndex(runtime, i).getString(runtime);
+        auto value = object.getProperty(runtime, nameValue);
+
+        auto name = nameValue.utf8(runtime);
+
+        auto keyIndex = nameToIndex_.at(
+            name.data(), static_cast<RawPropsPropNameLength>(name.size()));
+
+        if (keyIndex == kRawPropsValueIndexEmpty) {
+          continue;
+        }
+
+        rawProps.keyIndexToValueIndex_[keyIndex] = valueIndex;
+        rawProps.values_.push_back(
+            RawValue(jsi::dynamicFromValue(runtime, value)));
+        valueIndex++;
+      }
+#endif
+// RNOH patch end
       break;
     }
 

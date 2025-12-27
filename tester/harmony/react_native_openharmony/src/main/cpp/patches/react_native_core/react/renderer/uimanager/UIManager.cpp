@@ -16,8 +16,6 @@
 #include <react/renderer/uimanager/SurfaceRegistryBinding.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
 #include <react/renderer/uimanager/UIManagerCommitHook.h>
-// RNOH patch add header file
-#include <react/renderer/uimanager/UIManagerNodeOperationHook.h>
 
 #include <glog/logging.h>
 
@@ -61,9 +59,13 @@ ShadowNode::Shared UIManager::createNode(
     SurfaceId surfaceId,
     const RawProps &rawProps,
     SharedEventTarget eventTarget) const {
-  // RNOH patch begin
-  {SystraceSection s("UIManager::createNode name = ",name);}
-  // RNOH patch end
+// RNOH patch begin
+#ifdef PARALLELIZATION_ON
+  { SystraceSection s("UIManager::createNode componentName = ", name); }
+#else
+  SystraceSection s("UIManager::createNode", "componentName", name);
+#endif
+// RNOH patch end
 
   auto &componentDescriptor = componentDescriptorRegistry_->at(name);
   auto fallbackDescriptor =
@@ -101,11 +103,7 @@ ShadowNode::Shared UIManager::createNode(
   if (leakChecker_) {
     leakChecker_->uiManagerDidCreateShadowNodeFamily(family);
   }
-  // RNOH patch begin
-  for (auto* nodeOperationHook : nodeOperationHooks_) {
-    nodeOperationHook->uiManagerDidCreateShadowNode(*shadowNode);
-  }
-  // RNOH patch end
+
   return shadowNode;
 }
 
@@ -148,12 +146,7 @@ ShadowNode::Shared UIManager::cloneNode(
           /* .props = */ props,
           /* .children = */ children,
       });
-  // RNOH patch begin
-  for (auto* nodeOperationHook : nodeOperationHooks_) {
-    nodeOperationHook->uiManagerDidCloneShadowNode(
-        shadowNode, *clonedShadowNode);
-  }
-  // RNOH patch end
+
   return clonedShadowNode;
 }
 
@@ -164,12 +157,6 @@ void UIManager::appendChild(
 
   auto &componentDescriptor = parentShadowNode->getComponentDescriptor();
   componentDescriptor.appendChild(parentShadowNode, childShadowNode);
-  // RNOH patch begin
-  for (auto* nodeOperationHook : nodeOperationHooks_) {
-    nodeOperationHook->uiManagerDidAppendChildNode(
-        *parentShadowNode, *childShadowNode);
-  }
-  // RNOH patch end
 }
 
 void UIManager::completeSurface(
@@ -533,29 +520,6 @@ void UIManager::unregisterCommitHook(
   commitHooks_.erase(iterator);
   commitHook.commitHookWasUnregistered(*this);
 }
-// RNOH patch begin
-void UIManager::registerNodeOperationHook(
-    UIManagerNodeOperationHook& nodeOperationHook) {
-  std::unique_lock lock(nodeOperationHookMutex_);
-  react_native_assert(
-      std::find(
-          nodeOperationHooks_.begin(),
-          nodeOperationHooks_.end(),
-          &nodeOperationHook) == nodeOperationHooks_.end());
-  nodeOperationHooks_.push_back(&nodeOperationHook);
-}
-
-void UIManager::unregisterNodeOperationHook(
-    UIManagerNodeOperationHook& nodeOperationHook) {
-  std::unique_lock lock(nodeOperationHookMutex_);
-  auto iterator = std::find(
-      nodeOperationHooks_.begin(),
-      nodeOperationHooks_.end(),
-      &nodeOperationHook);
-  react_native_assert(iterator != nodeOperationHooks_.end());
-  nodeOperationHooks_.erase(iterator);
-}
-// RNOH patch end
 
 #pragma mark - ShadowTreeDelegate
 

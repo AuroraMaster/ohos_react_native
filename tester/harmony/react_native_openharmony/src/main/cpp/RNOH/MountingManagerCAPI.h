@@ -96,6 +96,11 @@ class MountingManagerCAPI final : public MountingManager {
     void clearPreallocationRequestQueue();
 
  private:
+  static const std::unordered_set<facebook::react::ComponentHandle>& getSupportedHandles();
+
+  bool isComponentSupportedForParallelization(
+        ComponentInstance::Shared const& componentInstance) const;
+    
   void updateComponentWithShadowView(
       ComponentInstance::Shared const& componentInstance,
       facebook::react::ShadowView const& shadowView);

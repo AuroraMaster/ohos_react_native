@@ -10,6 +10,8 @@
 #include "RNOH/Performance/HarmonyReactMarker.h"
 #include "RNOH/ParallelComponent.h"
 #include "RNOH/ApiVersionCheck.h"
+#include "RNOH/ParallelCheck.h"
+#include <string_view>
 
 namespace rnoh {
 
@@ -227,6 +229,36 @@ void MountingManagerCAPI::updateComponentWithShadowView(
     componentInstance->setProps(shadowView.props);
 }
 
+const std::unordered_set<facebook::react::ComponentHandle>&
+    MountingManagerCAPI::getSupportedHandles() {
+  static const std::unordered_set<facebook::react::ComponentHandle>
+      supportedHandles = {
+          facebook::react::ParagraphShadowNode::Handle(),
+          facebook::react::TextShadowNode::Handle(),
+          facebook::react::RawTextShadowNode::Handle(),
+          facebook::react::ViewShadowNode::Handle(),
+          facebook::react::ImageShadowNode::Handle(),
+          facebook::react::RootShadowNode::Handle(),
+          facebook::react::TextInputShadowNode::Handle(),
+          facebook::react::ScrollViewShadowNode::Handle(),
+          facebook::react::SwitchShadowNode::Handle(),
+          facebook::react::PullToRefreshViewShadowNode::Handle(),
+          facebook::react::ActivityIndicatorViewShadowNode::Handle(),
+      };
+  return supportedHandles;
+}
+
+bool MountingManagerCAPI::isComponentSupportedForParallelization(
+    ComponentInstance::Shared const& componentInstance) const {
+  if (getSupportedHandles().find(componentInstance->getComponentHandle()) !=
+      getSupportedHandles().end()) {
+    return true;
+  }
+
+  static const std::string FAST_IMAGE_VIEW = "FastImageView";
+  return componentInstance->getComponentName() == FAST_IMAGE_VIEW;
+}
+
 void MountingManagerCAPI::handleMutation(Mutation const &mutation) {
     DVLOG(1) << "Mutation (type:" << getMutationNameFromType(mutation.type)
              << "; componentName: "
@@ -274,6 +306,14 @@ void MountingManagerCAPI::handleMutation(Mutation const &mutation) {
           // text need change stackNode
             parentComponentInstance->insertChild(
                 newChildComponentInstance, mutation.index);
+            if (IsParallelizationWorkable() &&
+                isComponentSupportedForParallelization(newChildComponentInstance)) {
+                auto &node = newChildComponentInstance->getLocalRootArkUINode();
+                auto arkHandle = node.getArkUINodeHandle();
+                if (arkHandle) {
+                  NativeNodeApi::getInstance()->markDirty(arkHandle, ArkUI_NodeDirtyFlag::NODE_NEED_MEASURE);
+                }
+            }
         }
         break;
       }

@@ -11,7 +11,9 @@
 #include <react/renderer/core/RawPropsKey.h>
 #include <react/renderer/core/RawPropsParser.h>
 // RNOH patch add header file
-#include "ffrt/cpp/pattern/job_partner.h"
+#ifdef PARALLELIZATION_ON
+#include <ffrt/cpp/pattern/job_partner.h>
+#endif
 
 namespace facebook::react {
 
@@ -64,18 +66,24 @@ void RawProps::parse(
  * will be removed as soon Android implementation does not need it.
  */
 RawProps::operator folly::dynamic() const noexcept {
-  // RNOH patch begin
-  folly::dynamic r;
-  // RNOH patch end
+// RNOH patch begin
+#ifdef PARALLELIZATION_ON
+  folly::dynamic dynamicValue;
+#endif
+// RNOH patch end
   switch (mode_) {
     case Mode::Empty:
       return folly::dynamic::object();
     case Mode::JSI:
-      // RNOH patch begin
+// RNOH patch begin
+#ifdef PARALLELIZATION_ON
       ffrt::job_partner<>::submit_to_master(
-          [&] { r = jsi::dynamicFromValue(*runtime_, value_); });
-      return r;
-      // RNOH patch end
+          [&] { dynamicValue = jsi::dynamicFromValue(*runtime_, value_); });
+      return dynamicValue;
+#else
+      return jsi::dynamicFromValue(*runtime_, value_);
+#endif
+// RNOH patch end
     case Mode::Dynamic:
       return dynamic_;
   }

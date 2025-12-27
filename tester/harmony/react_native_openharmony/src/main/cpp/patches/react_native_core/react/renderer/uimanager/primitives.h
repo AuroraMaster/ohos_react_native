@@ -61,7 +61,8 @@ inline static ShadowNode::Shared shadowNodeFromValue(
   if (CoreFeatures::useNativeState) {
     return value.getObject(runtime).getNativeState<ShadowNode>(runtime);
   } else {
-    // RNOH patch begin
+// RNOH patch begin
+#ifdef PARALLELIZATION_ON
     auto obj = value.getObject(runtime);
     if (obj.isHostObject<ShadowNodeWrapper>(runtime)) {
       return obj.getHostObject<ShadowNodeWrapper>(runtime)->shadowNode;
@@ -71,7 +72,12 @@ inline static ShadowNode::Shared shadowNodeFromValue(
           .getHostObject<ShadowNodeWrapper>(runtime)
           ->shadowNode;
     }
-    // RNOH patch end
+#else
+    return value.getObject(runtime)
+        .getHostObject<ShadowNodeWrapper>(runtime)
+        ->shadowNode;
+#endif
+// RNOH patch end
   }
 }
 
