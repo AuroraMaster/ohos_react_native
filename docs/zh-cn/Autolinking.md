@@ -112,7 +112,7 @@ npm install <library-with-native-dependencies> --save
       ]
     }
     ```
-    `createRNOHModulePlugin` 的配置后续会出相关文档说明，这里先主要讲解一下autolinking的参数配置。
+    `createRNOHModulePlugin` 的详细配置文档在[hvigorfile 配置](./hvigorfile配置.md)，这里先主要讲解一下 autolinking 的参数配置。
 
     在这个[Sample](../Samples/AutolinkingSample/README_zh.md)中，给 autolinking 传入的是一个空对象，但实际的项目中可能会涉及额外的配置，autolinking 对象的属性与 `link-harmony` 命令的参数是有关联的，详细的说明如下：
 

@@ -1764,7 +1764,8 @@ class ScrollView extends React.Component<Props, State> {
         removeClippedSubviews={
           // Subview clipping causes issues with sticky headers on Android and
           // would be hard to fix properly in a performant way.
-          Platform.OS === "android" && hasStickyHeaders
+          (Platform.OS === "android" || Platform.OS === "harmony") &&
+          hasStickyHeaders
             ? false
             : this.props.removeClippedSubviews
         }
