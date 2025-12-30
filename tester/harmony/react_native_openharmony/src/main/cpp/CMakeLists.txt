@@ -383,6 +383,7 @@ set(RNOH_SOURCE
     "${RNOH_CPP_DIR}/RNOH/RNInstanceInternal.cpp"
     "${RNOH_CPP_DIR}/RNOH/JSBigStringHelpers.cpp"
     "${RNOH_CPP_DIR}/RNOH/SchedulerDelegate.cpp"
+    "${RNOH_CPP_DIR}/RNOH/ParallelCheck.cpp"
     "${RNOH_CPP_DIR}/RNOH/MessageQueueThread.cpp"
     "${RNOH_CPP_DIR}/RNOH/MutationsToNapiConverter.cpp"
     "${RNOH_CPP_DIR}/RNOH/LogSink.cpp"

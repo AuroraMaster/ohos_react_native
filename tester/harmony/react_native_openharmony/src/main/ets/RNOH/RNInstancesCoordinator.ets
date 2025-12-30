@@ -402,6 +402,10 @@ export class RNInstancesCoordinator {
     this.napiBridge.onMemoryLevel(memoryLevel);
   }
 
+  public setParallelizationEnabled(enabled: boolean): void {
+    this.napiBridge.setParallelizationEnabled(enabled);
+  }
+
   public onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam) {
     this.rnInstanceRegistry?.forEach((rnInstance) => {
       rnInstance.onNewWant(want.uri);

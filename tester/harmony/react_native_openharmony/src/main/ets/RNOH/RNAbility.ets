@@ -194,4 +194,8 @@ export abstract class RNAbility extends UIAbility {
   onShouldDisableCleaningRNInstances(): boolean {
     return false;
   }
+
+  protected setParallelizationEnabled(enabled: boolean): void {
+    this.rnInstancesCoordinator?.setParallelizationEnabled(enabled);
+  }
 }

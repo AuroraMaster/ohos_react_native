@@ -30,6 +30,7 @@ class ArkUINodeRegistry {
  public:
   static void initialize(ArkTSBridge::Shared arkTSBridge);
   static ArkUINodeRegistry& getInstance();
+  static bool isInitialized();
 
   void registerNode(ArkUINode* node);
   void unregisterNode(ArkUINode* node);
@@ -38,6 +39,8 @@ class ArkUINodeRegistry {
       ArkUINode* node,
       TouchEventHandler* touchEventHandler);
   void unregisterTouchHandler(ArkUINode* node);
+
+  void reinitializeNodeEventReceiver();
 
  private:
   ArkUINodeRegistry(ArkTSBridge::Shared arkTSBridge);

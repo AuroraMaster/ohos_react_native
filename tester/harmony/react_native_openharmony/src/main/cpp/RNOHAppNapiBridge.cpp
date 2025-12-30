@@ -23,6 +23,7 @@
 #include "RNOH/Performance/OHReactMarkerListener.h"
 #include "RNOH/RNInstance.h"
 #include "RNOH/RNInstanceCAPI.h"
+#include "RNOH/ParallelCheck.h"
 #include "RNOH/TaskExecutor/NapiTaskRunner.h"
 #include "RNOH/TaskExecutor/ThreadTaskRunner.h"
 #include "RNOH/UITicker.h"
@@ -829,6 +830,17 @@ static napi_value getNativeNodeIdByTag(napi_env env, napi_callback_info info) {
   });
 }
 
+static napi_value setParallelizationEnabled(napi_env env,
+    napi_callback_info info) {
+  return invoke(env, [&] {
+    ArkJS arkJS(env);
+    auto args = arkJS.getCallbackArgs(info, 1);
+    auto enabled = arkJS.getBoolean(args[0]);
+    rnoh::SetParallelizationEnabled(enabled);
+    return arkJS.getUndefined();
+  });
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
   napi_property_descriptor desc[] = {
@@ -1043,6 +1055,14 @@ static napi_value Init(napi_env env, napi_value exports) {
       {"setUIContext",
        nullptr,
        ::setUIContext,
+       nullptr,
+       nullptr,
+       nullptr,
+       napi_default,
+       nullptr},
+      {"setParallelizationEnabled",
+       nullptr,
+       ::setParallelizationEnabled,
        nullptr,
        nullptr,
        nullptr,

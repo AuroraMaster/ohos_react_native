@@ -7,13 +7,17 @@
 
 #include "NativeNodeApi.h"
 #include <glog/logging.h>
+#include <mutex>
 #include "RNOH/ParallelCheck.h"
 
 namespace rnoh {
 
+ArkUI_NativeNodeAPI_1* NativeNodeApi::INSTANCE = nullptr;
+std::mutex NativeNodeApi::instanceMutex;
+
 ArkUI_NativeNodeAPI_1* NativeNodeApi::getInstance() {
 #ifdef C_API_ARCH
-  static ArkUI_NativeNodeAPI_1* INSTANCE = nullptr;
+  std::lock_guard<std::mutex> lock(instanceMutex);
   if (INSTANCE == nullptr) {
 #ifdef PARALLELIZATION_ON
     if (IsParallelizationWorkable()) {
@@ -35,6 +39,13 @@ ArkUI_NativeNodeAPI_1* NativeNodeApi::getInstance() {
 #endif
   LOG(FATAL)
       << "This method should only by used when C-API architecture is enabled.";
+}
+
+void NativeNodeApi::resetInstance() {
+#ifdef C_API_ARCH
+  std::lock_guard<std::mutex> lock(instanceMutex);
+  INSTANCE = nullptr;
+#endif
 }
 
 } // namespace rnoh

@@ -28,6 +28,10 @@ ArkUINodeRegistry& ArkUINodeRegistry::getInstance() {
   return *instance;
 }
 
+bool ArkUINodeRegistry::isInitialized() {
+  return instance != nullptr;
+}
+
 void ArkUINodeRegistry::registerNode(ArkUINode* node) {
   auto [_it, inserted] =
       m_nodeByHandle.emplace(node->getArkUINodeHandle(), node);
@@ -75,6 +79,10 @@ void ArkUINodeRegistry::unregisterTouchHandler(ArkUINode* node) {
 
 ArkUINodeRegistry::ArkUINodeRegistry(ArkTSBridge::Shared arkTSBridge)
     : m_arkTSBridge(std::move(arkTSBridge)) {
+  reinitializeNodeEventReceiver();
+}
+
+void ArkUINodeRegistry::reinitializeNodeEventReceiver() {
   NativeNodeApi::getInstance()->registerNodeEventReceiver(
       [](ArkUI_NodeEvent* event) {
         ArkUINodeRegistry::getInstance().receiveEvent(event);
