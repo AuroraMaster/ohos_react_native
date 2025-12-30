@@ -104,12 +104,10 @@ auto MountingManagerCAPI::getValidMutations(MutationList const& mutations)
         isArkTSMutation = !isCAPIComponent(mutation.oldChildShadowView);
         break;
       case facebook::react::ShadowViewMutation::Insert:
-        isArkTSMutation = !isCAPIComponent(mutation.parentShadowView) ||
-            !isCAPIComponent(mutation.newChildShadowView);
+        isArkTSMutation = !isCAPIComponent(mutation.newChildShadowView);
         break;
       case facebook::react::ShadowViewMutation::Remove:
-        isArkTSMutation = !isCAPIComponent(mutation.parentShadowView) ||
-            !isCAPIComponent(mutation.oldChildShadowView);
+        isArkTSMutation = !isCAPIComponent(mutation.oldChildShadowView);
         break;
       case facebook::react::ShadowViewMutation::RemoveDeleteTree:
         isArkTSMutation = false;
@@ -127,15 +125,15 @@ auto MountingManagerCAPI::getValidMutations(MutationList const& mutations)
 bool MountingManagerCAPI::isCAPIComponent(
     facebook::react::ShadowView const& shadowView) {
   std::string componentName = shadowView.componentName;
-  if (m_cApiComponentNames.count(componentName) > 0) {
+  if (m_cApiComponentNames.count(componentName) > 0 || componentName == "RootView") {
     return true;
   }
   if (m_arkTsComponentNames.count(componentName) > 0) {
     return false;
   }
-  auto componentInstance = m_componentInstanceProvider->isContainComponentInstance(
+  auto isComponentPrecreated = m_componentInstanceProvider->isContainComponentInstance(
       shadowView.tag);
-  if (componentInstance) {
+  if (isComponentPrecreated) {
     m_cApiComponentNames.insert(std::move(componentName));
     return true;
   }
