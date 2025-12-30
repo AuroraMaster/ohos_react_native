@@ -9,12 +9,20 @@
  */
 
 import NativeI18nManager from 'react-native/Libraries/ReactNative/NativeI18nManager';
+import RCTDeviceEventEmitter from 'react-native/Libraries/EventEmitter/RCTDeviceEventEmitter';
+import type {EventSubscription} from 'react-native/Libraries/vendor/emitter/EventEmitter';
 
 const i18nConstants: {|
   doLeftAndRightSwapInRTL: boolean,
   isRTL: boolean,
   localeIdentifier?: ?string,
 |} = getI18nManagerConstants();
+
+let harmonyI18nConstants: {|
+  doLeftAndRightSwapInRTL: boolean,
+  isRTL: boolean,
+  localeIdentifier?: ?string,
+|} | null = null;
 
 function getI18nManagerConstants() {
   if (NativeI18nManager) {
@@ -29,15 +37,46 @@ function getI18nManagerConstants() {
   };
 }
 
+function getHarmonyI18nManagerConstants() {  
+  if (harmonyI18nConstants == null) {
+    harmonyI18nConstants = getI18nManagerConstants();
+  }
+  return harmonyI18nConstants;
+}
+
+function invalidateHarmonyI18nConstantsCache() {
+  harmonyI18nConstants = null;
+}
+
+let languageChangeListener: ?EventSubscription = null;
+
+function addLanguageListener() {
+  languageChangeListener = RCTDeviceEventEmitter.addListener("i18nManagerLanguageChanged", (event) => {
+    invalidateHarmonyI18nConstantsCache();
+  });
+}
+
+function setupLanguageChangeListener() {
+  if (!languageChangeListener) {    
+    try {
+      if (RCTDeviceEventEmitter && typeof RCTDeviceEventEmitter.addListener === 'function') {
+        addLanguageListener();
+      }
+    } catch (error) {
+      console.error('Failed to register listener:', error);
+    }
+  }
+}
+
+setupLanguageChangeListener();
+
 module.exports = {
   getConstants: (): {|
     doLeftAndRightSwapInRTL: boolean,
     isRTL: boolean,
     localeIdentifier: ?string,
   |} => {
-    // RNOH patch
-    // return i18nConstants;
-    return Platform.OS === "harmony" ? getI18nManagerConstants() : i18nConstants;
+    return getHarmonyI18nManagerConstants();
   },
 
   allowRTL: (shouldAllow: boolean) => {
@@ -46,6 +85,7 @@ module.exports = {
     }
 
     NativeI18nManager.allowRTL(shouldAllow);
+    invalidateHarmonyI18nConstantsCache();
   },
 
   forceRTL: (shouldForce: boolean) => {
@@ -54,6 +94,7 @@ module.exports = {
     }
 
     NativeI18nManager.forceRTL(shouldForce);
+    invalidateHarmonyI18nConstantsCache();
   },
 
   swapLeftAndRightInRTL: (flipStyles: boolean) => {
@@ -62,17 +103,14 @@ module.exports = {
     }
 
     NativeI18nManager.swapLeftAndRightInRTL(flipStyles);
+    invalidateHarmonyI18nConstantsCache();
   },
 
-  // RNOH patch
   get isRTL() {
-    return Platform.OS === "harmony" ? getI18nManagerConstants().isRTL : i18nConstants.isRTL;
+    return getHarmonyI18nManagerConstants().isRTL;
   },
-  // isRTL: i18nConstants.isRTL,
 
-  // RNOH patch
   get doLeftAndRightSwapInRTL() {
-    return Platform.OS === "harmony" ? getI18nManagerConstants().doLeftAndRightSwapInRTL : i18nConstants.doLeftAndRightSwapInRTL;
+    return getHarmonyI18nManagerConstants().doLeftAndRightSwapInRTL;
   },
-  // doLeftAndRightSwapInRTL: i18nConstants.doLeftAndRightSwapInRTL,
 };
