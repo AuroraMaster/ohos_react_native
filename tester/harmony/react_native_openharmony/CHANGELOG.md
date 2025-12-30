@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.72.108
+
+- feat: Adjustments to Directive Execution Flow and Manual Dirty Marking for Components.,([8a82c5648](https://gitcode.com/openharmony-sig/ohos_react_native/commit/8a82c5648b6c7d47c33c24dc09909aa6fb27a482))
+- [chore]: updated to version 6.0.2.150(0.72.106),([449de3011](https://gitcode.com/openharmony-sig/ohos_react_native/commit/449de3011f450e8a028b4dba62b553ea0fc54eb1))
+- fix: compilation errors caused by changes to the onChange virtual function.,([417e9f8a2](https://gitcode.com/openharmony-sig/ohos_react_native/commit/417e9f8a2e4b4e097466eadc3599955a1046e5d7))
+- fix: Fix development menu operations (d/r/reload) not working after port change,([546243dec](https://gitcode.com/openharmony-sig/ohos_react_native/commit/546243dec1c4f73c6be49c448a381b5dfdf0943f))
+- Fix: delete safeareainsetsprovider from anythreadturbomodule context,([280abaf70](https://gitcode.com/openharmony-sig/ohos_react_native/commit/280abaf70d531df9a853b2818a16099b0de74068))
+- fix: Catch exceptions thrown in handleComponentEventof NativeAnimatedTurboModule,([c51688af7](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c51688af7de64cdc33dc763927ac1354237b7a3e))
+- fix:Modify the launchParam parameter type,([ca7b13bbc](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ca7b13bbc1edc4ba7678004f7725c19b253a004c))
+
 ## 0.72.106
 
 - [chore]: updated to version 6.0.2.140(0.72.105),([ce019df78](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ce019df78a9f425373899e838c7759f244b3bbd4))

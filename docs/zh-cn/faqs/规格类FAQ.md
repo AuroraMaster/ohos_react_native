@@ -82,3 +82,9 @@ export default App;
 
 2. **元素的层级排列顺序发生了变化，zIndex 越大越靠上**  
    与旧架构（非 Fabric）不同，Fabric 启用后，`zIndex` 的作用更加明确且优先级更高。元素的层级不再依赖组件声明顺序，而是严格按照 `zIndex` 数值来决定显示的上下关系，`zIndex` 数值越大，元素越靠上。
+
+### ScrollView组件的 velocity 字段说明
+
+含义：velocity 代表组件的滚动速度
+
+说明：计算值与 android 对比有一定的差异，harmony 平台采用了最小二乘法拟合出瞬时速度来计算，比 android 更加线性。

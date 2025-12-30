@@ -1,5 +1,23 @@
 # Changelog
 
+## 6.0.2.161
+
+- docx: hvigor configuration,([8db1e79c4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/8db1e79c4519e353dac1dcab18d2d195a805ab71))
+- fix：统一harmony和android上对吸顶属性和removeClippedSubviews的处理,([1013c06f8](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1013c06f8b10f4a93b9f56207e5a4e29c55eaca2))
+- feat: Adjustments to Directive Execution Flow and Manual Dirty Marking for Components.,([8a82c5648](https://gitcode.com/openharmony-sig/ohos_react_native/commit/8a82c5648b6c7d47c33c24dc09909aa6fb27a482))
+- 优化autolink文档说明,([fb2a60af5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/fb2a60af5870566929fb5f6a01471082bf5c4178))
+- 新增性能优化实践文档,([0a6229f78](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0a6229f78633d5a9ec414b88cc9f7294bdbae24a))
+- [chore]: updated to version 6.0.2.150(0.72.106),([449de3011](https://gitcode.com/openharmony-sig/ohos_react_native/commit/449de3011f450e8a028b4dba62b553ea0fc54eb1))
+- fix: compilation errors caused by changes to the onChange virtual function.,([417e9f8a2](https://gitcode.com/openharmony-sig/ohos_react_native/commit/417e9f8a2e4b4e097466eadc3599955a1046e5d7))
+- docx: Dev Menu add,([82dc0fbe1](https://gitcode.com/openharmony-sig/ohos_react_native/commit/82dc0fbe1bd9cde61b61e899cabde0e50032e783))
+- fix: Fix development menu operations (d/r/reload) not working after port change,([546243dec](https://gitcode.com/openharmony-sig/ohos_react_native/commit/546243dec1c4f73c6be49c448a381b5dfdf0943f))
+- 补充Autolinking文档,([241266763](https://gitcode.com/openharmony-sig/ohos_react_native/commit/241266763173da69ed949bb65e94334e9404b45c))
+- Fix: delete safeareainsetsprovider from anythreadturbomodule context,([280abaf70](https://gitcode.com/openharmony-sig/ohos_react_native/commit/280abaf70d531df9a853b2818a16099b0de74068))
+- fix: Catch exceptions thrown in handleComponentEventof NativeAnimatedTurboModule,([c51688af7](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c51688af7de64cdc33dc763927ac1354237b7a3e))
+- 【Config】: add developer,([d17468850](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d1746885095d7c4e93fa28f99f78deb98e8f8956))
+- fix:Modify the launchParam parameter type,([ca7b13bbc](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ca7b13bbc1edc4ba7678004f7725c19b253a004c))
+- 【Config】: add developer,([d3a7b7ac8](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d3a7b7ac809ccf38639c3b667834a2735d3b31b2))
+
 ## 6.0.2.150
 
 - [chore]: updated to version 6.0.2.140(0.72.105),([ce019df78](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ce019df78a9f425373899e838c7759f244b3bbd4))
