@@ -17,9 +17,79 @@ var ReactNativePrivateInterface = require("react-native/Libraries/ReactPrivate/R
   React = require("react"),
   Scheduler = require("scheduler");
 
-// RNOH patch begin
-const pendingNodes = [];
-const pendingAppendChilds = [];
+const RNOH_BATCH_DEFAULT_BUDGET =
+  typeof globalThis !== "undefined" &&
+  typeof globalThis.__RNOH_BATCH_BUDGET === "number" &&
+  globalThis.__RNOH_BATCH_BUDGET >= 0
+    ? (globalThis.__RNOH_BATCH_BUDGET | 0)
+    : 12;
+
+const rnohBatchStateBySurface = new Map();
+const rnohPendingNodesBySurface = new Map();
+const rnohPendingAppendsBySurface = new Map();
+
+/**
+ * Cleanup all per-surface batching state to avoid leaking JS objects when a surface is stopped.
+ * This MUST be called when a surface is unmounted/stopped.
+ */
+function rnohCleanupSurfaceState(surfaceId, reason) {
+  try {
+    rnohBatchStateBySurface.delete(surfaceId);
+    rnohPendingNodesBySurface.delete(surfaceId);
+    rnohPendingAppendsBySurface.delete(surfaceId);
+  } catch (e) {
+    // best effort
+  }
+}
+
+function rnohGetSurfaceState(surfaceId) {
+  let st = rnohBatchStateBySurface.get(surfaceId);
+  if (!st) {
+    st = {
+      budget: RNOH_BATCH_DEFAULT_BUDGET,
+      // how many completeRoot intervals have finished on this surface
+      commitCountDone: 0,
+      // once true, this surface will stay in single mode for future completeRoot intervals
+      lockedSingle: false,
+
+      // frozen per current completeRoot interval
+      commitModeFrozen: false,
+      currentCommitMode: "batch",
+      currentCommitIndex: 0, // 1-based, = commitCountDone + 1 when frozen
+    };
+    rnohBatchStateBySurface.set(surfaceId, st);
+  }
+  return st;
+}
+
+function rnohGetPendingNodes(surfaceId) {
+  let arr = rnohPendingNodesBySurface.get(surfaceId);
+  if (!arr) {
+    arr = [];
+    rnohPendingNodesBySurface.set(surfaceId, arr);
+  }
+  return arr;
+}
+
+function __rnohGetPendingAppends(surfaceId) {
+  let arr = rnohPendingAppendsBySurface.get(surfaceId);
+  if (!arr) {
+    arr = [];
+    rnohPendingAppendsBySurface.set(surfaceId, arr);
+  }
+  return arr;
+}
+
+function rnohEnsureCommitMode(surfaceId, hint) {
+  const st = rnohGetSurfaceState(surfaceId);
+  if (!st.commitModeFrozen) {
+    st.currentCommitIndex = st.commitCountDone + 1;
+    st.currentCommitMode =
+      !st.lockedSingle && st.commitCountDone < st.budget ? "batch" : "single";
+    st.commitModeFrozen = true;
+  }
+  return st.currentCommitMode === "batch";
+}
 // RNOH patch end
 
 function invokeGuardedCallbackImpl(name, func, context, a, b, c, d, e, f) {
@@ -1940,16 +2010,22 @@ var _nativeFabricUIManage = nativeFabricUIManager,
   nextReactTag = 2;
 registerEventHandler && registerEventHandler(dispatchEvent);
 // RNOH patch begin
-function flushPendingNodes() {
-  if (pendingNodes.length > 0) {
-    batchCreateNode(pendingNodes);
-    pendingNodes.splice(0);
+function flushPendingNodes(surfaceId, reason) {
+  const st = rnohGetSurfaceState(surfaceId);
+  const arr = rnohGetPendingNodes(surfaceId);
+  if (arr.length > 0) {
+    batchCreateNode(arr);
+    arr.splice(0);
   }
 }
 
-function flushPendingAppendChilds() {
-  batchAppendChild(pendingAppendChilds);
-  pendingAppendChilds.splice(0);
+function flushPendingAppendChilds(surfaceId, reason) {
+  const st = rnohGetSurfaceState(surfaceId);
+  const arr = __rnohGetPendingAppends(surfaceId);
+  if (arr.length > 0) {
+    batchAppendChild(arr);
+    arr.splice(0);
+  }
 }
 // RNOH patch end
 var ReactFabricHostComponent = (function() {
@@ -2069,19 +2145,35 @@ function createTextInstance(
   hostContext = nextReactTag;
   nextReactTag += 2;
   // RNOH patch begin
-  let placeholder = {};
-  pendingNodes.push({
-    node: placeholder,
-    tag: hostContext,
-    uiViewClassName: "RCTRawText",
-    renderLanes: rootContainerInstance,
-    updatePayload: { text: text },
-    workInProgress: internalInstanceHandle,
-  });
-  if (pendingNodes.length % 500 == 0) {
-    flushPendingNodes();
+  var __sid = rootContainerInstance;
+  var __useBatch = rnohEnsureCommitMode(__sid, "createTextInstance");
+  if (__useBatch) {
+    var __placeholder = {};
+    var __arr = rnohGetPendingNodes(__sid);
+    __arr.push({
+      node: __placeholder,
+      tag: hostContext,
+      uiViewClassName: "RCTRawText",
+      renderLanes: __sid,
+      updatePayload: { text: text },
+      workInProgress: internalInstanceHandle,
+    });
+    if (__arr.length % 500 == 0) {
+      flushPendingNodes(__sid, "threshold");
+    }
+    return { node: __placeholder, _rnohSurfaceId: __sid };
+  } else {
+    return {
+      node: createNode(
+        hostContext,
+        "RCTRawText",
+        __sid,
+        { text: text },
+        internalInstanceHandle
+      ),
+      _rnohSurfaceId: __sid,
+    };
   }
-  return { node: placeholder };
   // RNOH patch end
 }
 var scheduleTimeout = setTimeout,
@@ -2096,7 +2188,8 @@ function cloneHiddenInstance(instance) {
   );
   return {
     node: cloneNodeWithNewProps(node, JSCompiler_inline_result),
-    canonical: instance.canonical
+    canonical: instance.canonical,
+    _rnohSurfaceId: instance._rnohSurfaceId
   };
 }
 function describeComponentFrame(name, source, ownerName) {
@@ -5404,20 +5497,32 @@ appendAllChildren = function(
         isHidden &&
         (instance = cloneHiddenInstance(instance));
       // RNOH patch begin
-      pendingAppendChilds.push({
-        parentTag: parent.node,
-        currentTag: instance.node,
-      });
+      var __sid = parent._rnohSurfaceId;
+          var __useBatch = rnohEnsureCommitMode(__sid, "appendAllChildren");
+      if (__useBatch) {
+        __rnohGetPendingAppends(__sid).push({
+          parentTag: parent.node,
+          currentTag: instance.node,
+        });
+      } else {
+        appendChildNode(parent.node, instance.node);
+      }
       // RNOH patch end
     } else if (6 === node.tag) {
       instance = node.stateNode;
       if (needsVisibilityToggle && isHidden)
         throw Error("Not yet implemented.");
       // RNOH patch begin
-      pendingAppendChilds.push({
-        parentTag: parent.node,
-        currentTag: instance.node,
-      });
+      var __sid = parent._rnohSurfaceId;
+          var __useBatch = rnohEnsureCommitMode(__sid, "appendAllChildren");
+      if (__useBatch) {
+        __rnohGetPendingAppends(__sid).push({
+          parentTag: parent.node,
+          currentTag: instance.node,
+        });
+      } else {
+        appendChildNode(parent.node, instance.node);
+      }
       // RNOH patch end
     } else if (4 !== node.tag)
       if (22 === node.tag && null !== node.memoizedState)
@@ -5478,16 +5583,31 @@ function appendAllChildrenToContainer(
 updateHostContainer = function(current, workInProgress) {
   var portalOrRoot = workInProgress.stateNode;
   if (!hadNoMutationsEffects(current, workInProgress)) {
-    //RNOH patch begin
-    flushPendingNodes()
-    flushPendingAppendChilds()
-    //RNOH patch end
+    var __sid = portalOrRoot.containerInfo;
+    var __st = rnohGetSurfaceState(__sid);
+      var __useBatch = rnohEnsureCommitMode(__sid, "updateHostContainer");
+
+    if (__useBatch) {
+      //RNOH patch begin
+      flushPendingNodes(__sid, "commit");
+      flushPendingAppendChilds(__sid, "commit");
+      //RNOH patch end
+    }
+
     current = portalOrRoot.containerInfo;
     var newChildSet = createChildNodeSet(current);
     appendAllChildrenToContainer(newChildSet, workInProgress, !1, !1);
     portalOrRoot.pendingChildren = newChildSet;
     workInProgress.flags |= 4;
     completeRoot(current, newChildSet);
+
+    // finalize this completeRoot interval
+    __st.commitCountDone += 1;
+        if (!__st.lockedSingle && __st.commitCountDone >= __st.budget) {
+      __st.lockedSingle = true;
+    }
+    __st.commitModeFrozen = false;
+    __st.currentCommitIndex = 0;
   }
 };
 updateHostComponent$1 = function(current, workInProgress, type, newProps) {
@@ -5523,7 +5643,8 @@ updateHostComponent$1 = function(current, workInProgress, type, newProps) {
             : null !== newProps
             ? cloneNodeWithNewChildrenAndProps(oldProps, newProps)
             : cloneNodeWithNewChildren(oldProps),
-          canonical: type.canonical
+          canonical: type.canonical,
+          _rnohSurfaceId: type._rnohSurfaceId
         }),
         (workInProgress.stateNode = type),
         current
@@ -5670,17 +5791,30 @@ function completeWork(current, workInProgress, renderLanes) {
         );
         // RNOH patch begin
         let renderLanes_tmp = renderLanes;
-        renderLanes = {};
-        pendingNodes.push({
-          node: renderLanes,
-          tag: current,
-          uiViewClassName: type.uiViewClassName,
-          renderLanes: renderLanes_tmp,
-          updatePayload: updatePayload,
-          workInProgress: workInProgress,
-        });
-        if (pendingNodes.length % 500 == 0) {
-          flushPendingNodes();
+        var __sid = renderLanes_tmp;
+              var __useBatch = rnohEnsureCommitMode(__sid, "createHostComponent");
+        if (__useBatch) {
+          renderLanes = {};
+          var __arr = rnohGetPendingNodes(__sid);
+          __arr.push({
+            node: renderLanes,
+            tag: current,
+            uiViewClassName: type.uiViewClassName,
+            renderLanes: renderLanes_tmp,
+            updatePayload: updatePayload,
+            workInProgress: workInProgress,
+          });
+          if (__arr.length % 500 == 0) {
+            flushPendingNodes(__sid, "threshold");
+          }
+        } else {
+          renderLanes = createNode(
+            current,
+            type.uiViewClassName,
+            renderLanes_tmp,
+            updatePayload,
+            workInProgress
+          );
         }
         // RNOH patch end
         current = new ReactFabricHostComponent(
@@ -5689,7 +5823,7 @@ function completeWork(current, workInProgress, renderLanes) {
           newProps,
           workInProgress
         );
-        current = { node: renderLanes, canonical: current };
+        current = { node: renderLanes, canonical: current, _rnohSurfaceId: renderLanes_tmp };
         appendAllChildren(current, workInProgress, !1, !1);
         workInProgress.stateNode = current;
         null !== workInProgress.ref && (workInProgress.flags |= 512);
@@ -8489,10 +8623,14 @@ exports.sendAccessibilityEvent = function(handle, eventType) {
 };
 exports.stopSurface = function(containerTag) {
   var root = roots.get(containerTag);
-  root &&
-    updateContainer(null, root, null, function() {
-      roots.delete(containerTag);
-    });
+  if (!root) {
+    rnohCleanupSurfaceState(containerTag, "stopSurface");
+    return;
+  }
+  updateContainer(null, root, null, function() {
+    roots.delete(containerTag);
+    rnohCleanupSurfaceState(containerTag, "stopSurface");
+  });
 };
 exports.unmountComponentAtNode = function(containerTag) {
   this.stopSurface(containerTag);

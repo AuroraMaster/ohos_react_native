@@ -8,12 +8,17 @@
 #pragma once
 #include <arkui/native_interface.h>
 #include <arkui/native_node.h>
+#include <mutex>
 
 namespace rnoh {
 
 class NativeNodeApi {
  public:
   static ArkUI_NativeNodeAPI_1* getInstance();
+  static void resetInstance();
+
+  static ArkUI_NativeNodeAPI_1* INSTANCE;
+  static std::mutex instanceMutex;
 
  private:
   NativeNodeApi() {}

@@ -20,6 +20,7 @@ import type { DevToolsController } from './DevToolsController';
 import type { DisplayMetrics, DevMenu } from './types';
 import type { RNInstanceOptions } from './RNInstance';
 import type { SafeAreaInsetsProvider } from './SafeAreaInsetsProvider';
+import libRNOHApp from 'librnoh_app.so';
 
 export type UIAbilityState = 'FOREGROUND' | 'BACKGROUND';
 
@@ -157,6 +158,10 @@ export class RNOHCoreContext {
 
   protected get erasedWorkerTaskRunner() {
     return this._rnohCoreContextDeps.erasedWorkerTaskRunner;
+  }
+
+  setParallelizationEnabled(enabled: boolean): void {
+    libRNOHApp?.setParallelizationEnabled(enabled);
   }
 }
 

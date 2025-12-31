@@ -392,6 +392,10 @@ export class NapiBridge {
     this.libRNOHApp?.onArkTSMessage(name, payload)
   }
 
+  setParallelizationEnabled(enabled: boolean): void {
+    this.libRNOHApp?.setParallelizationEnabled(enabled)
+  }
+
   logMarker(markerId: string, rnInstanceId: number) {
     this.libRNOHApp?.logMarker(markerId, rnInstanceId)
   }

@@ -6,19 +6,24 @@
  */
 #pragma once
 #include "ApiVersionCheck.h"
+#include <atomic>
+#include <glog/logging.h>
 
 namespace rnoh {
 
-/**
- * @ThreadSafe
- * @internal
- * @brief Check if parallelization optimization is enabled by user and API level >= 21
- *
- * @return true if API level >= 21 && user set PARALLEL_OPTIMIZATION_ENABLE, false otherwise.
- */
+class RNInstanceCAPI;
+
+extern bool PARALLEL_RUNTIME_SWITCH;
+     
+inline bool GetParallelizationEnabled() {
+  return PARALLEL_RUNTIME_SWITCH;
+}
+
+void SetParallelizationEnabled(bool enabled);
+
 inline bool IsParallelizationWorkable() {
   #ifdef PARALLELIZATION_ON
-    return IsAtLeastApi22();
+    return IsAtLeastApi22() && GetParallelizationEnabled();
   #else
     return false;
   #endif

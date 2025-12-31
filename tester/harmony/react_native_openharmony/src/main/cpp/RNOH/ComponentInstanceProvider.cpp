@@ -70,20 +70,17 @@ ComponentInstance::Shared ComponentInstanceProvider::getComponentInstance(
   bool isComponentInstanceNotHit = false;
   std::unordered_map<facebook::react::Tag, ComponentInstance::Shared>::
       const_iterator componentInstanceIt;
-  {
-    std::lock_guard<std::mutex> lock(m_preallocatedComponentInstanceByTagMtx);
-    componentInstanceIt = m_preallocatedComponentInstanceByTag.find(tag);
-    isComponentInstanceNotHit =
-        componentInstanceIt == m_preallocatedComponentInstanceByTag.end();
+  std::lock_guard<std::mutex> lock(m_preallocatedComponentInstanceByTagMtx);
+  componentInstanceIt = m_preallocatedComponentInstanceByTag.find(tag);
+  isComponentInstanceNotHit =
+      componentInstanceIt == m_preallocatedComponentInstanceByTag.end();
+  if (!isComponentInstanceNotHit) {
+    return componentInstanceIt->second;
   }
-  if (isComponentInstanceNotHit) {
-    return m_componentInstanceFactory->create(
-        tag, componentHandle, std::move(componentName));
-  } else {
-    std::lock_guard<std::mutex> lock(m_preallocatedComponentInstanceByTagMtx);
-    return m_preallocatedComponentInstanceByTag.extract(componentInstanceIt)
-        .mapped();
-  }
+  auto componentInstance = m_componentInstanceFactory->create(
+      tag, componentHandle, std::move(componentName));
+  m_preallocatedComponentInstanceByTag.emplace(tag, componentInstance);
+  return componentInstance;
 }
 
 bool ComponentInstanceProvider::isContainComponentInstance(facebook::react::Tag tag) {
