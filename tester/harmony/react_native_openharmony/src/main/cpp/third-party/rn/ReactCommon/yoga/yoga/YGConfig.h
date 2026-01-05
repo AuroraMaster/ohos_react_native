@@ -12,6 +12,14 @@
 #include "Yoga-internal.h"
 #include "Yoga.h"
 
+
+// Whether moving a node from an old to new config should dirty previously
+// calculated layout results.
+bool configUpdateInvalidatesLayout(
+    YGNodeType nodeType,
+    const YGConfig& oldConfig,
+    const YGConfig& newConfig);
+
 struct YOGA_EXPORT YGConfig {
   using LogWithContextFn = int (*)(
       YGConfigRef config,
@@ -44,6 +52,7 @@ public:
   bool shouldDiffLayoutWithoutLegacyStretchBehaviour = false;
   bool printTree = false;
   float pointScaleFactor = 1.0f;
+  float fontSizeMultiplier = 1.0f;
   std::array<bool, facebook::yoga::enums::count<YGExperimentalFeature>()>
       experimentalFeatures = {};
   void* context = nullptr;

@@ -125,6 +125,7 @@ class RNInstanceArkTS : public RNInstanceInternal,
       float viewportOffsetX,
       float viewportOffsetY,
       float pixelRatio,
+      float fontSizeMultiplier,
       bool isRTL) override;
   facebook::react::Size measureSurface(
       facebook::react::Tag surfaceId,
@@ -135,6 +136,7 @@ class RNInstanceArkTS : public RNInstanceInternal,
       float viewportOffsetX,
       float viewportOffsetY,
       float pixelRatio,
+      float fontSizeMultiplier,
       bool isRTL) override;
   void startSurface(
       facebook::react::Tag surfaceId,
@@ -145,6 +147,7 @@ class RNInstanceArkTS : public RNInstanceInternal,
       float viewportOffsetX,
       float viewportOffsetY,
       float pixelRatio,
+      float fontSizeMultiplier,
       bool isRTL,
       folly::dynamic&& initialProps) override;
   void setSurfaceProps(facebook::react::Tag surfaceId, folly::dynamic&& props)

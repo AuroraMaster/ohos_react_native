@@ -224,7 +224,9 @@ export class NapiBridge {
     surfaceOffsetY: number,
     pixelRatio: number,
     isRTL: boolean,
-    initialProps: any) {
+    initialProps: any,
+    fontSizeMultiplier?: number,
+  ) {
     this.libRNOHApp?.startSurface(
       instanceId,
       surfaceTag,
@@ -235,6 +237,7 @@ export class NapiBridge {
       surfaceOffsetX,
       surfaceOffsetY,
       pixelRatio,
+      fontSizeMultiplier ?? 1.0,
       isRTL,
       initialProps,
     );
@@ -251,6 +254,7 @@ export class NapiBridge {
     surfaceOffsetY: number,
     pixelRatio: number,
     isRTL: boolean,
+    fontSizeMultiplier?: number,
   ) {
     this.libRNOHApp?.updateSurfaceConstraints(
       instanceId,
@@ -262,6 +266,7 @@ export class NapiBridge {
       surfaceOffsetX,
       surfaceOffsetY,
       pixelRatio,
+      fontSizeMultiplier ?? 1.0,
       isRTL
     );
   }
@@ -277,6 +282,7 @@ export class NapiBridge {
     surfaceOffsetY: number,
     pixelRatio: number,
     isRTL: boolean,
+    fontSizeMultiplier?: number,
   ) {
     const result = this.libRNOHApp?.measureSurface(
       instanceId,
@@ -288,6 +294,7 @@ export class NapiBridge {
       surfaceOffsetX,
       surfaceOffsetY,
       pixelRatio,
+      fontSizeMultiplier ?? 1.0,
       isRTL
     );
     return this.unwrapResult<{ width: number, height: number }>(result)

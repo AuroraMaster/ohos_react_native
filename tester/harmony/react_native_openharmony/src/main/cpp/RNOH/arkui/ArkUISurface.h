@@ -59,6 +59,7 @@ class ArkUISurface
       float viewportOffsetX,
       float viewportOffsetY,
       float pixelRatio,
+      float fontSizeMultiplier,
       bool isRTL);
 
   void updateConstraints(
@@ -69,6 +70,7 @@ class ArkUISurface
       float viewportOffsetX,
       float viewportOffsetY,
       float pixelRatio,
+      float fontSizeMultiplier,
       bool isRTL);
   void start(
       float minWidth,
@@ -78,6 +80,7 @@ class ArkUISurface
       float viewportOffsetX,
       float viewportOffsetY,
       float pixelRatio,
+      float fontSizeMultiplier,
       bool isRTL,
       folly::dynamic const& initialProps,
       std::shared_ptr<facebook::react::LayoutAnimationDriver> const&
@@ -85,6 +88,7 @@ class ArkUISurface
   void setProps(folly::dynamic const& props);
   void stop(std::function<void()> onStop);
   void setDisplayMode(facebook::react::DisplayMode displayMode);
+  void updateLayoutScaling(float pixelRatio, float fontSizeMultiplier);
     
   Surface::LayoutContext getLayoutContext() override;
   DisplayMetrics getDisplayMetrics() override;

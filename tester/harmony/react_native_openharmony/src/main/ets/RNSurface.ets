@@ -203,6 +203,7 @@ struct ContentAdaptiveSurface {
       surfaceOffsetY: this.surfaceOffsetY,
       pixelRatio: vp2px(1),
       isRTL,
+      fontSizeMultiplier: this.ctx.getDisplayMetrics().screenPhysicalPixels.fontScale,
     }
     if (this.shouldStartSurface) {
       this.surfaceHandle.setDisplayMode(DisplayMode.Visible)

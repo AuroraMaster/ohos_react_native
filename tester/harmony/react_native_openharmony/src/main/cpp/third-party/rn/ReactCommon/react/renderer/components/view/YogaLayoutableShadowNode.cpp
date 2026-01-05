@@ -116,14 +116,23 @@ YogaLayoutableShadowNode::YogaLayoutableShadowNode(
               .yogaNode_.isDirty() == yogaNode_.isDirty() &&
       "Yoga node must inherit dirty flag.");
 
-  for (auto &child : getChildren()) {
-    if (auto layoutableChild = traitCast<YogaLayoutableShadowNode>(child)) {
-      yogaLayoutableChildren_.push_back(layoutableChild);
+  if (!getTraits().check(ShadowNodeTraits::Trait::LeafYogaNode)) {
+    for (auto &child : getChildren()) {
+      if (auto layoutableChild = traitCast<YogaLayoutableShadowNode>(child)) {
+        yogaLayoutableChildren_.push_back(layoutableChild);
+      }
     }
   }
 
   yogaNode_.setContext(this);
   yogaNode_.setOwner(nullptr);
+  if (configUpdateInvalidatesLayout(
+          yogaNode_.getNodeType(),
+          *static_cast<YogaLayoutableShadowNode const&>(sourceShadowNode)
+               .yogaNode_.getConfig(),
+          *yogaNode_.getConfig())) {
+    yogaNode_.markDirtyAndPropogate();
+  }
   updateYogaChildrenOwnersIfNeeded();
 
   // This is the only legit place where we can dirty cloned Yoga node.
@@ -151,11 +160,6 @@ void YogaLayoutableShadowNode::cleanLayout() {
 
 void YogaLayoutableShadowNode::dirtyLayout() {
   yogaNode_.setDirty(true);
-}
-
-void YogaLayoutableShadowNode::dirtyLayoutAndPropogateToDescendants()
-{
-    YGNodeMarkDirtyAndPropogateToDescendants(&yogaNode_);
 }
 
 bool YogaLayoutableShadowNode::getIsLayoutClean() const {
@@ -416,6 +420,76 @@ void YogaLayoutableShadowNode::updateYogaProps() {
   return result;
 }
 
+void YogaLayoutableShadowNode::configureYogaTree(
+    float fontSizeMultiplier,
+    float pointScaleFactor/* , */
+    /* int defaultErrata, */
+    /* bool swapLeftAndRight */) {
+  ensureUnsealed();
+
+  // Set state on our own Yoga node
+  /* auto errata = resolveErrata(defaultErrata); */
+  /* YGConfigSetErrata(&yogaConfig_, errata); */
+  YGConfigSetPointScaleFactor(&yogaConfig_, pointScaleFactor);
+  YGConfigSetFontSizeMultiplier(&yogaConfig_, fontSizeMultiplier);
+
+  // TODO: `swapLeftAndRight` modified backing props and cannot be undone
+  /* if (swapLeftAndRight) { */
+  /*   swapStyleLeftAndRight(); */
+  /* } */
+
+  yogaTreeHasBeenConfigured_ = true;
+
+  // Recursively propagate the configuration to child nodes. If a child was
+  // already configured as part of a previous ShadowTree generation, we only
+  // need to reconfigure it if the context values passed to the Node have
+  // changed.
+  for (size_t i = 0; i < yogaLayoutableChildren_.size(); i++) {
+    const auto& child = *yogaLayoutableChildren_[i];
+    auto childLayoutMetrics = child.getLayoutMetrics();
+    /* auto childErrata = YGConfigGetErrata(&child.yogaConfig_); */
+    auto childFontSizeMultiplier =
+        YGConfigGetFontSizeMultiplier(&child.yogaConfig_);
+
+    if (child.yogaTreeHasBeenConfigured_ &&
+        childFontSizeMultiplier == fontSizeMultiplier &&
+        childLayoutMetrics.pointScaleFactor == pointScaleFactor /* && */
+        /* childLayoutMetrics.wasLeftAndRightSwapped == swapLeftAndRight && */
+        /* childErrata == child.resolveErrata(errata) */) {
+      continue;
+    }
+
+    if (doesOwn(child)) {
+      auto& mutableChild = const_cast<YogaLayoutableShadowNode&>(child);
+      mutableChild.configureYogaTree(
+          fontSizeMultiplier,
+          pointScaleFactor/* , */
+          /* child.resolveErrata(errata), */
+          /* swapLeftAndRight */);
+    } else {
+      cloneChildInPlace(i).configureYogaTree(
+          fontSizeMultiplier, pointScaleFactor/* , errata, swapLeftAndRight */);
+    }
+  }
+}
+
+YogaLayoutableShadowNode& YogaLayoutableShadowNode::cloneChildInPlace(
+    size_t layoutableChildIndex) {
+  ensureUnsealed();
+
+  const auto& childNode = *yogaLayoutableChildren_[layoutableChildIndex];
+
+  // TODO: Why does this not use `ShadowNodeFragment::statePlaceholder()` like
+  // `adoptYogaChild()`?
+  auto clonedChildNode = childNode.clone(
+      {ShadowNodeFragment::propsPlaceholder(),
+       ShadowNodeFragment::childrenPlaceholder(),
+       childNode.getState()});
+
+  replaceChild(childNode, clonedChildNode, layoutableChildIndex);
+  return static_cast<YogaLayoutableShadowNode&>(*clonedChildNode);
+}
+
 void YogaLayoutableShadowNode::setSize(Size size) const {
   ensureUnsealed();
 
@@ -473,8 +547,15 @@ void YogaLayoutableShadowNode::layoutTree(
    * the only value in the config of the root node is taken into account
    * (and this is by design).
    */
-  yogaConfig_.pointScaleFactor = layoutContext.pointScaleFactor;
+  {
+    SystraceSection s2("YogaLayoutableShadowNode::configureYogaTree");
+    configureYogaTree(
+        layoutContext.fontSizeMultiplier,
+        layoutContext.pointScaleFactor/* , */
+        /* YGErrataAll, */
+        /* layoutContext.swapLeftAndRightInRTL */);
 
+  }
   auto minimumSize = layoutConstraints.minimumSize;
   auto maximumSize = layoutConstraints.maximumSize;
 

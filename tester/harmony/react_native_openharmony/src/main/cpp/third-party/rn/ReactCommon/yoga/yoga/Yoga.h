@@ -29,7 +29,15 @@ typedef struct YGSize {
   float height;
 } YGSize;
 
+/**
+ * Handle to a mutable Yoga configuration.
+ */
 typedef struct YGConfig* YGConfigRef;
+
+/**
+ * Handle to an immutable Yoga configuration.
+ */
+typedef const struct YGConfig* YGConfigConstRef;
 
 typedef struct YGNode* YGNodeRef;
 typedef const struct YGNode* YGNodeConstRef;
@@ -313,6 +321,17 @@ WIN_EXPORT void YGAssertWithConfig(
 WIN_EXPORT void YGConfigSetPointScaleFactor(
     YGConfigRef config,
     float pixelsInPoint);
+/**
+ * Set the font size multiplier.
+ */
+WIN_EXPORT void YGConfigSetFontSizeMultiplier(
+    YGConfigRef config,
+    float fontSizeMultiplier);
+/**
+ * Get the currently set font size multiplier.
+ */
+WIN_EXPORT float YGConfigGetFontSizeMultiplier(YGConfigConstRef config);
+
 
 // Yoga previously had an error where containers would take the maximum space
 // possible instead of the minimum like they are supposed to. In practice this

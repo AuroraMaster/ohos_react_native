@@ -398,6 +398,29 @@ void RNInstanceCAPI::updateSurfaceConstraints(
     float viewportOffsetY,
     float pixelRatio,
     bool isRTL) {
+  RNInstanceCAPI::updateSurfaceConstraints(
+      surfaceId,
+      minWidth,
+      minHeight,
+      maxWidth,
+      maxHeight,
+      viewportOffsetX,
+      viewportOffsetY,
+      1.0f,
+      isRTL);
+}
+
+void RNInstanceCAPI::updateSurfaceConstraints(
+    facebook::react::Tag surfaceId,
+    float minWidth,
+    float minHeight,
+    float maxWidth,
+    float maxHeight,
+    float viewportOffsetX,
+    float viewportOffsetY,
+    float pixelRatio,
+    float fontSizeMultiplier,
+    bool isRTL) {
   DLOG(INFO) << "RNInstanceCAPI::updateSurfaceConstraints";
   auto it = m_surfaceById.find(surfaceId);
   if (it == m_surfaceById.end()) {
@@ -411,6 +434,7 @@ void RNInstanceCAPI::updateSurfaceConstraints(
       viewportOffsetX,
       viewportOffsetY,
       pixelRatio,
+      fontSizeMultiplier,
       isRTL);
 }
 
@@ -423,6 +447,29 @@ facebook::react::Size RNInstanceCAPI::measureSurface(
     float viewportOffsetX,
     float viewportOffsetY,
     float pixelRatio,
+    bool isRTL) {
+  return RNInstanceCAPI::measureSurface(
+      surfaceId,
+      minWidth,
+      minHeight,
+      maxWidth,
+      maxHeight,
+      viewportOffsetX,
+      viewportOffsetY,
+      1.0f,
+      isRTL);
+}
+
+facebook::react::Size RNInstanceCAPI::measureSurface(
+    facebook::react::Tag surfaceId,
+    float minWidth,
+    float minHeight,
+    float maxWidth,
+    float maxHeight,
+    float viewportOffsetX,
+    float viewportOffsetY,
+    float pixelRatio,
+    float fontSizeMultiplier,
     bool isRTL) {
   DLOG(INFO) << "RNInstanceCAPI::measureSurface";
   auto it = m_surfaceById.find(surfaceId);
@@ -437,6 +484,7 @@ facebook::react::Size RNInstanceCAPI::measureSurface(
       viewportOffsetX,
       viewportOffsetY,
       pixelRatio,
+      fontSizeMultiplier,
       isRTL);
 }
 
@@ -449,6 +497,31 @@ void RNInstanceCAPI::startSurface(
     float viewportOffsetX,
     float viewportOffsetY,
     float pixelRatio,
+    bool isRTL,
+    folly::dynamic&& initialProps) {
+  RNInstanceCAPI::startSurface(
+      surfaceId,
+      minWidth,
+      minHeight,
+      maxWidth,
+      maxHeight,
+      viewportOffsetX,
+      viewportOffsetY,
+      pixelRatio,
+      1.0f,
+      isRTL,
+      std::move(initialProps));
+}
+void RNInstanceCAPI::startSurface(
+    facebook::react::Tag surfaceId,
+    float minWidth,
+    float minHeight,
+    float maxWidth,
+    float maxHeight,
+    float viewportOffsetX,
+    float viewportOffsetY,
+    float pixelRatio,
+    float fontSizeMultiplier,
     bool isRTL,
     folly::dynamic&& initialProps) {
   DLOG(INFO) << "RNInstanceCAPI::startSurface";
@@ -464,6 +537,7 @@ void RNInstanceCAPI::startSurface(
       viewportOffsetX,
       viewportOffsetY,
       pixelRatio,
+      fontSizeMultiplier,
       isRTL,
       std::move(initialProps),
       m_animationDriver);
@@ -540,9 +614,6 @@ void RNInstanceCAPI::onConfigurationChange(folly::dynamic const& payload) {
     return;
   }
   float densityDpi = windowPhysicalPixels["densityDpi"].asDouble();
-  if (densityDpi == m_densityDpi) {
-    return;
-  }
   m_densityDpi = densityDpi;
   if (windowPhysicalPixels["scale"].isDouble() &&
       windowPhysicalPixels["fontScale"].isDouble()) {
@@ -556,6 +627,9 @@ void RNInstanceCAPI::onConfigurationChange(folly::dynamic const& payload) {
     if (textMeasurer) {
       textMeasurer->setTextMeasureParams(
           fontScale, scale, densityDpi, halfLeading);
+      for (const auto& [_, surface] : m_surfaceById) {
+        surface->updateLayoutScaling(scale, fontScale);
+      }
     }
     float xDpi = windowPhysicalPixels["xDpi"].asDouble();
     float yDpi = windowPhysicalPixels["yDpi"].asDouble();

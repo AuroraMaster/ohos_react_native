@@ -81,7 +81,8 @@ export class SurfaceHandle {
       ctx.surfaceOffsetY,
       ctx.pixelRatio,
       ctx.isRTL,
-      this.props);
+      this.props,
+      ctx.fontSizeMultiplier);
     this.running = true
   }
 
@@ -109,6 +110,7 @@ export class SurfaceHandle {
       surfaceOffsetX,
       surfaceOffsetY,
       pixelRatio,
+      fontSizeMultiplier,
       isRTL,
     } = ctx;
     this.surfaceCtx = {
@@ -119,7 +121,8 @@ export class SurfaceHandle {
       surfaceOffsetX,
       surfaceOffsetY,
       isRTL,
-      pixelRatio
+      pixelRatio,
+      fontSizeMultiplier,
     };
 
     this.napiBridge.updateSurfaceConstraints(
@@ -133,6 +136,7 @@ export class SurfaceHandle {
       surfaceOffsetY,
       pixelRatio,
       isRTL,
+      fontSizeMultiplier,
     );
   }
 
@@ -147,6 +151,7 @@ export class SurfaceHandle {
       surfaceOffsetX,
       surfaceOffsetY,
       pixelRatio,
+      fontSizeMultiplier,
     } = this.surfaceCtx;
 
     this.surfaceCtx = {
@@ -157,7 +162,8 @@ export class SurfaceHandle {
       surfaceOffsetX,
       surfaceOffsetY,
       isRTL,
-      pixelRatio
+      pixelRatio,
+      fontSizeMultiplier,
     };
 
     this.napiBridge.updateSurfaceConstraints(
@@ -171,6 +177,7 @@ export class SurfaceHandle {
       surfaceOffsetY,
       pixelRatio,
       isRTL,
+      fontSizeMultiplier,
     );
   }
 
@@ -185,11 +192,12 @@ export class SurfaceHandle {
       surfaceOffsetX,
       surfaceOffsetY,
       pixelRatio,
+      fontSizeMultiplier,
       isRTL,
     } = ctx
     return this.napiBridge.measureSurface(this.rnInstance.getId(), this.tag, minWidth, minHeight, maxWidth, maxHeight,
       surfaceOffsetX,
-      surfaceOffsetY, pixelRatio, isRTL)
+      surfaceOffsetY, pixelRatio, isRTL, fontSizeMultiplier,)
   }
 
   public getDisplayMode(): DisplayMode {
