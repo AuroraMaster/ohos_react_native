@@ -88,3 +88,8 @@ export default App;
 含义：velocity 代表组件的滚动速度
 
 说明：计算值与 android 对比有一定的差异，harmony 平台采用了最小二乘法拟合出瞬时速度来计算，比 android 更加线性。
+
+### RN鸿蒙暂不支持toLocaleLowerCase接口
+
+- 如果不要求支持国际化，可使用toLowerCase转换。
+- 如果要求支持国际化，需要对部分国际化语言字符进行自定义特殊转换。
