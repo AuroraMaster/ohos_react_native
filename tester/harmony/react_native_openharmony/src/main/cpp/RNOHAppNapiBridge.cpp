@@ -414,7 +414,7 @@ static napi_value updateSurfaceConstraints(
   DLOG(INFO) << "updateSurfaceConstraints\n";
   ArkJS arkJs(env);
   try {
-    auto args = arkJs.getCallbackArgs(info, 10);
+    auto args = arkJs.getCallbackArgs(info, 11);
     size_t instanceId = arkJs.getDouble(args[0]);
     auto rnInstance = maybeGetInstanceById(instanceId);
     if (!rnInstance) {
@@ -429,7 +429,8 @@ static napi_value updateSurfaceConstraints(
         arkJs.getDouble(args[6]),
         arkJs.getDouble(args[7]),
         arkJs.getDouble(args[8]),
-        arkJs.getBoolean(args[9]));
+        arkJs.getDouble(args[9]),
+        arkJs.getBoolean(args[10]));
   } catch (...) {
     ArkTSBridge::getInstance()->handleError(std::current_exception());
   }
@@ -441,7 +442,7 @@ static napi_value measureSurface(napi_env env, napi_callback_info info) {
   return invoke(env, [&] {
     DLOG(INFO) << "measureSurface";
     ArkJS arkJS(env);
-    auto args = arkJS.getCallbackArgs(info, 10);
+    auto args = arkJS.getCallbackArgs(info, 11);
     size_t instanceId = arkJS.getDouble(args[0]);
     auto rnInstance = maybeGetInstanceById(instanceId);
     if (!rnInstance) {
@@ -456,7 +457,8 @@ static napi_value measureSurface(napi_env env, napi_callback_info info) {
         arkJS.getDouble(args[6]),
         arkJS.getDouble(args[7]),
         arkJS.getDouble(args[8]),
-        arkJS.getBoolean(args[9]));
+        arkJS.getDouble(args[9]),
+        arkJS.getBoolean(args[10]));
     return arkJS.createObjectBuilder()
         .addProperty("width", size.width)
         .addProperty("height", size.height)
@@ -486,7 +488,7 @@ static napi_value createSurface(napi_env env, napi_callback_info info) {
 static napi_value startSurface(napi_env env, napi_callback_info info) {
   ArkJS arkJs(env);
   try {
-    auto args = arkJs.getCallbackArgs(info, 11);
+    auto args = arkJs.getCallbackArgs(info, 12);
     size_t instanceId = arkJs.getDouble(args[0]);
     auto rnInstance = maybeGetInstanceById(instanceId);
     if (!rnInstance) {
@@ -503,8 +505,9 @@ static napi_value startSurface(napi_env env, napi_callback_info info) {
         arkJs.getDouble(args[6]),
         arkJs.getDouble(args[7]),
         arkJs.getDouble(args[8]),
-        arkJs.getBoolean(args[9]),
-        arkJs.getDynamic(args[10]));
+        arkJs.getDouble(args[9]),
+        arkJs.getBoolean(args[10]),
+        arkJs.getDynamic(args[11]));
   } catch (...) {
     ArkTSBridge::getInstance()->handleError(std::current_exception());
   }

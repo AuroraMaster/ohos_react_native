@@ -7,6 +7,17 @@
 
 #include "YGConfig.h"
 
+bool configUpdateInvalidatesLayout(
+    YGNodeType nodeType,
+    const YGConfig& oldConfig,
+    const YGConfig& newConfig) {
+  return oldConfig.experimentalFeatures != newConfig.experimentalFeatures ||
+      oldConfig.pointScaleFactor != newConfig.pointScaleFactor ||
+      oldConfig.useWebDefaults != newConfig.useWebDefaults ||
+      (nodeType == YGNodeType::YGNodeTypeText &&
+       oldConfig.fontSizeMultiplier != newConfig.fontSizeMultiplier);
+}
+
 YGConfig::YGConfig(YGLogger logger) : cloneNodeCallback_{nullptr} {
   logger_.noContext = logger;
   loggerUsesContext_ = false;

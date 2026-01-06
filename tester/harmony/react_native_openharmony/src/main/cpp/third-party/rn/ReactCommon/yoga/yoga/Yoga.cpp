@@ -4084,6 +4084,21 @@ YOGA_EXPORT void YGConfigSetPointScaleFactor(
   }
 }
 
+void YGConfigSetFontSizeMultiplier(
+    const YGConfigRef config,
+    const float fontSizeMultiplier) {
+  YGAssertWithConfig(
+      config,
+      fontSizeMultiplier >= 0.0f,
+      "Size multiplier should not be less than zero");
+
+  config->fontSizeMultiplier = fontSizeMultiplier;
+}
+
+float YGConfigGetFontSizeMultiplier(const YGConfigConstRef config) {
+  return config->fontSizeMultiplier;
+}
+
 static void YGRoundToPixelGrid(
     const YGNodeRef node,
     const double pointScaleFactor,

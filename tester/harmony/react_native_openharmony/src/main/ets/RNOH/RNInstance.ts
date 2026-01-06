@@ -49,6 +49,7 @@ export type SurfaceContext = {
   surfaceOffsetX: number
   surfaceOffsetY: number
   pixelRatio: number
+  fontSizeMultiplier?: number
   isRTL: boolean
 } | {
   minWidth: number
@@ -58,6 +59,7 @@ export type SurfaceContext = {
   surfaceOffsetX: number
   surfaceOffsetY: number
   pixelRatio: number
+  fontSizeMultiplier?: number
   isRTL: boolean
 }
 

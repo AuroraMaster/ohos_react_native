@@ -78,7 +78,6 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
 
   void cleanLayout() override;
   void dirtyLayout() override;
-  void dirtyLayoutAndPropogateToDescendants();
   bool getIsLayoutClean() const override;
 
   /*
@@ -133,6 +132,22 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    * valid child node satisfied requirements of the Concurrent Layout approach.
    */
   void adoptYogaChild(size_t index);
+
+  /**
+   * Applies contextual values to the ShadowNode's Yoga tree after the
+   * ShadowTree has been constructed, but before it has been is laid out or
+   * committed.
+   */
+  void configureYogaTree(
+      float fontSizeMultiplier,
+      float pointScaleFactor/* , */
+      /* YGErrata defaultErrata, */
+      /* bool swapLeftAndRight */);
+
+  /**
+   * Replcaes a child with a mutable clone of itself, returning the clone.
+   */
+  YogaLayoutableShadowNode& cloneChildInPlace(size_t layoutableChildIndex);
 
   static YGConfig &initializeYogaConfig(YGConfig &config);
   static YGNode *yogaNodeCloneCallbackConnector(
@@ -201,6 +216,11 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    * List of children which derive from YogaLayoutableShadowNode
    */
   ListOfShared yogaLayoutableChildren_;
+
+  /*
+   * Whether the full Yoga subtree of this Node has been configured.
+   */
+  bool yogaTreeHasBeenConfigured_{false};
 };
 
 } // namespace react

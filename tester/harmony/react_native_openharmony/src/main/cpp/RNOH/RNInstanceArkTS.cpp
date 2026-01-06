@@ -152,6 +152,7 @@ facebook::react::Size RNInstanceArkTS::measureSurface(
     float viewportOffsetX,
     float viewportOffsetY,
     float pixelRatio,
+    float fontSizeMultiplier,
     bool isRTL) {
     throw std::runtime_error("Not implemented");
 }
@@ -165,6 +166,7 @@ void RNInstanceArkTS::startSurface(
     float viewportOffsetX,
     float viewportOffsetY,
     float pixelRatio,
+    float fontSizeMultiplier,
     bool isRTL,
     folly::dynamic&& initialProps) {
   taskExecutor->runTask(TaskThread::JS, [=] {
@@ -272,6 +274,7 @@ void RNInstanceArkTS::updateSurfaceConstraints(
     float viewportOffsetX,
     float viewportOffsetY,
     float pixelRatio,
+    float fontSizeMultiplier,
     bool isRTL) {
   taskExecutor->runTask(
       TaskThread::JS,

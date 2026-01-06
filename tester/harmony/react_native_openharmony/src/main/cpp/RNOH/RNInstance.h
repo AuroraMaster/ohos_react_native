@@ -162,6 +162,7 @@ class RNInstanceInternal : public RNInstance,
       float viewportOffsetX,
       float viewportOffsetY,
       float pixelRatio,
+      float fontSizeMultiplier,
       bool isRTL) = 0;
   virtual void updateSurfaceConstraints(
       facebook::react::Tag surfaceId,
@@ -172,6 +173,7 @@ class RNInstanceInternal : public RNInstance,
       float viewportOffsetX,
       float viewportOffsetY,
       float pixelRatio,
+      float fontSizeMultiplier,
       bool isRTL) = 0;
   virtual void startSurface(
       facebook::react::Tag surfaceId,
@@ -182,6 +184,7 @@ class RNInstanceInternal : public RNInstance,
       float viewportOffsetX,
       float viewportOffsetY,
       float pixelRatio,
+      float fontSizeMultiplier,
       bool isRTL,
       folly::dynamic&& initialProps) = 0;
   virtual void setSurfaceProps(

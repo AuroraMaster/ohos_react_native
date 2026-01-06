@@ -161,6 +161,7 @@ void ArkUISurface::updateConstraints(
     float viewportOffsetX,
     float viewportOffsetY,
     float pixelRatio,
+    float fontSizeMultiplier,
     bool isRTL) {
   m_threadGuard.assertThread();
   auto layoutConstraints = m_surfaceHandler.getLayoutConstraints();
@@ -172,6 +173,7 @@ void ArkUISurface::updateConstraints(
   auto layoutContext = m_surfaceHandler.getLayoutContext();
   layoutContext.viewportOffset = {viewportOffsetX, viewportOffsetY};
   layoutContext.pointScaleFactor = pixelRatio;
+  layoutContext.fontSizeMultiplier = fontSizeMultiplier;
   m_surfaceHandler.constraintLayout(layoutConstraints, layoutContext);
 }
 
@@ -183,6 +185,7 @@ facebook::react::Size ArkUISurface::measure(
     float viewportOffsetX,
     float viewportOffsetY,
     float pixelRatio,
+    float fontSizeMultiplier,
     bool isRTL) {
   m_threadGuard.assertThread();
   auto layoutConstraints = m_surfaceHandler.getLayoutConstraints();
@@ -195,6 +198,7 @@ facebook::react::Size ArkUISurface::measure(
   auto layoutContext = m_surfaceHandler.getLayoutContext();
   layoutContext.viewportOffset = {viewportOffsetX, viewportOffsetY};
   layoutContext.pointScaleFactor = pixelRatio;
+  layoutContext.fontSizeMultiplier = fontSizeMultiplier;
   return m_surfaceHandler.measure(layoutConstraints, layoutContext);
 }
 
@@ -206,6 +210,7 @@ void ArkUISurface::start(
     float viewportOffsetX,
     float viewportOffsetY,
     float pixelRatio,
+    float fontSizeMultiplier,
     bool isRTL,
     folly::dynamic const& initialProps,
     std::shared_ptr<facebook::react::LayoutAnimationDriver> const&
@@ -222,6 +227,7 @@ void ArkUISurface::start(
       viewportOffsetX,
       viewportOffsetY,
       pixelRatio,
+      fontSizeMultiplier,
       isRTL);
   m_surfaceHandler.start();
   auto mountingCoordinator = m_surfaceHandler.getMountingCoordinator();
@@ -262,6 +268,17 @@ void ArkUISurface::setDisplayMode(
     facebook::react::DisplayMode displayMode) {
   m_threadGuard.assertThread();
   m_surfaceHandler.setDisplayMode(displayMode);
+}
+
+void ArkUISurface::updateLayoutScaling(
+    float pixelRatio,
+    float fontSizeMultiplier) {
+  m_threadGuard.assertThread();
+  auto layoutContext = m_surfaceHandler.getLayoutContext();
+  layoutContext.pointScaleFactor = pixelRatio;
+  layoutContext.fontSizeMultiplier = fontSizeMultiplier;
+  m_surfaceHandler.constraintLayout(
+      m_surfaceHandler.getLayoutConstraints(), layoutContext);
 }
 
 Surface::LayoutContext ArkUISurface::getLayoutContext() {
