@@ -20,6 +20,7 @@
 #include <react/renderer/uimanager/UIManagerAnimationDelegate.h>
 
 #include <optional>
+#include <mutex>
 
 namespace facebook {
 namespace react {
@@ -100,9 +101,21 @@ class LayoutAnimationKeyFrameManager : public UIManagerAnimationDelegate,
    * we keep the contract of: only mutate it within the context of
    * `pullTransaction`. If that contract is held, this is implicitly protected
    * by the MountingCoordinator's mutex.
+   * RNOH patch: The above assumption is incorrect when multiple Surfaces exist.
+   * Multiple Surfaces share the same LayoutAnimationKeyFrameManager instance,
+   * but each Surface has its own MountingCoordinator with its own mutex. When
+   * multiple Surfaces concurrently call pullTransaction(), they will all access
+   * the shared inflightAnimations_ vector without proper synchronization, leading
+   * to data races and crashes (e.g., ShadowView destruction during concurrent
+   * access). We add a dedicated mutex to protect inflightAnimations_ and all
+   * related shared state.
    */
   mutable std::vector<LayoutAnimation> inflightAnimations_{};
-
+  // RNOH patch begin: Add mutex to protect inflightAnimations_ from concurrent
+  // access when multiple Surfaces (each with its own MountingCoordinator) call
+  // pullTransaction() simultaneously.
+  mutable std::mutex inflightAnimationsMutex_;
+  // RNOH patch end
   bool hasComponentDescriptorForShadowView(ShadowView const &shadowView) const;
   ComponentDescriptor const &getComponentDescriptorForShadowView(
       ShadowView const &shadowView) const;
