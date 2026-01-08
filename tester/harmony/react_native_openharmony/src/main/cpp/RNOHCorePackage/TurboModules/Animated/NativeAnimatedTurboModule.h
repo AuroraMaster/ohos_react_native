@@ -150,6 +150,8 @@ class NativeAnimatedTurboModule
   std::shared_ptr<VSyncListener> m_vsyncListener =
       std::make_shared<VSyncListener>();
   std::atomic<bool> m_isDisplaySoloistRegistered{false};
+  std::unique_ptr<std::weak_ptr<NativeAnimatedTurboModule>>
+      m_weakSelfForDisplaySoloist = nullptr;
   AnimatedNodesManager m_animatedNodesManager;
   std::mutex m_nodesManagerLock;
   bool m_initializedEventListener = false;

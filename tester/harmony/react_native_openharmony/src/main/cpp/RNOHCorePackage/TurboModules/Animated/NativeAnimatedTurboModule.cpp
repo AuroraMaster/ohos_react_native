@@ -302,18 +302,25 @@ void NativeAnimatedTurboModule::startDisplaySoloist() {
   if (isDisplaySoloistRegistered()) {
     return;
   }
+
+  if (!m_weakSelfForDisplaySoloist) {
+    m_weakSelfForDisplaySoloist = std::make_unique<std::weak_ptr<NativeAnimatedTurboModule>>(weak_from_this());
+  }
+  
   int startStatus = OH_DisplaySoloist_Start(
       m_nativeDisplaySoloist.get(),
       [](long long timestamp, long long targetTimestamp, void* data) {
-        auto* nativeAnimatedTM = static_cast<NativeAnimatedTurboModule*>(data);
-        if (!nativeAnimatedTM) {
+        auto* weakSelfPtr = static_cast<std::weak_ptr<NativeAnimatedTurboModule>*>(data);
+        if (!weakSelfPtr) {
           LOG(ERROR)
-              << "[DisplaySoloist] Start: Failed to get NativeAnimatedTurboModule.";
+              << "[DisplaySoloist] Start: Failed to get weak_ptr.";
           return;
         }
-        nativeAnimatedTM->runUpdates(timestamp);
+        if (auto self = weakSelfPtr->lock()) {
+          self->runUpdates(timestamp);
+        }
       },
-      this);
+      m_weakSelfForDisplaySoloist.get());
   if (startStatus != 0) {
     LOG(ERROR)
         << "[DisplaySoloist] Failed to start DisplaySoloist. Error code: "
