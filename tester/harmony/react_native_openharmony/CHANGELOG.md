@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.72.109
+
+- Fix: getValidMutations method bug,([16e90855a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/16e90855a78b97b516c311f179dd95cadb424420))
+- fix:I18nManager Optimization,([d3ba2f4f4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d3ba2f4f45be8e4f462140c905301da5267749a5))
+- feat:添加并行化运行态开关,([16ba19dfd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/16ba19dfdf848157a930446e650901b71cd1b5b6))
+- [chore]: updated to version 6.0.2.161(0.72.108),([1558978ed](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1558978edc6a6c750e62fbf4a8d486432709098d))
+
 ## 0.72.108
 
 - feat: Adjustments to Directive Execution Flow and Manual Dirty Marking for Components.,([8a82c5648](https://gitcode.com/openharmony-sig/ohos_react_native/commit/8a82c5648b6c7d47c33c24dc09909aa6fb27a482))
