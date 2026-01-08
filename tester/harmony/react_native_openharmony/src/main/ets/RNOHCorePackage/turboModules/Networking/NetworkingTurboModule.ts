@@ -20,7 +20,7 @@ import {
 } from '../../../HttpClient/types';
 
 type ResponseType =
-| 'base64'
+  | 'base64'
   | 'blob'
   | 'text';
 
@@ -295,7 +295,7 @@ export class NetworkingTurboModule extends AnyThreadTurboModule {
     promise.then(async (httpResponse) => {
       this.networkEventDispatcher.dispatchDidReceiveNetworkResponse(requestId, httpResponse.statusCode,
         httpResponse.headers, query.url);
-      if (this.requestCancellersById[requestId]) {
+      if (this.requestCancellersById.has(requestId)) {
         this.requestCancellersById.delete(requestId);
       }
       for (const handler of this.responseBodyHandlers) {
@@ -314,7 +314,7 @@ export class NetworkingTurboModule extends AnyThreadTurboModule {
         query.url)
       this.networkEventDispatcher.dispatchDidCompleteNetworkResponseWithError(requestId,
         errorResponse.error.toString(), errorResponse.timeout ?? false);
-      if (this.requestCancellersById[requestId]) {
+      if (this.requestCancellersById.has(requestId)) {
         this.requestCancellersById.delete(requestId);
       }
     });
@@ -323,10 +323,22 @@ export class NetworkingTurboModule extends AnyThreadTurboModule {
   }
 
   abortRequest(requestId: number) {
-    if (this.requestCancellersById[requestId]) {
-      this.requestCancellersById[requestId]();
+    const cancel = this.requestCancellersById.get(requestId);
+    if (cancel) {
+      cancel();
       this.requestCancellersById.delete(requestId);
     }
+  }
+
+  public __onDestroy__(): void {
+    for (const [requestId, cancel] of this.requestCancellersById.entries()) {
+      try {
+        cancel();
+      } catch (error) {
+        console.warn(`Failed to cancel request ${requestId} during destroy:`, error);
+      }
+    }
+    this.requestCancellersById.clear();
   }
 
   private createId(): number {

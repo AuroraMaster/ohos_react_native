@@ -42,6 +42,7 @@ export class AppearanceTurboModule extends AnyThreadTurboModule {
    */
   private initialColorMode: ConfigurationConstant.ColorMode = ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET;
   private logger: RNOHLogger
+  private envCallbackID: number | undefined = undefined;
 
   constructor(ctx: AnyThreadTurboModuleContext) {
     super(ctx);
@@ -85,7 +86,7 @@ export class AppearanceTurboModule extends AnyThreadTurboModule {
     };
 
     const applicationContext = this.ctx.uiAbilityContext.getApplicationContext();
-    applicationContext.on('environment', envCallback);
+    this.envCallbackID = applicationContext.on('environment', envCallback);
   }
 
   setColorScheme(colorScheme: string): void {
@@ -104,4 +105,13 @@ export class AppearanceTurboModule extends AnyThreadTurboModule {
       this.ctx.uiAbilityContext.getApplicationContext().setColorMode(colorMode)
     }
   };
+
+  public __onDestroy__(): void {
+    super.__onDestroy__();
+    if (this.envCallbackID !== undefined) {
+      const applicationContext = this.ctx.uiAbilityContext.getApplicationContext();
+      applicationContext.off('environment', this.envCallbackID);
+      this.envCallbackID = undefined;
+    }
+  }
 }

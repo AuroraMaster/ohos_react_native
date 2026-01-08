@@ -111,10 +111,39 @@ export class DefaultHttpClient implements HttpClient {
     promise: Promise<HttpResponse>
   } {
     const httpRequest = http.createHttp();
-    let timeoutId: number = null;
+    let timeoutId: number | null = null;
+
+    let headersReceiveHandler: ((data: Object) => void) | undefined;
+    let dataReceiveHandler: ((chunk: ArrayBuffer) => void) | undefined;
+    let dataSendProgressHandler: ((progress: any) => void) | undefined;
+    let dataEndHandler: (() => void) | undefined;
+
     const cleanup = () => {
+      try {
+        if (headersReceiveHandler) {
+          httpRequest.off('headersReceive', headersReceiveHandler);
+          headersReceiveHandler = undefined;
+        }
+        if (dataReceiveHandler) {
+          httpRequest.off('dataReceive', dataReceiveHandler);
+          dataReceiveHandler = undefined;
+        }
+        if (dataSendProgressHandler) {
+          httpRequest.off('dataSendProgress', dataSendProgressHandler);
+          dataSendProgressHandler = undefined;
+        }
+        if (dataEndHandler) {
+          httpRequest.off('dataEnd', dataEndHandler);
+          dataEndHandler = undefined;
+        }
+      } catch (err) {
+        this.logger?.warn('Failed to remove event listeners: ' + err);
+      }
       httpRequest.destroy();
-      clearTimeout(timeoutId);
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
     }
     const promise: Promise<HttpResponse> = new Promise((resolve, reject) => {
 
@@ -146,8 +175,8 @@ export class DefaultHttpClient implements HttpClient {
       let finalRequestOptions: RequestOptions = mergeObjects(this.baseRequestOptions, requestOptions);
       if (finalRequestOptions.timeout) {
         timeoutId = setTimeout(() => {
-          httpRequest.destroy();
           reject({ timeout: true, statusCode: 0, error: Error('Request timeout.') })
+          cleanup()
         }, finalRequestOptions.timeout)
       }
 
@@ -168,14 +197,15 @@ export class DefaultHttpClient implements HttpClient {
         }
       }
 
-      httpRequest.once('headersReceive', (data) => {
+      headersReceiveHandler = (data) => {
         headers = data;
         totalLength = headers['content-length'] ?? -1;
         this.setCookiesFromHeaders(url, headers);
         maybeResolve();
-      })
+      };
+      httpRequest.once('headersReceive', headersReceiveHandler);
 
-      httpRequest.on('dataReceive', (chunk) => {
+      dataReceiveHandler = (chunk) => {
         dataChunks.push(chunk);
         currentLength += chunk.byteLength;
         if (requestOptions.onReceiveProgress) {
@@ -185,9 +215,10 @@ export class DefaultHttpClient implements HttpClient {
             bitsReceived: chunk,
           })
         }
-      })
+      };
+      httpRequest.on('dataReceive', dataReceiveHandler);
 
-      httpRequest.on('dataSendProgress', (progress) => {
+      dataSendProgressHandler = (progress) => {
         if (requestOptions.onSendProgress) {
           requestOptions.onSendProgress(
             {
@@ -196,9 +227,10 @@ export class DefaultHttpClient implements HttpClient {
             }
           )
         }
-      })
+      };
+      httpRequest.on('dataSendProgress', dataSendProgressHandler);
 
-      httpRequest.on('dataEnd', () => {
+      dataEndHandler = () => {
         const totalLength = dataChunks.map(chunk => chunk.byteLength).reduce((acc, length) => acc + length, 0);
         const data = new Uint8Array(totalLength);
         let offset = 0;
@@ -209,7 +241,8 @@ export class DefaultHttpClient implements HttpClient {
         }
         resultBody = data.buffer;
         maybeResolve();
-      })
+      };
+      httpRequest.on('dataEnd', dataEndHandler);
 
       try {
         httpRequest.requestInStream(

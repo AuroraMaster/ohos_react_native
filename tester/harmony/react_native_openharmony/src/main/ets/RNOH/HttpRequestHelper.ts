@@ -25,32 +25,22 @@ export async function fetchDataFromUrl(url: string, options: FetchOptions = { us
     let result: ArrayBuffer | undefined;
     let headers: Object | undefined;
     let responseCode: number | undefined;
+    let isCleanedUp = false;
 
-    function cleanUp() {
-      httpRequest.destroy();
-    }
+    const onDataReceiveProgress = ({receiveSize, totalSize}: {receiveSize: number, totalSize: number}) => {
+      onProgress?.(receiveSize / totalSize);
+    };
 
-    function maybeResolve() {
-      if (result !== undefined && headers !== undefined && responseCode !== undefined) {
-        resolve({ headers, result, responseCode });
-        cleanUp();
-      }
-    }
-
-    httpRequest.on("dataReceiveProgress", ({receiveSize, totalSize}) => {
-      onProgress?.(receiveSize / totalSize)
-    })
-
-    httpRequest.on("headersReceive", (data) => {
+    const onHeadersReceive = (data: Object) => {
       headers = data;
       maybeResolve();
-    })
+    };
 
-    httpRequest.on("dataReceive", (chunk) => {
+    const onDataReceive = (chunk: ArrayBuffer) => {
       dataChunks.push(chunk);
-    });
+    };
 
-    httpRequest.on("dataEnd", () => {
+    const onDataEnd = () => {
       const totalLength = dataChunks.map(chunk => chunk.byteLength).reduce((acc, length) => acc + length, 0);
       const data = new Uint8Array(totalLength);
       let offset = 0;
@@ -61,7 +51,31 @@ export async function fetchDataFromUrl(url: string, options: FetchOptions = { us
       }
       result = data.buffer;
       maybeResolve();
-    });
+    };
+
+    httpRequest.on("dataReceiveProgress", onDataReceiveProgress);
+    httpRequest.on("headersReceive", onHeadersReceive);
+    httpRequest.on("dataReceive", onDataReceive);
+    httpRequest.on("dataEnd", onDataEnd);
+
+    function cleanUp() {
+      if (isCleanedUp) {
+        return;
+      }
+      isCleanedUp = true;
+      httpRequest.off("dataReceiveProgress", onDataReceiveProgress);
+      httpRequest.off("headersReceive", onHeadersReceive);
+      httpRequest.off("dataReceive", onDataReceive);
+      httpRequest.off("dataEnd", onDataEnd);
+      httpRequest.destroy();
+    }
+
+    function maybeResolve() {
+      if (result !== undefined && headers !== undefined && responseCode !== undefined) {
+        resolve({ headers, result, responseCode });
+        cleanUp();
+      }
+    }
 
     try {
       httpRequest.requestInStream(
