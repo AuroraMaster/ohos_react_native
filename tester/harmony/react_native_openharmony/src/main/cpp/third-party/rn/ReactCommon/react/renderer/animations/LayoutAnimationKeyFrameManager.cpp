@@ -150,6 +150,9 @@ void LayoutAnimationKeyFrameManager::setReduceDeleteCreateMutation(
 }
 
 bool LayoutAnimationKeyFrameManager::shouldAnimateFrame() const {
+  // RNOH patch begin
+  std::lock_guard<std::mutex> inflightLock(inflightAnimationsMutex_);
+  // RNOH patch end
   std::lock_guard<std::mutex> lock(currentAnimationMutex_);
   return currentAnimation_ || !inflightAnimations_.empty();
 }
@@ -171,6 +174,9 @@ LayoutAnimationKeyFrameManager::pullTransaction(
     MountingTransaction::Number transactionNumber,
     TransactionTelemetry const &telemetry,
     ShadowViewMutationList mutations) const {
+  // RNOH patch begin
+  std::lock_guard<std::mutex> inflightLock(inflightAnimationsMutex_);
+  // RNOH patch end
   // Current time in milliseconds
   uint64_t now = now_();
 

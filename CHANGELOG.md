@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.0.2.200
+
+- Fix: getValidMutations method bug,([16e90855a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/16e90855a78b97b516c311f179dd95cadb424420))
+- fix:I18nManager Optimization,([d3ba2f4f4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/d3ba2f4f45be8e4f462140c905301da5267749a5))
+- feat:添加并行化运行态开关,([16ba19dfd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/16ba19dfdf848157a930446e650901b71cd1b5b6))
+- fix: 并行化js侧修改,([8033d2eed](https://gitcode.com/openharmony-sig/ohos_react_native/commit/8033d2eedc6d900548196451b53861ba69d99d2f))
+- [doc] 文档新增 ScrollView组件的 velocity 字段说明,([ca694823d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ca694823d8de4942a54cf5e6fe18e9f4cff22e09))
+- [chore]: updated to version 6.0.2.161(0.72.108),([1558978ed](https://gitcode.com/openharmony-sig/ohos_react_native/commit/1558978edc6a6c750e62fbf4a8d486432709098d))
+
 ## 6.0.2.161
 
 - docx: hvigor configuration,([8db1e79c4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/8db1e79c4519e353dac1dcab18d2d195a805ab71))
