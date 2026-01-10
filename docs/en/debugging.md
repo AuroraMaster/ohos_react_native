@@ -149,6 +149,7 @@ When Metro is used to load a bundle, application update can be triggered in the 
 ## JS Debugging
 
 ### Opening React Native Dev Menu
+**Note**: In Release mode, Dev Menu is not available.
 
 1. Run the following commands:
 

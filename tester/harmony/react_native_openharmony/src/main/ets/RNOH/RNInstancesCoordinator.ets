@@ -241,6 +241,7 @@ export class RNInstancesCoordinator {
     this.devMenu = devMenu;
     this.options = options;
     this.jsPackagerClient = jsPackagerClient;
+    AppStorage.setOrCreate('jsPackagerClient', this.jsPackagerClient);
     this.defaultBackPressHandler = defaultBackPressHandler;
     this.globalRNOHErrorEventEmitter = globalRNOHErrorEventEmitter;
     const httpClientProvider = options?.httpClientProvider ?? new DefaultHttpClientProvider()
@@ -300,7 +301,8 @@ export class RNInstancesCoordinator {
     if (this.timerId) {
       clearTimeout(this.timerId)
     }
-    this.jsPackagerClient.onDestroy()
+    const client = AppStorage.get('jsPackagerClient') as JSPackagerClient | undefined
+    client?.onDestroy()
     this.rnInstanceRegistry.forEach(instance => {
       instance.onDestroy()
     })
@@ -410,9 +412,5 @@ export class RNInstancesCoordinator {
     this.rnInstanceRegistry?.forEach((rnInstance) => {
       rnInstance.onNewWant(want.uri);
     })
-  }
-
-  public updatePackagerClientConfig(config: JSPackagerClientConfig) {
-    this.jsPackagerClient.updateConnect(config);
   }
 }
