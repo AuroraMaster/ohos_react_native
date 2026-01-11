@@ -34,7 +34,7 @@ import { WorkerThread } from "./WorkerThread"
 import font from "@ohos.font"
 import { common } from '@kit.AbilityKit'
 import { emitter } from '@kit.BasicServicesKit';
-import type { JSPackagerClientConfig } from './JSPackagerClient'
+import { JSPackagerClient } from "./JSPackagerClient"
 
 export type Resource = Exclude<font.FontOptions["familySrc"], string>
 
@@ -89,12 +89,7 @@ export type StageChangeEventArgsByEventName = {
   APP_STATE_BLUR: [];
 }
 
-
 export type BundleExecutionStatus = "RUNNING" | "DONE"
-
-interface RNInstancesCoordinator {
-  updatePackagerClientConfig: (config: JSPackagerClientConfig) => void;
-}
 
 const rootDescriptor = {
   isDynamicBinder: false,
@@ -915,8 +910,14 @@ export class RNInstanceImpl implements RNInstance {
           host: hotReloadConfig.host,
           port: hotReloadConfig.port
         }
-        const curInstancesCoordinator = AppStorage.get('RNInstancesCoordinator') as RNInstancesCoordinator;
-        curInstancesCoordinator?.updatePackagerClientConfig(updateConfig)
+        const client = AppStorage.get("jsPackagerClient") as JSPackagerClient | undefined;
+        client?.updateConnect(updateConfig);
+        if (!client) {
+          this.logger.warn(
+            "JSPackagerClient is not initialized. " +
+              "Please ensure RNInstancesCoordinator is used or register it manually."
+          )
+        }
       }
       const isRemoteBundle = bundleURL.startsWith("http")
       if (this.shouldEnableDebugger && isRemoteBundle) {
