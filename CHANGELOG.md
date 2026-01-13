@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.0.2.210
+
+- [chore]: updated to version 6.0.2.200(0.72.109),([c6f0acedd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c6f0acedd584f5cc49bdfddae3cd1434ef7a783e))
+- fix:crash when AnimatedTM destroyed,([396a14944](https://gitcode.com/openharmony-sig/ohos_react_native/commit/396a14944fd29543f9ec186915838497e7d36b9d))
+- fix:fix memory leak in TurboModule,([58179914c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/58179914ceb55ca20521fa80a7a9d6849766b4aa))
+- 【轻量级 PR】update: 更新文件 规格类FAQ.md,([c3c9b8e1d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c3c9b8e1deb0ef8b49938da1735b901e0f4f96d1))
+- Add immediate font scaling support for system font size changes,([2b6de3fb4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2b6de3fb4b940864058e0a5035071611102d59b8))
+- 新增性能优化指南,([e3f7817d0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/e3f7817d0ba3618f6c3e66c419753ae045c6bf89))
+
 ## 6.0.2.200
 
 - Fix: getValidMutations method bug,([16e90855a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/16e90855a78b97b516c311f179dd95cadb424420))
