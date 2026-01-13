@@ -356,6 +356,10 @@ export class RNInstancesCoordinator {
     }
   }
 
+  public onUpdateDecorHeight() {
+    this.displayMetricsManager.updateDecorHeight();
+  }
+
   public onWindowSizeChange(windowSize: window.Size | window.Rect) {
     const currentTime = Date.now();
     if (currentTime - this.lastChangeTime > this.delayTime) {

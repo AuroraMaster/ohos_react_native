@@ -71,11 +71,7 @@ export class DisplayMetricsManager {
     return this.displayMetrics.windowPhysicalPixels.fontScale
   }
 
-  public updateWindowSize(windowSize: window.Size | window.Rect) {
-    this.displayMetrics.windowPhysicalPixels.height = windowSize.height;
-    this.displayMetrics.windowPhysicalPixels.width = windowSize.width;
-    this.displayMetrics.windowPhysicalPixels.top = (windowSize as window.Rect).top || 0;
-    this.displayMetrics.windowPhysicalPixels.left = (windowSize as window.Rect).left || 0;
+  public updateDecorHeight() {
     try {
       if (this.mainWindow.getWindowDecorVisible()) {
         this.displayMetrics.windowPhysicalPixels.decorHeight =
@@ -88,6 +84,14 @@ export class DisplayMetricsManager {
       this.displayMetrics.windowPhysicalPixels.decorHeight = 0;
       this.logger.error(`Failed to get window decor height: ${JSON.stringify(err)}`);
     }
+    this.updateDisplayMetrics()
+  }
+
+  public updateWindowSize(windowSize: window.Size | window.Rect) {
+    this.displayMetrics.windowPhysicalPixels.height = windowSize.height;
+    this.displayMetrics.windowPhysicalPixels.width = windowSize.width;
+    this.displayMetrics.windowPhysicalPixels.top = (windowSize as window.Rect).top || 0;
+    this.displayMetrics.windowPhysicalPixels.left = (windowSize as window.Rect).left || 0;
     this.updateDisplayMetrics()
   }
 

@@ -57,6 +57,7 @@ export abstract class RNAbility extends UIAbility {
         return;
       }
       logger.info("Succeeded in loading the content", JSON.stringify(data))
+      this.rnInstancesCoordinator?.onUpdateDecorHeight();
     });
   }
 
@@ -159,7 +160,10 @@ export abstract class RNAbility extends UIAbility {
       }
       await this.onWindowSetup(mainWindow)
       await this.onWindowStageSetup(windowStage)
-      this.rnInstancesCoordinator?.onWindowSizeChange(mainWindow.getWindowProperties().windowRect)
+      let windowSize = mainWindow.getWindowProperties().windowRect
+      windowSize.top = 0
+      windowSize.left = 0
+      this.rnInstancesCoordinator?.onWindowSizeChange(windowSize)
     } catch (err) {
       logger.error("Failed to setup window", JSON.stringify(err))
     } finally {
