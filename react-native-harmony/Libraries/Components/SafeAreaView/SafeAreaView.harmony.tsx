@@ -22,6 +22,14 @@ const safeAreaTurboModule = TurboModuleRegistry.get<Spec>(
   "SafeAreaTurboModule"
 )!;
 
+let cachedInitialInsets: SafeAreaInsets | null = null;
+const getCachedInitialInsets = (): SafeAreaInsets => {
+  if (!cachedInitialInsets) {
+    cachedInitialInsets = safeAreaTurboModule.getInitialInsets();
+  }
+  return cachedInitialInsets;
+};
+
 const getPaddingTop = (inset: number, pageY: number) => {
   return Math.max(0, inset - (pageY < 0 ? pageY * -1 : pageY));
 }
@@ -71,10 +79,12 @@ export default React.forwardRef<View, ViewProps>(
 
     const safeAreaViewRef = React.useRef<View>(null);
 
-    const [topInset, setTopInset] = useState(safeAreaTurboModule.getInitialInsets().top);
-    const [leftInset, setLeftInset] = useState(safeAreaTurboModule.getInitialInsets().left);
-    const [rightInset, setRightInset] = useState(safeAreaTurboModule.getInitialInsets().right);
-    const [bottomInset, setBottomInset] = useState(safeAreaTurboModule.getInitialInsets().bottom);
+    const [initialInsets] = useState(() => getCachedInitialInsets());
+
+    const [topInset, setTopInset] = useState(initialInsets.top);
+    const [leftInset, setLeftInset] = useState(initialInsets.left);
+    const [rightInset, setRightInset] = useState(initialInsets.right);
+    const [bottomInset, setBottomInset] = useState(initialInsets.bottom);
 
     const [measurement, setMeasurement] = useState({ x: 0, y: 0, width: 0, height: 0, pageX: 0, pageY: -1 });
     const [layout, setLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
@@ -91,6 +101,8 @@ export default React.forwardRef<View, ViewProps>(
         const subscription = (RCTDeviceEventEmitter as any).addListener(
           "SAFE_AREA_INSETS_CHANGE",
           (insets: SafeAreaInsets) => {
+            cachedInitialInsets = insets; 
+
             setTopInset(insets.top);
             setBottomInset(insets.bottom);
             setLeftInset(insets.left);
@@ -101,7 +113,7 @@ export default React.forwardRef<View, ViewProps>(
           subscription.remove();
         };
       },
-      [setTopInset, setLeftInset, setRightInset, setBottomInset, measurement.pageY]
+      []
     );
 
     useLayoutEffect(() => {
@@ -123,7 +135,7 @@ export default React.forwardRef<View, ViewProps>(
         style={[
           style,
           {
-            paddingTop: isPaddingTopExplicit ? style.paddingBottom : paddingTop,
+            paddingTop: isPaddingTopExplicit ? style.paddingTop : paddingTop,
             paddingLeft: isPaddingLeftExplicit ? style.paddingLeft : leftInset,
             paddingRight: isPaddingRightExplicit ? style.paddingRight : rightInset,
             paddingBottom: isPaddingBottomExplicit ? style.paddingBottom : paddingBottom,
