@@ -50,7 +50,7 @@ const getPaddingBottom = (insetBottom: number, insetTop: number, paddingTop: num
   }
 
   if (height < windowHeight && pageY < windowHeight && pageY > 0 && positionY > 0) {
-    return Math.max(0, insetBottom - (windowHeight - pageY));
+     return Math.max(0, Math.round(pageY + height) - Math.round(windowHeight - insetBottom));
   }
 
   // if SafeAreaView nested and outside of the current viewport - for example in scroll view
