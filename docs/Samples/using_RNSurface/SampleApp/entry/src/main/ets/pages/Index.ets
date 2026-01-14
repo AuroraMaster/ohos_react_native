@@ -96,7 +96,7 @@ export struct Index {
   }
 
   build() {
-    NavDestination() {
+    Column() {
       if (this.isBundleReady) {
         Column() {
           RNSurface({
