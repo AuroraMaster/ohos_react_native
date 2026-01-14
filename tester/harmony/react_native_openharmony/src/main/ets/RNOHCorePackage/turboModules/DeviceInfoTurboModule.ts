@@ -20,14 +20,47 @@ export class DeviceInfoTurboModule extends TurboModule {
 
   private displayMetrics?: DisplayMetrics = null;
   private cleanUpCallbacks?: (() => void)[] = []
+  private lastEmittedDisplayMetricsSignature: string | null = null;
+
+  private getDisplayMetricsSignature(displayMetrics: DisplayMetrics): string {
+    const wp = displayMetrics.windowPhysicalPixels;
+    const sp = displayMetrics.screenPhysicalPixels;
+    const num = (value: number | undefined) =>
+      value == null ? '' : String(Math.round(value * 1000) / 1000);
+    return [
+      num(wp.top),
+      num(wp.left),
+      num(wp.width),
+      num(wp.height),
+      num(wp.decorHeight),
+      num(wp.scale),
+      num(wp.fontScale),
+      num(wp.densityDpi),
+      num(wp.xDpi),
+      num(wp.yDpi),
+      num(sp.width),
+      num(sp.height),
+      num(sp.scale),
+      num(sp.fontScale),
+      num(sp.densityDpi),
+      num(sp.xDpi),
+      num(sp.yDpi),
+    ].join('|');
+  }
 
   constructor(protected ctx: TurboModuleContext, initialDisplayMetrics: DisplayMetrics) {
     super(ctx);
     this.displayMetrics = initialDisplayMetrics;
     const updateDisplayMetrics = () => {
-      this.displayMetrics = this.ctx.getDisplayMetrics();
-      this.ctx.rnInstance.emitDeviceEvent("didUpdateDimensions", this.displayMetrics);
-      this.ctx.rnInstance.postMessageToCpp("CONFIGURATION_UPDATE",this.displayMetrics);
+      const nextDisplayMetrics = this.ctx.getDisplayMetrics();
+      this.displayMetrics = nextDisplayMetrics;
+      const signature = this.getDisplayMetricsSignature(nextDisplayMetrics);
+      if (signature === this.lastEmittedDisplayMetricsSignature) {
+        return;
+      }
+      this.lastEmittedDisplayMetricsSignature = signature;
+      this.ctx.rnInstance.emitDeviceEvent("didUpdateDimensions", nextDisplayMetrics);
+      this.ctx.rnInstance.postMessageToCpp("CONFIGURATION_UPDATE", nextDisplayMetrics);
     }
     this.cleanUpCallbacks.push(
       this.ctx.rnInstance.subscribeToLifecycleEvents("CONFIGURATION_UPDATE", updateDisplayMetrics)
@@ -69,6 +102,5 @@ export class DeviceInfoTurboModule extends TurboModule {
     };
   }
 }
-
 
 

@@ -383,6 +383,18 @@ export class RNInstancesCoordinator {
     }
   }
 
+  public onSystemDensityChange(density: number, windowSize: window.Size) {
+    const logger = this.logger.clone("onSystemDensityChange")
+    logger.debug(`density=${density}`)
+    this.displayMetricsManager.updateDisplayMetrics()
+    this.displayMetricsManager.updateWindowSize(windowSize)
+    const displayMetrics = this.displayMetricsManager.getDisplayMetrics()
+    this.rnInstanceRegistry.forEach((rnInstance) => {
+      rnInstance.emitDeviceEvent('systemDensityChange', { density, displayMetrics })
+      rnInstance.onWindowSizeChange(windowSize)
+    })
+  }
+
   public onConfigurationUpdate(systemConfiguration: AbilityConfiguration.Configuration) {
     this.displayMetricsManager?.setFontSizeScale(systemConfiguration.fontSizeScale);
     
