@@ -1,5 +1,18 @@
 # Changelog
 
+## 6.0.2.221
+
+- [chore]: updated to version 6.0.2.221(0.72.112),([c9a93b301](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c9a93b301fdc307d50c0f0e8a3afca546bdbf174))
+- fix the issue where the modified text in the onKeyPress function only displays the last character,([b298881b2](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b298881b2928c9dd643b14a69a2ec699ed000a38))
+
+## 6.0.2.220
+
+- fix the issue where the modified text in the onKeyPress function only displays the last character,([b298881b2](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b298881b2928c9dd643b14a69a2ec699ed000a38))
+- [chore]: updated to version 6.0.2.210(0.72.110),([42dc696e8](https://gitcode.com/openharmony-sig/ohos_react_native/commit/42dc696e8de0e449db3d85aec6588624b31ad5af))
+- Fix layout jitter in SafeAreaView by refining bottom inset calculation,([ceadd852f](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ceadd852fabf464bed9c91b3c15411f8f576c8cb))
+- Fix: Adjust Timing of getWindowDecorVisible Call to Prevent Exceptions,([fd45a5dba](https://gitcode.com/openharmony-sig/ohos_react_native/commit/fd45a5dba103944af8438cebf9f03745a3ddf78d))
+- fix: Fix issue where Dev Menu could not be used without RNAbility.,([e74fcbcc5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/e74fcbcc54a550e60c006724e5cc3b0ee6db85e0))
+
 ## 6.0.2.210
 
 - [chore]: updated to version 6.0.2.200(0.72.109),([c6f0acedd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c6f0acedd584f5cc49bdfddae3cd1434ef7a783e))

@@ -16,9 +16,8 @@ import AbilityConstant from '@ohos.app.ability.AbilityConstant';
 import AbilityConfiguration from '@ohos.app.ability.Configuration';
 import { HttpClient, DefaultHttpClient } from "../HttpClient"
 import { EnvironmentCallback } from '@kit.AbilityKit';
-import { BusinessError, deviceInfo } from '@kit.BasicServicesKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 import { EventEmitter } from './EventEmitter';
-import { OH_API_LEVEL_15 } from './types';
 
 /**
  Application developers are expected to extend this class. RNAbility aims to move much of the code to the RNOH side in order to improve stability.
@@ -148,40 +147,15 @@ export abstract class RNAbility extends UIAbility {
       const onWindowStageChange = (windowStageEvent: window.WindowStageEventType) => {
         this.rnInstancesCoordinator?.onWindowStageChange(windowStageEvent)
       }
-      let onSystemDensityChange: ((density: number) => void) | undefined = undefined;
       mainWindow.on('windowSizeChange', onWindowSizeChange)
       mainWindow.on('windowRectChange', onWindowReactChange)
       windowStage.on('windowStageEvent', onWindowStageChange)
-      if (deviceInfo.sdkApiVersion >= OH_API_LEVEL_15) {
-        onSystemDensityChange = (density: number) => {
-          const logger = this.logger.clone("systemDensityChange")
-          logger.debug(`callbackDensity=${density}`)
-          try {
-            const densityInfo = mainWindow.getWindowDensityInfo()
-            logger.debug(`windowDensityInfo.customDensity=${densityInfo.customDensity}`)
-          } catch (err) {
-            logger.warn(`Failed to read getWindowDensityInfo: ${JSON.stringify(err)}`)
-          }
-          const windowRect = mainWindow.getWindowProperties().windowRect
-          this.rnInstancesCoordinator?.onSystemDensityChange(density, { width: windowRect.width, height: windowRect.height })
-        }
-        mainWindow.on('systemDensityChange', onSystemDensityChange)
-      }
       this.unregisterWindowListenerCallback()
       this.unregisterWindowListenerCallback = () => {
         try {
           mainWindow.off("windowSizeChange", onWindowSizeChange)
         } catch {
           this.logger?.error("Error when trying to unsubscribe from window size changes")
-        }
-        if (deviceInfo.sdkApiVersion >= OH_API_LEVEL_15) {
-          try {
-            if (onSystemDensityChange !== undefined) {
-              mainWindow.off("systemDensityChange", onSystemDensityChange)
-            }
-          } catch {
-            this.logger?.error("Error when trying to unsubscribe from system density changes")
-          }
         }
       }
       await this.onWindowSetup(mainWindow)

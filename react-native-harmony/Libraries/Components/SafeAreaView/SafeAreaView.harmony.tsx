@@ -58,7 +58,7 @@ const getPaddingBottom = (insetBottom: number, insetTop: number, paddingTop: num
   }
 
   if (height < windowHeight && pageY < windowHeight && pageY > 0 && positionY > 0) {
-     return Math.max(0, Math.round(pageY + height) - Math.round(windowHeight - insetBottom));
+     return Math.max(0, insetBottom - (windowHeight - pageY));
   }
 
   // if SafeAreaView nested and outside of the current viewport - for example in scroll view
@@ -135,7 +135,7 @@ export default React.forwardRef<View, ViewProps>(
         style={[
           style,
           {
-            paddingTop: isPaddingTopExplicit ? style.paddingTop : paddingTop,
+            paddingTop: isPaddingTopExplicit ? style.paddingBottom : paddingTop,
             paddingLeft: isPaddingLeftExplicit ? style.paddingLeft : leftInset,
             paddingRight: isPaddingRightExplicit ? style.paddingRight : rightInset,
             paddingBottom: isPaddingBottomExplicit ? style.paddingBottom : paddingBottom,
