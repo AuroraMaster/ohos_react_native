@@ -41,8 +41,8 @@
 #include "RNOH/ComponentInstancePreallocationRequestQueue.h"
 #include "RNOH/ComponentInstanceRegistry.h"
 #include "RNOH/CustomComponentArkUINodeHandleFactory.h"
-#include "RNOH/MountingManagerCAPI.h"
 #include "RNOH/ImageSourceResolver.h"
+#include "RNOH/MountingManagerCAPI.h"
 #include "RNOH/ParallelComponent.h"
 #endif
 
@@ -81,12 +81,11 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
     std::unordered_set<std::string> arkTsComponentNames,
     std::unordered_map<std::string, std::string> fontPathByFontFamily,
     std::string hspModuleName,
-    std::string cacheDir
-    ) {  
+    std::string cacheDir) {
   HarmonyReactMarker::logMarker(
       HarmonyReactMarker::HarmonyReactMarkerId::REACT_INSTANCE_INIT_START, id);
   auto shouldUseCAPIArchitecture =
-       featureFlagRegistry->getFeatureFlagStatus("C_API_ARCH");
+      featureFlagRegistry->getFeatureFlagStatus("C_API_ARCH");
   auto taskExecutor = std::make_shared<TaskExecutor>(
       env, std::move(workerTaskRunner), shouldEnableBackgroundExecutor);
   auto arkTSChannel = std::make_shared<ArkTSChannel>(
@@ -158,7 +157,7 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
     };
 
     for (auto& componentName : package->getComponentCreateInSubThread()) {
-        ComponentNameManager::getInstance().addComponentName(componentName);
+      ComponentNameManager::getInstance().addComponentName(componentName);
     };
     auto packageGlobalJSIBinders = package->createGlobalJSIBinders();
     globalJSIBinders.insert(
@@ -243,12 +242,13 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
         componentInstanceRegistry;
     auto componentInstancePreallocationRequestQueue =
         std::make_shared<ComponentInstancePreallocationRequestQueue>();
-    auto componentInstanceProvider = std::make_shared<ComponentInstanceProvider>(
-        componentInstancePreallocationRequestQueue,
-        componentInstanceFactory,
-        componentInstanceRegistry,
-        uiTicker,
-        taskExecutor);
+    auto componentInstanceProvider =
+        std::make_shared<ComponentInstanceProvider>(
+            componentInstancePreallocationRequestQueue,
+            componentInstanceFactory,
+            componentInstanceRegistry,
+            uiTicker,
+            taskExecutor);
     componentInstanceProvider->initialize();
     auto mountingManagerCAPI = std::make_shared<MountingManagerCAPI>(
         componentInstanceRegistry,
@@ -259,11 +259,12 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
         featureFlagRegistry,
         arkTSChannel);
     SharedNativeResourceManager nativeResourceManager(
-      OH_ResourceManager_InitNativeResourceManager(env, jsResourceManager),
-      OH_ResourceManager_ReleaseNativeResourceManager);
+        OH_ResourceManager_InitNativeResourceManager(env, jsResourceManager),
+        OH_ResourceManager_ReleaseNativeResourceManager);
     for (auto& [fontFamilyName, fontPathRelativeToRawfileDir] :
-       fontPathByFontFamily) {
-      textMeasurer->registerFont(nativeResourceManager, fontFamilyName, fontPathRelativeToRawfileDir);
+         fontPathByFontFamily) {
+      textMeasurer->registerFont(
+          nativeResourceManager, fontFamilyName, fontPathRelativeToRawfileDir);
     }
     auto rnInstance = std::make_shared<RNInstanceCAPI>(
         id,

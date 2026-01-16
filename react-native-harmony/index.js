@@ -215,5 +215,8 @@ module.exports = {
     return require('react-native/Libraries/Renderer/shims/ReactNative')
       .dispatchCommand;
   },
+  get RegisterPageName() {
+    return require('./Libraries/RegisterPageName/RegisterPageName').default;
+  },
   // END: react-native-harmony specific exports
 };

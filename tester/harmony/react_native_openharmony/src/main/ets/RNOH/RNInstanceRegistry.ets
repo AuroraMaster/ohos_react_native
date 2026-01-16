@@ -14,9 +14,9 @@ import type { RNOHLogger } from './RNOHLogger';
 import type { DevToolsController } from './DevToolsController';
 import { HttpClientProvider } from './HttpClientProvider';
 import { HttpClient } from '../HttpClient/ts';
-import { DisplayMetricsManager } from "./DisplayMetricsManager"
+import { DisplayMetricsManager } from './DisplayMetricsManager'
 import resourceManager from '@ohos.resourceManager';
-import { WorkerThread } from "./WorkerThread"
+import { WorkerThread } from './WorkerThread'
 import common from '@ohos.app.ability.common'
 import { RNOHCorePackage } from '../RNOHCorePackage/Package'
 import { RNOHErrorEventEmitter } from './RNOHError';
@@ -48,6 +48,7 @@ export class RNInstanceRegistry {
   private workerThreadPromise: Promise<WorkerThread> | undefined
   private launchUri?: string
   private cacheDir?: string
+  private onInstanceCreated?: (rnInstance: RNInstanceImpl) => void
 
   constructor(
     uiAbilityContext: common.UIAbilityContext,
@@ -63,7 +64,8 @@ export class RNInstanceRegistry {
     displayMetricsManager: DisplayMetricsManager,
     workerThreadPromise: Promise<WorkerThread> | undefined,
     launchUri: string | undefined,
-    cacheDir: string | undefined
+    cacheDir: string | undefined,
+    onInstanceCreated?: (rnInstance: RNInstanceImpl) => void,
   ) {
     this.uiAbilityContext = uiAbilityContext
     this.envId = envId
@@ -79,6 +81,7 @@ export class RNInstanceRegistry {
     this.workerThreadPromise = workerThreadPromise
     this.launchUri = launchUri
     this.cacheDir = cacheDir
+    this.onInstanceCreated = onInstanceCreated
   }
 
   public async createInstance(options: RNInstanceOptions): Promise<RNInstance> {
@@ -139,6 +142,7 @@ export class RNInstanceRegistry {
     packages.unshift(new RNOHCorePackage({}));
     await rnInstance.initialize(packages);
     this.instanceMap.set(id, rnInstance);
+    this.onInstanceCreated?.(rnInstance);
     return rnInstance;
   }
 

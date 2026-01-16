@@ -455,6 +455,7 @@ set(RNOH_SOURCE
     "${RNOH_CPP_DIR}/RNOHCorePackage/TurboModules/Animated/Drivers/DecayAnimationDriver.cpp"
     "${RNOH_CPP_DIR}/RNOHCorePackage/TurboModules/Animated/Drivers/EventAnimationDriver.cpp"
     "${RNOH_CPP_DIR}/RNOHCorePackage/TurboModules/I18nManagerTurboModule.cpp"
+    "${RNOH_CPP_DIR}/RNOHCorePackage/TurboModules/RegisterPageNameTurboModule.cpp"
     "${RNOH_CPP_DIR}/RNOHCorePackage/EventEmitRequestHandlers/TouchEventEmitRequestHandler.cpp"
     "${RNOH_CPP_DIR}/RNOH/arkui/DynamicArkUILoader.cpp"
     "${RNOH_CPP_DIR}/RNOH/arkui/NodeApi.cpp"
@@ -522,6 +523,7 @@ endif()
 target_link_libraries(rnoh PUBLIC
     libace_napi.z.so
     libace_ndk.z.so
+    libability_runtime.so
     libdeviceinfo_ndk.z.so   
     libhilog_ndk.z.so
     librawfile.z.so

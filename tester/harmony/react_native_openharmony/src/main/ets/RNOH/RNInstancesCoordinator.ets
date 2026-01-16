@@ -102,7 +102,7 @@ function getMetadata(name: string): string {
  */
 export class RNInstancesCoordinator {
   private static isInitialized = false
-  private isBoldTextEnabled:boolean | undefined = undefined;
+  private isBoldTextEnabled: boolean | undefined = undefined;
 
   static create(dependencies: RNInstancesCoordinatorDependencies,
     options?: RNInstancesCoordinatorOptions): RNInstancesCoordinator {
@@ -118,7 +118,8 @@ export class RNInstancesCoordinator {
     const devToolsController = new DevToolsController(dependencies.logger);
     const napiBridge = new NapiBridge(dependencies.logger);
     const displayMetricsManager = new DisplayMetricsManager(dependencies.logger);
-    displayMetricsManager.setFontSizeScale(dependencies.fontSizeScale ?? dependencies.uiAbilityContext.config.fontSizeScale ?? 1)
+    displayMetricsManager.setFontSizeScale(dependencies.fontSizeScale ??
+    dependencies.uiAbilityContext.config.fontSizeScale ?? 1)
     const globalRNOHErrorEventEmitter: RNOHErrorEventEmitter = new EventEmitter();
     globalRNOHErrorEventEmitter.subscribe("NEW_ERROR", (err) => {
       dependencies.logger.error(err);
@@ -210,10 +211,12 @@ export class RNInstancesCoordinator {
   private timerId: number = 0;
   private lastChangeTime: number = 0;
   private isWindowRectDrag: boolean = false;
+  private windowId: number | undefined = undefined;
+  private bundleCodeDir: string | undefined = undefined;
   /**
-  * Note: You may need to change this delay along with RNSurface's onMeasuredSize delay, 
-  * as both have an effect on window changes. 
-  */
+   * Note: You may need to change this delay along with RNSurface's onMeasuredSize delay,
+   * as both have an effect on window changes.
+   */
   private readonly delayTime: number = 500;
 
   private constructor(napiBridge: NapiBridge,
@@ -271,7 +274,15 @@ export class RNInstancesCoordinator {
       displayMetricsManager,
       workerThreadPromise,
       this.options?.launchURI,
-      this.uiAbilityContext.cacheDir
+      this.uiAbilityContext.cacheDir,
+      (rnInstance) => {
+        if (this.windowId !== undefined) {
+          rnInstance.postMessageToCpp("WINDOW_ID", this.windowId);
+        }
+        if (this.bundleCodeDir !== undefined) {
+          rnInstance.postMessageToCpp("BUNDLE_CODE_DIR", this.bundleCodeDir);
+        }
+      }
     )
     this.rnohCoreContext = new InternalRNOHCoreContext({
       reactNativeVersion: "0.72.5",
@@ -372,7 +383,7 @@ export class RNInstancesCoordinator {
       if (this.timerId) {
         clearTimeout(this.timerId)
       }
-      this.timerId = setTimeout(() =>{
+      this.timerId = setTimeout(() => {
         this.displayMetricsManager.updateWindowSize(windowSize);
         this.rnInstanceRegistry.forEach((rnInstance) => {
           rnInstance.onWindowSizeChange(windowSize)
@@ -385,7 +396,7 @@ export class RNInstancesCoordinator {
 
   public onConfigurationUpdate(systemConfiguration: AbilityConfiguration.Configuration) {
     this.displayMetricsManager?.setFontSizeScale(systemConfiguration.fontSizeScale);
-    
+
     const fontWeightScale = systemConfiguration.fontWeightScale;
     let isEmitBoldTextEvent = false;
     if (fontWeightScale !== undefined) {
@@ -416,5 +427,18 @@ export class RNInstancesCoordinator {
     this.rnInstanceRegistry?.forEach((rnInstance) => {
       rnInstance.onNewWant(want.uri);
     })
+  }
+
+  public postMessageToCpp(name: string, payload: ESObject) {
+    if (name === "WINDOW_ID" && typeof payload === "number") {
+      this.windowId = payload;
+    }
+    if (name === "BUNDLE_CODE_DIR" && typeof payload === "string") {
+      this.bundleCodeDir = payload;
+    }
+
+    this.rnInstanceRegistry?.forEach((rnInstance) => {
+      rnInstance.postMessageToCpp(name, payload);
+    });
   }
 }
