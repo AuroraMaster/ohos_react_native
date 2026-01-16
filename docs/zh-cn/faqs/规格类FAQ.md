@@ -93,10 +93,3 @@ export default App;
 
 - 如果不要求支持国际化，可使用toLowerCase转换。
 - 如果要求支持国际化，需要对部分国际化语言字符进行自定义特殊转换。
-
-### 由于ArkUi在API15之前的版本没有接口可以实现监听系统界面缩放每个档位的变化事件，因此RN鸿蒙在API15之前也无法实现监听系统界面缩放大小中每个档位的变化事件，从而会导致系统界面缩放大小变化时，updaDisplayMetric无法更新scale和DPI，后续布局计算使用旧值计算容器的大小，最后出现字体超出容器的现象。
-
-**onConfigurationUpdate**:API15版本之前唯一可以用于监听界面大小缩放的接口，但是由于规格问题，这个接口只能接听到DPI在不同区间变化的时机。详情可以观看这个链接:https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-app-ability-configuration。
-
-**on('systemDensityChange')**:API15之后可以用于监听系统界面大小每个档位变化的时机。这个接口只用于监听系统界面缩放大小的变化。详情可以见:https://developer.huawei.com/consumer/cn/doc/harmonyos-references/arkts-apis-window-window#onsystemdensitychange15.
-
