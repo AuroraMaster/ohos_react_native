@@ -19,11 +19,11 @@
 #include "RNOH/ArkTSBridge.h"
 #include "RNOH/Inspector.h"
 #include "RNOH/LogSink.h"
+#include "RNOH/ParallelCheck.h"
 #include "RNOH/Performance/HarmonyReactMarker.h"
 #include "RNOH/Performance/OHReactMarkerListener.h"
 #include "RNOH/RNInstance.h"
 #include "RNOH/RNInstanceCAPI.h"
-#include "RNOH/ParallelCheck.h"
 #include "RNOH/TaskExecutor/NapiTaskRunner.h"
 #include "RNOH/TaskExecutor/ThreadTaskRunner.h"
 #include "RNOH/UITicker.h"
@@ -65,13 +65,13 @@ auto extractOrDefault(Map& map, K&& key, V&& defaultValue)
 std::shared_ptr<facebook::react::JSExecutorFactory> getDefaultJSExecutorFactory(
     bool shouldEnableDebugger,
     folly::dynamic initOptions) {
-  #if USE_HERMES
-    DLOG(INFO) << "Using HermesExecutorFactory";
-    return createHermesExecutorFactory(shouldEnableDebugger);
-  #else
-    DLOG(INFO) << "Using JSVMExecutorFactory";
-    return createJSVMExecutorFactory(initOptions);
-  #endif
+#if USE_HERMES
+  DLOG(INFO) << "Using HermesExecutorFactory";
+  return createHermesExecutorFactory(shouldEnableDebugger);
+#else
+  DLOG(INFO) << "Using JSVMExecutorFactory";
+  return createJSVMExecutorFactory(initOptions);
+#endif
 }
 
 std::mutex RN_INSTANCE_BY_ID_MTX;
@@ -115,40 +115,40 @@ static napi_value onInit(napi_env env, napi_callback_info info) {
 #endif
   LogSink::initializeLogging();
   auto logVerbosityLevel = 0;
- 
+
 #ifdef LOG_VERBOSITY_LEVEL
-    FLAGS_v = LOG_VERBOSITY_LEVEL;
-    logVerbosityLevel = LOG_VERBOSITY_LEVEL;
+  FLAGS_v = LOG_VERBOSITY_LEVEL;
+  logVerbosityLevel = LOG_VERBOSITY_LEVEL;
 #endif
   DLOG(INFO) << "onInit (LOG_VERBOSITY_LEVEL=" << logVerbosityLevel << ")";
   ArkJS arkJs(env);
   auto args = arkJs.getCallbackArgs(info, 1);
-    nextEnvId++;
+  nextEnvId++;
   auto shouldClearRNInstances = arkJs.getBoolean(args[0]);
-    if (shouldClearRNInstances) {
-      /**
-       * This CPP code can survive closing an app. The app can be closed before
-       * removing all RNInstances. As a workaround, all rnInstances are removed
-       * on the start.
-       */
-      CLEANUP_RUNNER->runAsyncTask([] {
-        decltype(RN_INSTANCE_BY_ID) instances;
-        {
-          std::lock_guard<std::mutex> lock(RN_INSTANCE_BY_ID_MTX);
-          std::swap(RN_INSTANCE_BY_ID, instances);
-        }
-        instances.clear();
-      });
-      ARK_TS_BRIDGE_BY_ENV_ID.clear();
-    }
-    auto isDebugModeEnabled = false;
+  if (shouldClearRNInstances) {
+    /**
+     * This CPP code can survive closing an app. The app can be closed before
+     * removing all RNInstances. As a workaround, all rnInstances are removed
+     * on the start.
+     */
+    CLEANUP_RUNNER->runAsyncTask([] {
+      decltype(RN_INSTANCE_BY_ID) instances;
+      {
+        std::lock_guard<std::mutex> lock(RN_INSTANCE_BY_ID_MTX);
+        std::swap(RN_INSTANCE_BY_ID, instances);
+      }
+      instances.clear();
+    });
+    ARK_TS_BRIDGE_BY_ENV_ID.clear();
+  }
+  auto isDebugModeEnabled = false;
 #ifdef REACT_NATIVE_DEBUG
   isDebugModeEnabled = true;
 #endif
-    return arkJs.createObjectBuilder()
-        .addProperty("isDebugModeEnabled", isDebugModeEnabled)
-        .addProperty("envId", nextEnvId)
-        .build();
+  return arkJs.createObjectBuilder()
+      .addProperty("isDebugModeEnabled", isDebugModeEnabled)
+      .addProperty("envId", nextEnvId)
+      .build();
 }
 
 napi_value initializeArkTSBridge(napi_env env, napi_callback_info info) {
@@ -203,9 +203,7 @@ static napi_value getNextRNInstanceId(
   }
 }
 
-static napi_value onCreateRNInstance(
-    napi_env env,
-    napi_callback_info info) {
+static napi_value onCreateRNInstance(napi_env env, napi_callback_info info) {
   ArkJS arkJs(env);
   try {
     DLOG(INFO) << "createReactNativeInstance";
@@ -230,12 +228,10 @@ static napi_value onCreateRNInstance(
     auto arkTsComponentNamesDynamic = arkJs.getDynamic(args[11]);
     std::unordered_set<std::string> arkTsComponentNames = {};
     for (size_t i = 0; i < arkTsComponentNamesDynamic.size(); ++i) {
-        arkTsComponentNames.emplace(arkTsComponentNamesDynamic[i].asString());
+      arkTsComponentNames.emplace(arkTsComponentNamesDynamic[i].asString());
     }
-    auto fontPathByFontFamilyEntries =
-        arkJs.getObjectProperties(args[12]);
-    std::unordered_map<std::string, std::string>
-        fontPathByFontFamily;
+    auto fontPathByFontFamilyEntries = arkJs.getObjectProperties(args[12]);
+    std::unordered_map<std::string, std::string> fontPathByFontFamily;
     for (auto& [fontFamily, fontPathRelativeToRawfileDir] :
          fontPathByFontFamilyEntries) {
       fontPathByFontFamily.emplace(
@@ -321,8 +317,8 @@ static napi_value onCreateRNInstance(
     }
     auto [it, _inserted] =
         RN_INSTANCE_BY_ID.emplace(instanceId, std::move(rnInstance));
-    it->second->setJavaScriptExecutorFactory(
-        getDefaultJSExecutorFactory(shouldEnableDebugger, arkJs.getDynamic(args[14])));
+    it->second->setJavaScriptExecutorFactory(getDefaultJSExecutorFactory(
+        shouldEnableDebugger, arkJs.getDynamic(args[14])));
     it->second->start();
   } catch (...) {
     ArkTSBridge::getInstance()->handleError(std::current_exception());
@@ -330,9 +326,7 @@ static napi_value onCreateRNInstance(
   return arkJs.getUndefined();
 }
 
-static napi_value onDestroyRNInstance(
-    napi_env env,
-    napi_callback_info info) {
+static napi_value onDestroyRNInstance(napi_env env, napi_callback_info info) {
   DLOG(INFO) << "destroyReactNativeInstance";
   ArkJS arkJs(env);
   try {
@@ -360,52 +354,51 @@ static napi_value onDestroyRNInstance(
 }
 
 static napi_value loadScript(napi_env env, napi_callback_info info) {
-    const int sourceUrlParamIdx = 2;
-    return invoke(env, [&] {
-        DLOG(INFO) << "loadScript";
-        ArkJS arkJS(env);
-        auto args = arkJS.getCallbackArgs(info, 4);
-        size_t instanceId = arkJS.getDouble(args[0]);
-        auto rnInstance = maybeGetInstanceById(instanceId);
-        if (!rnInstance) {
-            return arkJS.getUndefined();
-        }
-        auto onFinishRef = arkJS.createNapiRef(args[3]);
+  const int sourceUrlParamIdx = 2;
+  return invoke(env, [&] {
+    DLOG(INFO) << "loadScript";
+    ArkJS arkJS(env);
+    auto args = arkJS.getCallbackArgs(info, 4);
+    size_t instanceId = arkJS.getDouble(args[0]);
+    auto rnInstance = maybeGetInstanceById(instanceId);
+    if (!rnInstance) {
+      return arkJS.getUndefined();
+    }
+    auto onFinishRef = arkJS.createNapiRef(args[3]);
 
-        auto callback = [env, onFinishRef = std::move(onFinishRef), rnInstance](
-                            const std::string& errorMsg) mutable {
-            auto taskExecutor = rnInstance->getTaskExecutor();
-            taskExecutor->runTask(
-                TaskThread::MAIN,
-                [env, onFinishRef = std::move(onFinishRef), errorMsg]() {
-                    ArkJS arkJS(env);
-                    auto listener = arkJS.getReferenceValue(onFinishRef);
-                    arkJS.call<1>(listener, {arkJS.createString(errorMsg)});
-                });
-        };
+    auto callback = [env, onFinishRef = std::move(onFinishRef), rnInstance](
+                        const std::string& errorMsg) mutable {
+      auto taskExecutor = rnInstance->getTaskExecutor();
+      taskExecutor->runTask(
+          TaskThread::MAIN,
+          [env, onFinishRef = std::move(onFinishRef), errorMsg]() {
+            ArkJS arkJS(env);
+            auto listener = arkJS.getReferenceValue(onFinishRef);
+            arkJS.call<1>(listener, {arkJS.createString(errorMsg)});
+          });
+    };
 
-        if (arkJS.isArrayBuffer(args[1])) {
-            std::vector<uint8_t> bundleContents = arkJS.getArrayBuffer(args[1]);
-            rnInstance->loadScriptFromBuffer(
-                std::move(bundleContents),
-                arkJS.getString(args[sourceUrlParamIdx]),
-                callback);
-        } else {
-            if (arkJS.hasProperty(args[1], "filePath")) {
-                auto filePathNapiValue =
-                    arkJS.getObjectProperty(args[1], "filePath");
-                std::string filePath = arkJS.getString(filePathNapiValue);
-                rnInstance->loadScriptFromFile(filePath, callback);
-            } else if (arkJS.hasProperty(args[1], "rawFilePath")) {
-                auto rawFilePathNapiValue =
-                    arkJS.getObjectProperty(args[1], "rawFilePath");
-                std::string rawFilePath = arkJS.getString(rawFilePathNapiValue);
-                rnInstance->loadScriptFromRawFile(rawFilePath, callback);
-            }
-        }
+    if (arkJS.isArrayBuffer(args[1])) {
+      std::vector<uint8_t> bundleContents = arkJS.getArrayBuffer(args[1]);
+      rnInstance->loadScriptFromBuffer(
+          std::move(bundleContents),
+          arkJS.getString(args[sourceUrlParamIdx]),
+          callback);
+    } else {
+      if (arkJS.hasProperty(args[1], "filePath")) {
+        auto filePathNapiValue = arkJS.getObjectProperty(args[1], "filePath");
+        std::string filePath = arkJS.getString(filePathNapiValue);
+        rnInstance->loadScriptFromFile(filePath, callback);
+      } else if (arkJS.hasProperty(args[1], "rawFilePath")) {
+        auto rawFilePathNapiValue =
+            arkJS.getObjectProperty(args[1], "rawFilePath");
+        std::string rawFilePath = arkJS.getString(rawFilePathNapiValue);
+        rnInstance->loadScriptFromRawFile(rawFilePath, callback);
+      }
+    }
 
-        return arkJS.getNull();
-    });
+    return arkJS.getNull();
+  });
 }
 
 static napi_value updateSurfaceConstraints(
@@ -679,7 +672,7 @@ static napi_value onArkTSMessage(napi_env env, napi_callback_info info) {
     if (!rnInstance) {
       return arkJs.getUndefined();
     }
-	std::weak_ptr<RNInstanceInternal> weakRNInstance = rnInstance;
+    std::weak_ptr<RNInstanceInternal> weakRNInstance = rnInstance;
     auto taskExecutor = rnInstance->getTaskExecutor();
     if (taskExecutor->isOnTaskThread(TaskThread::MAIN)) {
       rnInstance->handleArkTSMessage(messageName, messagePayload);
@@ -771,8 +764,7 @@ static napi_value setUIContext(napi_env env, napi_callback_info info) {
   });
 }
 
-static napi_value setBundlePath(napi_env env, napi_callback_info info)
-{
+static napi_value setBundlePath(napi_env env, napi_callback_info info) {
   DLOG(INFO) << "setBundlePath";
   ArkJS arkJs(env);
   try {
@@ -833,7 +825,8 @@ static napi_value getNativeNodeIdByTag(napi_env env, napi_callback_info info) {
   });
 }
 
-static napi_value setParallelizationEnabled(napi_env env,
+static napi_value setParallelizationEnabled(
+    napi_env env,
     napi_callback_info info) {
   return invoke(env, [&] {
     ArkJS arkJS(env);
@@ -1031,7 +1024,7 @@ static napi_value Init(napi_env env, napi_value exports) {
        nullptr,
        napi_default,
        nullptr},
-       {"getNativeNodeIdByTag",
+      {"getNativeNodeIdByTag",
        nullptr,
        ::getNativeNodeIdByTag,
        nullptr,
@@ -1039,7 +1032,7 @@ static napi_value Init(napi_env env, napi_value exports) {
        nullptr,
        napi_default,
        nullptr},
-       {"attachRootView",
+      {"attachRootView",
        nullptr,
        ::attachRootView,
        nullptr,

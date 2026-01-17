@@ -83,6 +83,7 @@
 #include "RNOHCorePackage/TurboModules/ToastAndroidTurboModule.h"
 #include "RNOHCorePackage/TurboModules/VibrationTurboModule.h"
 #include "RNOHCorePackage/TurboModules/WebSocketTurboModule.h"
+#include "RNOHCorePackage/TurboModules/RegisterPageNameTurboModule.h"
 
 namespace rnoh {
 
@@ -148,6 +149,8 @@ class RNOHCoreTurboModuleFactoryDelegate : public TurboModuleFactoryDelegate {
       return std::make_shared<ToastAndroidTurboModule>(ctx, name);
     } else if (name == "ShareModule") {
       return std::make_shared<ShareTurboModule>(ctx, name);
+    } else if (name == "RegisterPageName") {
+      return std::make_shared<RegisterPageName>(ctx, name);
     }
     return nullptr;
   };
@@ -260,6 +263,11 @@ class RNOHCorePackage : public Package {
         {"ActivityIndicatorView",
          std::make_shared<ActivityIndicatorComponentNapiBinder>()}};
   };
+
+  std::vector<ArkTSMessageHandler::Shared> createArkTSMessageHandlers()
+      override {
+    return {std::make_shared<RegisterPageNameMessageHandler>()};
+  }
 
   EventEmitRequestHandlers createEventEmitRequestHandlers() override {
     return {

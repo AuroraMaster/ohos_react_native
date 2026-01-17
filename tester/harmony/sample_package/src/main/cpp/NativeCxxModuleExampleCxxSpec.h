@@ -10,8 +10,8 @@
 
 #include <ReactCommon/TurboModule.h>
 #include <react/bridging/Bridging.h>
-#include "RNOH/ArkTSTurboModule.h"
 #include <map>
+#include "RNOH/ArkTSTurboModule.h"
 
 using namespace rnoh;
 using namespace facebook;
@@ -28,17 +28,17 @@ struct ConstantsStruct {
 
 struct ObjectStruct {
   std::string a;
-  std::string b; 
+  std::string b;
   std::string c;
 };
 
 struct objectStruct {
   int32_t a;
-  std::string b;  
+  std::string b;
 };
 
-struct ValueStruct  {
-  double x;  
+struct ValueStruct {
+  double x;
   std::string y;
   objectStruct z;
 };
@@ -57,29 +57,26 @@ class JSI_EXPORT NativeCxxModuleExampleCxxSpecJSI : public TurboModule {
 
   std::string getString(jsi::Runtime& rt, std::string arg);
 
-  jsi::String getValueWithCallback(
-    jsi::Runtime& rt);
+  jsi::String getValueWithCallback(jsi::Runtime& rt);
 
   ConstantsStruct getConstants(jsi::Runtime& rt);
 
   std::vector<std::optional<ObjectStruct>> getArray(
-    jsi::Runtime& rt, 
-    std::vector<std::optional<ObjectStruct>> arg);
+      jsi::Runtime& rt,
+      std::vector<std::optional<ObjectStruct>> arg);
 
-  std::map<std::string,std::optional<int32_t>> getMap(
-    jsi::Runtime& rt,
-    std::map<std::string,
-    std::optional<int32_t>> arg);
+  std::map<std::string, std::optional<int32_t>> getMap(
+      jsi::Runtime& rt,
+      std::map<std::string, std::optional<int32_t>> arg);
 
   objectStruct getObject(jsi::Runtime& rt, objectStruct arg);
 
-  std::set<float> getSet(jsi::Runtime &rt, std::set<float> arg);
+  std::set<float> getSet(jsi::Runtime& rt, std::set<float> arg);
 
-  ValueStruct getValue(jsi::Runtime& rt, 
-     double x, std::string y, objectStruct z);
+  ValueStruct
+  getValue(jsi::Runtime& rt, double x, std::string y, objectStruct z);
 
-  std::string getUnion(jsi::Runtime& rt,float x,
-     std::string y,jsi::Object z);
+  std::string getUnion(jsi::Runtime& rt, float x, std::string y, jsi::Object z);
 
   void voidFunc(jsi::Runtime& rt);
 };
