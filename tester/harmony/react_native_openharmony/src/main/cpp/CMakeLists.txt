@@ -27,6 +27,11 @@ if(PARALLELIZATION_ENABLE)
   add_compile_definitions(PARALLELIZATION_ON)
 endif()
 
+if(SPLIT_MUTATION_ENABLE)
+  message("SPLIT MUTATION is enabled!")
+  add_compile_definitions(SPLIT_MUTATION_ON)
+endif()
+
 add_compile_options("-Wno-error=unused-command-line-argument")
 
 include_directories(${NATIVERENDER_ROOT_PATH}
