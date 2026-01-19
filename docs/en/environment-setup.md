@@ -183,7 +183,7 @@ For details about the version mapping of the files used in this section, see [Re
    +   "@react-native-community/cli": "11.3.6"
    + },
     "engines": {
-      "node": ">=16"
+      "node": ">=20"
     }
    }
    ```
