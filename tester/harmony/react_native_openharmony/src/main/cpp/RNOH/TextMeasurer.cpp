@@ -104,6 +104,7 @@ void TextMeasurer::dealTextCase(
                 textCaseTransform(fragment.string, fragment.textAttributes.textTransform.value());
             }
             fragment.textAttributes.fontSize *= fontMultiplier;
+            fragment.textAttributes.lineHeight *= fontMultiplier;
         }
     }
 }

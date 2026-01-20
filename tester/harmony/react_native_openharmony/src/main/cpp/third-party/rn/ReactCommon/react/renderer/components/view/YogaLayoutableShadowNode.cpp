@@ -124,15 +124,13 @@ YogaLayoutableShadowNode::YogaLayoutableShadowNode(
     }
   }
 
+  YGConfigConstRef previousConfig =
+      &static_cast<const YogaLayoutableShadowNode&>(sourceShadowNode)
+           .yogaConfig_;
+
   yogaNode_.setContext(this);
   yogaNode_.setOwner(nullptr);
-  if (configUpdateInvalidatesLayout(
-          yogaNode_.getNodeType(),
-          *static_cast<YogaLayoutableShadowNode const&>(sourceShadowNode)
-               .yogaNode_.getConfig(),
-          *yogaNode_.getConfig())) {
-    yogaNode_.markDirtyAndPropogate();
-  }
+  yogaNode_.setConfig(&initializeYogaConfig(yogaConfig_, previousConfig));
   updateYogaChildrenOwnersIfNeeded();
 
   // This is the only legit place where we can dirty cloned Yoga node.
@@ -808,10 +806,18 @@ YogaLayoutableShadowNode &YogaLayoutableShadowNode::shadowNodeFromContext(
       *static_cast<ShadowNode *>(yogaNode->getContext()));
 }
 
-YGConfig &YogaLayoutableShadowNode::initializeYogaConfig(YGConfig &config) {
+YGConfig &YogaLayoutableShadowNode::initializeYogaConfig(
+    YGConfig &config,
+    YGConfigConstRef previousConfig) {
   config.setCloneNodeCallback(
       YogaLayoutableShadowNode::yogaNodeCloneCallbackConnector);
   config.useLegacyStretchBehaviour = true;
+  if (previousConfig != nullptr) {
+    YGConfigSetPointScaleFactor(
+        &config, YGConfigGetPointScaleFactor(previousConfig));
+    YGConfigSetFontSizeMultiplier(
+        &config, YGConfigGetFontSizeMultiplier(previousConfig));
+  }
 #ifdef RN_DEBUG_YOGA_LOGGER
   config.printTree = true;
 #endif
