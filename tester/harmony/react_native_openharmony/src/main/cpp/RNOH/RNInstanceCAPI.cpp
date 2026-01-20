@@ -20,6 +20,7 @@
 #include "RNOH/EventBeat.h"
 #include "RNOH/MessageQueueThread.h"
 #include "RNOH/MountingManagerCAPI.h"
+#include "RNOH/ParallelCheck.h"
 #include "RNOH/Performance/HarmonyReactMarker.h"
 #include "RNOH/Performance/NativeTracing.h"
 #include "RNOH/RNInstance.h"
@@ -612,6 +613,26 @@ void RNInstanceCAPI::onConfigurationChange(folly::dynamic const& payload) {
   if (windowPhysicalPixels.isNull() ||
       !windowPhysicalPixels["densityDpi"].isDouble()) {
     return;
+  }
+  if (IsParallelizationWorkable()) {
+    static double s_lastWindowWidth = -1.0;
+    static double s_lastWindowHeight = -1.0;
+    if (windowPhysicalPixels["width"].isDouble() &&
+        windowPhysicalPixels["height"].isDouble()) {
+      double width = windowPhysicalPixels["width"].asDouble();
+      double height = windowPhysicalPixels["height"].asDouble();
+      if (width > 0.0 && height > 0.0) {
+        const bool hasLast =
+            s_lastWindowWidth > 0.0 && s_lastWindowHeight > 0.0;
+        const bool sizeChanged = hasLast &&
+            (width != s_lastWindowWidth || height != s_lastWindowHeight);
+        s_lastWindowWidth = width;
+        s_lastWindowHeight = height;
+        if (sizeChanged) {
+          SchedulerDelegate::markConfigurationChange();
+        }
+      }
+    }
   }
   float densityDpi = windowPhysicalPixels["densityDpi"].asDouble();
   m_densityDpi = densityDpi;

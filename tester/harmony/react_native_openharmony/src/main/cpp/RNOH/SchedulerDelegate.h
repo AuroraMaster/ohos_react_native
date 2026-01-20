@@ -40,7 +40,9 @@ class SchedulerDelegate final : public facebook::react::SchedulerDelegate {
         m_taskExecutor(taskExecutor),
         m_weakPreallocationRequestQueue(
             std::move(weakPreallocationRequestQueue)){};
-    
+
+  static void markConfigurationChange();
+
   void schedulerDidRequestPreliminaryViewAllocation(
       SurfaceId /*surfaceId*/,
       const ShadowNode& shadowView) override;

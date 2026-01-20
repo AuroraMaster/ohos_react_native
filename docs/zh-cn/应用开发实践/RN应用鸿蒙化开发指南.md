@@ -92,7 +92,7 @@ npx react-native@0.72.5 init GuidePro --version 0.72.5 --skip-install
    "typescript": "4.8.4"  
    },  
    "engines": {  
-      "node": ">=16"  
+      "node": ">=20"  
    } 
 }
 ```
@@ -110,7 +110,7 @@ npm i @react-native-oh/react-native-harmony@x.x.x
 ![](figures/image-packagejson.png)
 
 >![](public_sys-resources/icon-note.gif) **说明：** 
->1.  指令中@x.x.x用于指定下载的版本，不指定时默认下载最新版本。
+>1.  指令中@x.x.x用于指定下载的版本，版本可以参考[React Native鸿蒙化版本信息](../版本说明.md)。
 >2.  本地安装鸿蒙化依赖,请参考[如何使用本地安装鸿蒙化依赖](https://gitcode.com/openharmony-sig/ohos_react_native/blob/master/docs/zh-cn/%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7%E6%8C%87%E5%AF%BC.md/#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E6%9C%AC%E5%9C%B0%E5%AE%89%E8%A3%85%E9%B8%BF%E8%92%99%E5%8C%96%E4%BE%9D%E8%B5%96)。
 >3.  如何从本地依赖切换至远程依赖,请参考[如何从本地依赖切换至远程依赖](https://gitcode.com/openharmony-sig/ohos_react_native/blob/master/docs/zh-cn/%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7%E6%8C%87%E5%AF%BC.md/#%E5%A6%82%E4%BD%95%E4%BB%8E%E6%9C%AC%E5%9C%B0%E4%BE%9D%E8%B5%96%E5%88%87%E6%8D%A2%E8%87%B3%E8%BF%9C%E7%A8%8B%E4%BE%9D%E8%B5%96)。
 
@@ -269,7 +269,7 @@ ohpm install @rnoh/react-native-openharmony@x.x.x
 执行完成后会在工程级目录以及模块级目录下生成 oh\_modules 文件夹，如上图。
 
 >![](public_sys-resources/icon-notice.gif) **须知：** 
->1.  指令中@x.x.x用于指定下载的版本，不指定时默认下载最新版本。
+>1.  指令中@x.x.x用于指定下载的版本，版本可以参考[React Native鸿蒙化版本信息](../版本说明.md)。
 >2.  由于 har 包比较大，这一步耗时会比较长，务必保证 ohpm install 和 IDE 自发的 SyncData 全都完成，否则会导致编译报错。
 >3.  如何在三方库或自定义module中引入rnoh的依赖，请参考[文档](https://gitcode.com/openharmony-sig/ohos_react_native/blob/master/docs/zh-cn/%E5%B8%B8%E8%A7%81%E5%BC%80%E5%8F%91%E5%9C%BA%E6%99%AF.md/#%E5%A6%82%E4%BD%95%E5%9C%A8%E4%B8%89%E6%96%B9%E5%BA%93%E6%88%96%E8%87%AA%E5%AE%9A%E4%B9%89module%E4%B8%AD%E5%BC%95%E5%85%A5rnoh%E7%9A%84%E4%BE%9D%E8%B5%96)。
 

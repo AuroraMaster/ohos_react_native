@@ -16,6 +16,7 @@
 #include <atomic>
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -141,6 +142,8 @@ constexpr int COST_DEFAULT = 2; // Update / miscellaneous
 constexpr int COST_INSERT = 3;
 constexpr int COST_REMOVE = 3;
 constexpr int COST_DELETE = 4;
+
+constexpr int64_t CONFIG_CHANGE_SKIP_WINDOW_MS = 3000; // 3s
 // ---------------------------------------------------------------
 
 struct SurfaceLoadState {
@@ -152,6 +155,22 @@ struct SurfaceLoadState {
 static std::mutex g_surfaceLoadMutex;
 static std::unordered_map<facebook::react::SurfaceId, SurfaceLoadState>
     g_surfaceLoad;
+
+static std::atomic<int64_t> g_lastConfigChangeMs{0};
+
+static inline int64_t steadyClockMs() {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(
+             SteadyClock::now().time_since_epoch())
+      .count();
+}
+
+static inline bool isInConfigChangeWindow() {
+  const int64_t last = g_lastConfigChangeMs.load(std::memory_order_acquire);
+  if (last == 0) {
+    return false;
+  }
+  return (steadyClockMs() - last) <= CONFIG_CHANGE_SKIP_WINDOW_MS;
+}
 
 static void doPruneSurfaceLoad(
     SteadyClock::time_point now,
@@ -462,6 +481,10 @@ static TwoBatchSplit splitNonCreateMutationsIntoTwoBatches(
 
 namespace rnoh {
 
+void SchedulerDelegate::markConfigurationChange() {
+  g_lastConfigChangeMs.store(steadyClockMs(), std::memory_order_release);
+}
+
 void SchedulerDelegate::schedulerDidFinishTransaction(
     MountingCoordinator::Shared mountingCoordinator) {
   facebook::react::SystraceSection s(
@@ -538,8 +561,16 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
                 mountingManager->didMount(otherCreateMutationList);
               });
 
+          bool splitMutation = false;
+#ifdef SPLIT_MUTATION_ON
+          splitMutation = true;
+#endif
+
           const auto surfaceId = transaction->getSurfaceId();
-          const bool inLoadWindow = isInInitialLoadWindow(surfaceId);
+          const bool inConfigChangeWindow =
+              splitMutation && isInConfigChangeWindow();
+          const bool inLoadWindow = (!splitMutation) || inConfigChangeWindow ||
+              isInInitialLoadWindow(surfaceId);
           if (inLoadWindow) {
             auto allOther = std::move(otherMutationList);
             performOnMainThread(
