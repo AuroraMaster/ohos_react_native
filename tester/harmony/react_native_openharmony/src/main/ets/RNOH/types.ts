@@ -40,7 +40,8 @@ export type Corners<T> = {
   bottomLeft: T,
   bottomRight: T,
 }
-
+// The minimum supported SDK API version for getMaxFontSize is 13
+export const OH_API_LEVEL_13 = 13;
 // The minimum supported SDK API version for getWindowDensityInfo is 15
 export const OH_API_LEVEL_15 = 15;
 // The minimum supported SDK API version for parallelization is 21
