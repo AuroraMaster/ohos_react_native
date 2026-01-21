@@ -51,6 +51,7 @@ public:
   bool useLegacyStretchBehaviour = false;
   bool shouldDiffLayoutWithoutLegacyStretchBehaviour = false;
   bool printTree = false;
+  uint32_t version = 0;
   float pointScaleFactor = 1.0f;
   float fontSizeMultiplier = 1.0f;
   std::array<bool, facebook::yoga::enums::count<YGExperimentalFeature>()>
