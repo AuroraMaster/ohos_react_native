@@ -423,13 +423,11 @@ void ScrollViewComponentInstance::onScrollStart() {
 
 void ScrollViewComponentInstance::onScrollStop() {
   m_allowNextScrollEvent = true;
-
+  m_scrollNode.setEnableScrollInteraction(m_enableScrollInteraction);
   if (m_scrollState == ScrollState::FLING) {
     emitOnMomentumScrollEndEvent();
   } else if (m_scrollState == ScrollState::SCROLL) {
     emitOnScrollEndDragEvent();
-  } else if (m_scrollState == ScrollState::CANCELING) {
-    m_scrollNode.setEnableScrollInteraction(m_enableScrollInteraction);
   }
   m_scrollState = ScrollState::IDLE;
   if (!isContentSmallerThanContainer(m_props) && !m_allowScrollPropagation &&
