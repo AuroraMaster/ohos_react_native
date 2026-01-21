@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.1.0.262
+
+- fix：Limit font scaling,([970882813](https://gitcode.com/openharmony-sig/ohos_react_native/commit/9708828136bab521af263f69e8517abc85f1adaf))
+- fix: Version Release Notes 0.72,([2c90c9864](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2c90c9864129856b59c6c3d2cf2d54922f06ca5b))
+- fix: Version Release Notes,([9b14014b0](https://gitcode.com/openharmony-sig/ohos_react_native/commit/9b14014b0ec57427bed1cfc259abed63dab86380))
+- fix: Version Release Notes,([66068d809](https://gitcode.com/openharmony-sig/ohos_react_native/commit/66068d809da69abc5ae8950b9cc9adc1e1d97c35))
+- fix: Version Release Notes,([747368b03](https://gitcode.com/openharmony-sig/ohos_react_native/commit/747368b032ce5786d21a828baf467d28c2c760d0))
+- fix: Version Release Notes,([ac418b2ae](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ac418b2ae08ee852b0bff46a8d03073e1395f042))
+
 ## 6.0.2.221
 
 - [chore]: updated to version 6.0.2.221(0.72.112),([c9a93b301](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c9a93b301fdc307d50c0f0e8a3afca546bdbf174))
