@@ -92,19 +92,22 @@ void TextMeasurer::dealTextCase(
     auto isNDKTextMeasuringEnabled =
         this->m_featureFlagRegistry->getFeatureFlagStatus("ENABLE_NDK_TEXT_MEASURING");
     if (canUseOHOSTextMeasurer || isNDKTextMeasuringEnabled) {
-        float fontMultiplier = 1.0;
-        if (paragraphAttributes.allowFontScaling) {
-            fontMultiplier = m_fontScale;
-            if (!isnan(paragraphAttributes.maxFontSizeMultiplier) && paragraphAttributes.maxFontSizeMultiplier >= 1) {
-                fontMultiplier = std::min(m_fontScale, (float)paragraphAttributes.maxFontSizeMultiplier);
-            }
-        }
         for (auto& fragment : attributedString.getFragments()) {
             if (fragment.textAttributes.textTransform.has_value()) {
                 textCaseTransform(fragment.string, fragment.textAttributes.textTransform.value());
             }
+            float fontMultiplier = 1.0;
+            if (paragraphAttributes.allowFontScaling) {
+                fontMultiplier = m_fontScale;
+                float maxFontSizeMultiplier = paragraphAttributes.maxFontSizeMultiplier;
+                if (!isnan(fragment.textAttributes.maxFontSizeMultiplier)) {
+                    maxFontSizeMultiplier = fragment.textAttributes.maxFontSizeMultiplier;
+                }
+                if (!isnan(maxFontSizeMultiplier) && maxFontSizeMultiplier >= 1) {
+                    fontMultiplier = std::min(m_fontScale, maxFontSizeMultiplier);
+                }
+            }
             fragment.textAttributes.fontSize *= fontMultiplier;
-            fragment.textAttributes.lineHeight *= fontMultiplier;
         }
     }
 }
