@@ -31,6 +31,7 @@
 #include "RNOH/TurboModuleProvider.h"
 #include "RNOHCorePackage/TurboModules/DeviceInfoTurboModule.h"
 #include "TaskExecutor/TaskExecutor.h"
+#include "TextMeasurer.h"
 
 using namespace facebook;
 namespace rnoh {
@@ -423,6 +424,10 @@ void RNInstanceCAPI::updateSurfaceConstraints(
     float fontSizeMultiplier,
     bool isRTL) {
   DLOG(INFO) << "RNInstanceCAPI::updateSurfaceConstraints";
+  auto textMeasurer = m_contextContainer->at<std::shared_ptr<rnoh::TextMeasurer>>("textLayoutManagerDelegate");
+  if (textMeasurer) {
+    textMeasurer->setDeviceScales(fontSizeMultiplier, pixelRatio);
+  }
   auto it = m_surfaceById.find(surfaceId);
   if (it == m_surfaceById.end()) {
     return;

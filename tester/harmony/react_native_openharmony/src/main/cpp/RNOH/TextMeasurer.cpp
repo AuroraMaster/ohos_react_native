@@ -347,6 +347,11 @@ std::vector<uint8_t> readSandboxFile(std::string const& absoluteFontFilePath) {
   return buffer;
 }
 
+void TextMeasurer::setDeviceScales(float fontScale, float scale) {
+  m_fontScale = fontScale;
+  m_scale = scale;
+}
+
 void TextMeasurer::setTextMeasureParams(float fontScale, float scale, float DPI, bool halfleading) {
   m_fontScale = fontScale;
   m_scale = scale;
