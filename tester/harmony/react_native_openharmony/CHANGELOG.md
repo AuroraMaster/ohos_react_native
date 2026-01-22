@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.72.114
+
+- fix：Limit font scaling,([970882813](https://gitcode.com/openharmony-sig/ohos_react_native/commit/9708828136bab521af263f69e8517abc85f1adaf))
+
 ## 0.72.112
 
 - [chore]: updated to version 6.0.2.221(0.72.112),([c9a93b301](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c9a93b301fdc307d50c0f0e8a3afca546bdbf174))
