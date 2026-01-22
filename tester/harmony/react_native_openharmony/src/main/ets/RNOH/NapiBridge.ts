@@ -35,7 +35,11 @@ import type { DisplayMetrics, InspectorInstance } from './types'
 import { deviceInfo } from '@kit.BasicServicesKit';
 import { UIContext } from '@kit.ArkUI';
 
-export type CppFeatureFlag = "ENABLE_NDK_TEXT_MEASURING" | "C_API_ARCH" | "WORKER_THREAD_ENABLED"
+export type CppFeatureFlag =
+  | 'ENABLE_NDK_TEXT_MEASURING'
+  | 'C_API_ARCH'
+  | 'WORKER_THREAD_ENABLED'
+  | 'ENABLE_MODAL_CONTENT_SHRINK';
 
 type RawRNOHError = {
   message: string,
@@ -109,7 +113,7 @@ export class NapiBridge {
     return this.libRNOHApp?.onInit(shouldCleanUpRNInstances, {
       handleError: (err: RawRNOHError) => {
         arkTSBridgeHandler.handleError(new RNOHError({
-          whatHappened: err.message,
+            whatHappened: err.message,
           howCanItBeFixed: (err.suggestions ?? []),
           customStack: (err.stacktrace ?? []).join("\n"),
         }))
@@ -206,7 +210,7 @@ export class NapiBridge {
     bundle: JsBundle,
     sourceURL:
       string): Promise<void> {
-        return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
           this.libRNOHApp?.loadScript(instanceId, bundle, sourceURL, (errorMsg: string) => {
             errorMsg ? reject(new Error(errorMsg)) : resolve()
           });
@@ -382,7 +386,7 @@ export class NapiBridge {
         suggestions?: string[]
       }) => {
         handler.handleError(new RNOHError({
-          whatHappened: errData.message,
+            whatHappened: errData.message,
           howCanItBeFixed: (errData.suggestions ?? []),
           customStack: (errData.stacktrace ?? []).join("\n"),
         }))

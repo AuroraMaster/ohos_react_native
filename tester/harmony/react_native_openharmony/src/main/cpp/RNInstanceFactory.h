@@ -34,6 +34,7 @@
 #include "RNOH/TextMeasurer.h"
 #include "RNOH/TurboModuleFactory.h"
 #include "RNOH/UITicker.h"
+#include "RNOH/modalshrink/GuideLayout.h"
 #include "RNOHCorePackage/RNOHCorePackage.h"
 
 #ifdef C_API_ARCH
@@ -86,6 +87,10 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
       HarmonyReactMarker::HarmonyReactMarkerId::REACT_INSTANCE_INIT_START, id);
   auto shouldUseCAPIArchitecture =
       featureFlagRegistry->getFeatureFlagStatus("C_API_ARCH");
+  auto enableModalContentShrink =
+      featureFlagRegistry->getFeatureFlagStatus("ENABLE_MODAL_CONTENT_SHRINK");
+  facebook::react::GuideLayout::getInstance().setModalContentShrinkEnabled(
+      enableModalContentShrink);
   auto taskExecutor = std::make_shared<TaskExecutor>(
       env, std::move(workerTaskRunner), shouldEnableBackgroundExecutor);
   auto arkTSChannel = std::make_shared<ArkTSChannel>(

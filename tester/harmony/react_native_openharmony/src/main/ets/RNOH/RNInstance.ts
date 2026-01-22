@@ -114,7 +114,12 @@ const rootDescriptor = {
 }
 
 
-type FeatureFlagName = "ENABLE_RN_INSTANCE_CLEAN_UP" | "NDK_TEXT_MEASUREMENTS" | "IMAGE_LOADER" | "C_API_ARCH"
+type FeatureFlagName =
+  | 'ENABLE_RN_INSTANCE_CLEAN_UP'
+  | 'NDK_TEXT_MEASUREMENTS'
+  | 'IMAGE_LOADER'
+  | 'C_API_ARCH'
+  | 'ENABLE_MODAL_CONTENT_SHRINK';
 
 /**
  * Coordinates information flow by passing information to other objects to facilitate their operations.
@@ -325,7 +330,7 @@ export interface RNInstance {
 
   /**
    * @returns UIContext
-  */
+   */
 
   getUIContext(): UIContext
 
@@ -482,7 +487,14 @@ export type RNInstanceOptions = {
    * The config hspModuleName corresponds to the name in the module.json of the hsp module.
    */
   hspModuleName?: string;
-}
+
+  /**
+   * Enables modal content shrink feature for better layout adaptation on foldable devices.
+   * When enabled, modal content will be adjusted based on the screen dimensions.
+   * @default: true
+   */
+  enableModalContentShrink?: boolean;
+};
 
 /**
  * Used in the C-API architecture
@@ -562,7 +574,8 @@ export class RNInstanceImpl implements RNInstance {
     backPressHandler?: () => void,
     private jsvmInitOptions?: ReadonlyArray<JSVMInitOption>,
     private hspModuleName?: string,
-    cacheDir?: string
+    cacheDir?: string,
+    private shouldEnableModalContentShrink: boolean = true
   ) {
     this.defaultProps = { concurrentRoot: !disableConcurrentRoot };
     this.httpClient = httpClient ?? httpClientProvider.getInstance(this);
@@ -579,6 +592,9 @@ export class RNInstanceImpl implements RNInstance {
     }
     if (this.shouldUseCAPIArchitecture) {
       this.enableFeatureFlag("C_API_ARCH")
+    }
+    if (this.shouldEnableModalContentShrink) {
+      this.enableFeatureFlag('ENABLE_MODAL_CONTENT_SHRINK');
     }
     this.onCreate()
   }
@@ -664,6 +680,9 @@ export class RNInstanceImpl implements RNInstance {
     }
     if (this.workerThread != undefined) {
       cppFeatureFlags.push("WORKER_THREAD_ENABLED")
+    }
+    if (this.shouldEnableModalContentShrink) {
+      cppFeatureFlags.push('ENABLE_MODAL_CONTENT_SHRINK');
     }
     this.napiBridge.onCreateRNInstance(
       this.envId,
@@ -1072,13 +1091,13 @@ export class RNInstanceImpl implements RNInstance {
   private subscribeToDevTools() {
     const emitter = this.devToolsController.eventEmitter;
     this.unregisterDevToolsMessageListeners.push(emitter.subscribe('TOGGLE_ELEMENT_INSPECTOR', () =>
-      this.emitDeviceEvent('toggleElementInspector', {}),
+    this.emitDeviceEvent('toggleElementInspector', {}),
     ));
     this.unregisterDevToolsMessageListeners.push(emitter.subscribe('DEV_MENU_SHOWN', () =>
-      this.emitDeviceEvent('RCTDevMenuShown', {}),
+    this.emitDeviceEvent('RCTDevMenuShown', {}),
     ));
     this.unregisterDevToolsMessageListeners.push(emitter.subscribe('DID_PRESS_MENU_ITEM', item =>
-      this.emitDeviceEvent('didPressMenuItem', item),
+    this.emitDeviceEvent('didPressMenuItem', item),
     ));
     this.unregisterDevToolsMessageListeners.push(emitter.subscribe('OPEN_URL', (url, onError) => {
       DevServerHelper.openUrl(url, this.getInitialBundleUrl(), onError);
@@ -1159,7 +1178,7 @@ export class RNInstanceImpl implements RNInstance {
         if (!fontResource.startsWith("/")) {
           throw new RNOHError({
             whatHappened:
-              'Font path must be an absolute path or a $rawfile Resource',
+            'Font path must be an absolute path or a $rawfile Resource',
             howCanItBeFixed: [
               'Provide an absolute path to the font (starting with a "/")',
             ],
