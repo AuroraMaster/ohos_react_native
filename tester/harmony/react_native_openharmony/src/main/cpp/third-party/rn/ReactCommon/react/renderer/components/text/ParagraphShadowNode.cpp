@@ -16,6 +16,7 @@
 #include <react/renderer/core/TraitCast.h>
 #include <react/renderer/graphics/rounding.h>
 #include <react/renderer/telemetry/TransactionTelemetry.h>
+#include "RNOH/modalshrink/GuideLayout.h"
 
 #include "ParagraphState.h"
 
@@ -25,8 +26,16 @@ using Content = ParagraphShadowNode::Content;
 
 char const ParagraphComponentName[] = "Paragraph";
 
-Content const &ParagraphShadowNode::getContent(
-    LayoutContext const &layoutContext) const {
+Content const& ParagraphShadowNode::getContent(
+    LayoutContext const& layoutContext) const {
+  // Check if content cache refresh is needed (for recalculating font size
+  // during Modal scaling)
+  auto& guideLayout = GuideLayout::getInstance();
+  if (guideLayout.needsContentRefresh(getTag())) {
+    content_.reset();
+    guideLayout.markContentRefreshed(getTag());
+  }
+
   if (content_.has_value()) {
     return content_.value();
   }
@@ -36,6 +45,27 @@ Content const &ParagraphShadowNode::getContent(
   auto textAttributes = TextAttributes::defaultTextAttributes();
   textAttributes.fontSizeMultiplier = layoutContext.fontSizeMultiplier;
   textAttributes.apply(getConcreteProps().textAttributes);
+
+  // Modal content font scaling handling
+  if (guideLayout.isModalContentShrinkEnabled() &&
+      guideLayout.isInModalSubtree(getTag())) {
+    float scaleFactor = guideLayout.getScaleFactor();
+    // Scale font size
+    if (!std::isnan(textAttributes.fontSize) && textAttributes.fontSize > 0) {
+      textAttributes.fontSize *= scaleFactor;
+    }
+    // Scale line height
+    if (!std::isnan(textAttributes.lineHeight) &&
+        textAttributes.lineHeight > 0) {
+      textAttributes.lineHeight *= scaleFactor;
+    }
+    // Scale letter spacing
+    if (!std::isnan(textAttributes.letterSpacing) &&
+        textAttributes.letterSpacing > 0) {
+      textAttributes.letterSpacing *= scaleFactor;
+    }
+  }
+
   textAttributes.layoutDirection =
       YGNodeLayoutGetDirection(&yogaNode_) == YGDirectionRTL
       ? LayoutDirection::RightToLeft
@@ -111,9 +141,9 @@ void ParagraphShadowNode::updateStateIfNeeded(Content const &content) {
   }
 
   setStateData(ParagraphState{
-      content.attributedString,
-      content.paragraphAttributes,
-      state.paragraphLayoutManager});
+          content.attributedString,
+          content.paragraphAttributes,
+          state.paragraphLayoutManager});
 }
 
 #pragma mark - LayoutableShadowNode

@@ -16,9 +16,11 @@ add_compile_options(
         -DLOG_TAG=\"Fabric\")
 
 file(GLOB rrc_view_SRC CONFIGURE_DEPENDS *.cpp)
+# Add GuideLayout source file from RNOH/modalshrink
+list(APPEND rrc_view_SRC "${RNOH_CPP_DIR}/RNOH/modalshrink/GuideLayout.cpp")
 add_library(rrc_view SHARED ${rrc_view_SRC})
 
-target_include_directories(rrc_view PUBLIC ${REACT_COMMON_DIR})
+target_include_directories(rrc_view PUBLIC ${REACT_COMMON_DIR} ${RNOH_CPP_DIR})
 
 target_link_libraries(rrc_view
         folly_runtime

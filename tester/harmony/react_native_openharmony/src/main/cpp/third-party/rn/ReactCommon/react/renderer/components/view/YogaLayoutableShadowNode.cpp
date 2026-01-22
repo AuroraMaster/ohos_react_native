@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include "RNOH/modalshrink/GuideLayout.h"
 
 namespace facebook::react {
 
@@ -117,9 +118,9 @@ YogaLayoutableShadowNode::YogaLayoutableShadowNode(
       "Yoga node must inherit dirty flag.");
 
   if (!getTraits().check(ShadowNodeTraits::Trait::LeafYogaNode)) {
-    for (auto &child : getChildren()) {
-      if (auto layoutableChild = traitCast<YogaLayoutableShadowNode>(child)) {
-        yogaLayoutableChildren_.push_back(layoutableChild);
+  for (auto &child : getChildren()) {
+    if (auto layoutableChild = traitCast<YogaLayoutableShadowNode>(child)) {
+      yogaLayoutableChildren_.push_back(layoutableChild);
       }
     }
   }
@@ -617,6 +618,35 @@ void YogaLayoutableShadowNode::layoutTree(
   {
     SystraceSection s("YogaLayoutableShadowNode::YGNodeCalculateLayout");
     YGNodeCalculateLayout(&yogaNode_, ownerWidth, ownerHeight, direction);
+  }
+
+  // Modal content scaling handling (Two-phase commit approach)
+  if (GuideLayout::getInstance().isModalContentShrinkEnabled()) {
+    // First check if Modal node exists
+    YGNodeRef modalNode = GuideLayout::getInstance().findModalNode(&yogaNode_);
+
+    if (modalNode) {
+      // Only process when Modal exists
+      // Begin new layout cycle, clear previous scaling records (but keep
+      // modalSubtreeTags_)
+      GuideLayout::getInstance().beginLayoutCycle();
+
+      // Check if Modal height exceeds screen
+      bool needsRescale = GuideLayout::getInstance().checkModalNeedsScaling(
+          &yogaNode_, ownerHeight);
+
+      if (needsRescale) {
+        // Reset state, apply scaling, recalculate
+        // Clear modalSubtreeTags_ before rescaling, will be recollected later
+        GuideLayout::getInstance().resetModalSubtreeTags();
+        GuideLayout::getInstance().resetYogaTreeState(&yogaNode_);
+        GuideLayout::getInstance().scanAndScaleModalSubtrees(&yogaNode_);
+        YGNodeCalculateLayout(&yogaNode_, ownerWidth, ownerHeight, direction);
+      }
+    } else {
+      // Clear all state when Modal doesn't exist
+      GuideLayout::getInstance().clearAllModalState();
+    }
   }
 
   if (yogaNode_.getHasNewLayout()) {
