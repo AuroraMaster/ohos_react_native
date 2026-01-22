@@ -50,6 +50,8 @@ class TextMeasurer : public facebook::react::TextLayoutManagerDelegate {
       facebook::react::AttributedString const& attributedString,
       facebook::react::ParagraphAttributes const& paragraphAttributes,
       facebook::react::LayoutConstraints const& layoutConstraints) override;
+    
+    void setDeviceScales(float m_fontScale, float m_scale);
   
     void setTextMeasureParams(float m_fontScale, float m_scale, float DPI, bool m_halfleading);
     
