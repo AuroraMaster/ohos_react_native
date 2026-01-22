@@ -322,6 +322,10 @@ WIN_EXPORT void YGConfigSetPointScaleFactor(
     YGConfigRef config,
     float pixelsInPoint);
 /**
+ * Get the currently set point scale factor.
+ */
+ WIN_EXPORT float YGConfigGetPointScaleFactor(YGConfigConstRef config);
+/**
  * Set the font size multiplier.
  */
 WIN_EXPORT void YGConfigSetFontSizeMultiplier(

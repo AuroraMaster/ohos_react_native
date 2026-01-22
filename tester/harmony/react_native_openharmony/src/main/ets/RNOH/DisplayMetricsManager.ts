@@ -5,13 +5,12 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import { DisplayMetrics, OH_API_LEVEL_15 } from './types';
+import { DisplayMetrics, OH_API_LEVEL_13, OH_API_LEVEL_15 } from './types';
 import window from '@ohos.window';
 import { RNOHLogger } from './RNOHLogger';
 import display from '@ohos.display';
 import { RNOHError } from "./RNOHError"
 import { deviceInfo } from '@kit.BasicServicesKit';
-import UIContext from '@ohos.arkui.UIContext';
 
 const defaultDisplayMetrics: DisplayMetrics = {
   windowPhysicalPixels: {
@@ -125,6 +124,17 @@ export class DisplayMetricsManager {
         customDensity = displayInstance.densityPixels;
         customDensityDpi = displayInstance.densityDPI;
         this.logger.error(`Failed to get customDensity: ${JSON.stringify(err)}`);
+      }
+      if (deviceInfo.sdkApiVersion >= OH_API_LEVEL_13 && this.mainWindow) {
+        try {
+          const maxFontScale = Number(this.mainWindow.getUIContext().getMaxFontScale().toFixed(2));
+          this.displayMetrics.screenPhysicalPixels.fontScale =
+            Math.min(this.displayMetrics.screenPhysicalPixels.fontScale, maxFontScale);
+          this.displayMetrics.windowPhysicalPixels.fontScale =
+            Math.min(this.displayMetrics.windowPhysicalPixels.fontScale, maxFontScale);
+        } catch (err) {
+          this.logger.error(`Failed to get maxFontScale: ${JSON.stringify(err)}`);
+        }
       }
       this.displayMetrics = {
         screenPhysicalPixels: {

@@ -19,6 +19,7 @@ bool YGLayout::operator==(YGLayout layout) const {
       direction() == layout.direction() &&
       hadOverflow() == layout.hadOverflow() &&
       lastOwnerDirection == layout.lastOwnerDirection &&
+      configVersion == layout.configVersion &&
       nextCachedMeasurementsIndex == layout.nextCachedMeasurementsIndex &&
       cachedLayout == layout.cachedLayout &&
       computedFlexBasis == layout.computedFlexBasis;

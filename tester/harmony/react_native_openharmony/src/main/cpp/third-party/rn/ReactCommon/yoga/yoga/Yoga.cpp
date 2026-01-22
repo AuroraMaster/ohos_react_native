@@ -3821,6 +3821,7 @@ bool YGLayoutNodeInternal(
 
   const bool needToVisitNode =
       (node->isDirty() && layout->generationCount != generationCount) ||
+      layout->configVersion != node->getConfig()->version ||
       layout->lastOwnerDirection != ownerDirection;
 
   if (needToVisitNode) {
@@ -4003,6 +4004,7 @@ bool YGLayoutNodeInternal(
     }
 
     layout->lastOwnerDirection = ownerDirection;
+    layout->configVersion = node->getConfig()->version;
 
     if (cachedResults == nullptr) {
       if (layout->nextCachedMeasurementsIndex + 1 >
@@ -4082,6 +4084,11 @@ YOGA_EXPORT void YGConfigSetPointScaleFactor(
   } else {
     config->pointScaleFactor = pixelsInPoint;
   }
+  config->version++;
+}
+
+float YGConfigGetPointScaleFactor(const YGConfigConstRef config) {
+  return config->pointScaleFactor;
 }
 
 void YGConfigSetFontSizeMultiplier(
@@ -4093,6 +4100,7 @@ void YGConfigSetFontSizeMultiplier(
       "Size multiplier should not be less than zero");
 
   config->fontSizeMultiplier = fontSizeMultiplier;
+  config->version++;
 }
 
 float YGConfigGetFontSizeMultiplier(const YGConfigConstRef config) {

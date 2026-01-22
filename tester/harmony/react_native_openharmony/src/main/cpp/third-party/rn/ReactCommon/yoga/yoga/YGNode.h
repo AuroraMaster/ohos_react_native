@@ -307,7 +307,24 @@ public:
 
   // TODO: rvalue override for setChildren
 
-  YG_DEPRECATED void setConfig(YGConfigRef config) { config_ = config; }
+  YG_DEPRECATED void setConfig(YGConfigRef config) {
+    YGAssert(config != nullptr, "Attempting to set a null config on a Node");
+    YGAssertWithConfig(
+        config,
+        config->useWebDefaults == config_->useWebDefaults,
+        "UseWebDefaults may not be changed after constructing a Node");
+
+    if (configUpdateInvalidatesLayout(getNodeType(), *config_, *config)) {
+      markDirtyAndPropogate();
+      layout_.configVersion = 0;
+    } else {
+      // If the config is functionally the same, then align the configVersion so
+      // that we can reuse the layout cache
+      layout_.configVersion = config->version;
+    }
+
+    config_ = config;
+  }
 
   void setDirty(bool isDirty);
   void setLayoutLastOwnerDirection(YGDirection direction);

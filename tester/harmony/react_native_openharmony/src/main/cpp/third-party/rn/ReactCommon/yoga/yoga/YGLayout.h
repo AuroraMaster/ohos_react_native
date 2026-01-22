@@ -33,6 +33,7 @@ public:
   // Instead of recomputing the entire layout every single time, we cache some
   // information to break early when nothing changed
   uint32_t generationCount = 0;
+  uint32_t configVersion = 0;
   YGDirection lastOwnerDirection = YGDirectionInherit;
 
   uint32_t nextCachedMeasurementsIndex = 0;
