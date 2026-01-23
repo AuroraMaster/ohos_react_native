@@ -92,19 +92,22 @@ void TextMeasurer::dealTextCase(
     auto isNDKTextMeasuringEnabled =
         this->m_featureFlagRegistry->getFeatureFlagStatus("ENABLE_NDK_TEXT_MEASURING");
     if (canUseOHOSTextMeasurer || isNDKTextMeasuringEnabled) {
-        float fontMultiplier = 1.0;
-        if (paragraphAttributes.allowFontScaling) {
-            fontMultiplier = m_fontScale;
-            if (!isnan(paragraphAttributes.maxFontSizeMultiplier) && paragraphAttributes.maxFontSizeMultiplier >= 1) {
-                fontMultiplier = std::min(m_fontScale, (float)paragraphAttributes.maxFontSizeMultiplier);
-            }
-        }
         for (auto& fragment : attributedString.getFragments()) {
             if (fragment.textAttributes.textTransform.has_value()) {
                 textCaseTransform(fragment.string, fragment.textAttributes.textTransform.value());
             }
+            float fontMultiplier = 1.0;
+            if (paragraphAttributes.allowFontScaling) {
+                fontMultiplier = m_fontScale;
+                float maxFontSizeMultiplier = paragraphAttributes.maxFontSizeMultiplier;
+                if (!isnan(fragment.textAttributes.maxFontSizeMultiplier)) {
+                    maxFontSizeMultiplier = fragment.textAttributes.maxFontSizeMultiplier;
+                }
+                if (!isnan(maxFontSizeMultiplier) && maxFontSizeMultiplier >= 1) {
+                    fontMultiplier = std::min(m_fontScale, maxFontSizeMultiplier);
+                }
+            }
             fragment.textAttributes.fontSize *= fontMultiplier;
-            fragment.textAttributes.lineHeight *= fontMultiplier;
         }
     }
 }
@@ -345,6 +348,11 @@ std::vector<uint8_t> readSandboxFile(std::string const& absoluteFontFilePath) {
   std::vector<uint8_t> buffer(length);
   fontFile.read(reinterpret_cast<char*>(buffer.data()), length);
   return buffer;
+}
+
+void TextMeasurer::setDeviceScales(float fontScale, float scale) {
+  m_fontScale = fontScale;
+  m_scale = scale;
 }
 
 void TextMeasurer::setTextMeasureParams(float fontScale, float scale, float DPI, bool halfleading) {

@@ -81,6 +81,7 @@ struct Index {
             enableNDKTextMeasuring: true,
             enableBackgroundExecutor: false,
             enableCAPIArchitecture: true,
+            enableModalContentShrink: true,
             arkTsComponentNames: arkTsComponentNames,
             fontResourceByFontFamily: {
               // NOTE: you can provide fonts in `RNInstanceConfig` ahead of time, when creating the RN application

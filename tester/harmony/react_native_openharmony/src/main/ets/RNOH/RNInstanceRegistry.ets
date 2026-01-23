@@ -136,6 +136,7 @@ export class RNInstanceRegistry {
       options.jsvmInitOptions,
       options.hspModuleName,
       this.cacheDir,
+      options.enableModalContentShrink ?? true,
     );
     rnInstance.setUIAbilityContext(this.uiAbilityContext);
     const packages = options.createRNPackages({})
