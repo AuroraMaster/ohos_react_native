@@ -9,6 +9,8 @@
 #include "NativeNodeApi.h"
 #include "RNOH/arkui/conversions.h"
 #include "TextAreaNode.h"
+#include <deviceinfo.h>
+#include "RNOH/arkui/DynamicArkUILoader.h"
 
 static constexpr std::array TEXT_AREA_NODE_EVENT_TYPES = {
     NODE_TEXT_AREA_ON_PASTE,
@@ -134,7 +136,7 @@ void TextAreaNode::onNodeEvent(
         this, static_cast<int>(round(arkUiValues[0].f32)), arkUiValues[1].i32);
   }
   if (eventType == ArkUI_NodeEventType::NODE_TEXT_AREA_ON_CHANGE_WITH_PREVIEW_TEXT) {
-    auto changeEvent = OH_ArkUI_NodeEvent_GetTextChangeEvent(event);
+    auto changeEvent = DynamicArkUILoader::getTextChangeEventFun()(event);
     auto position = changeEvent->number;
     std::string content(changeEvent->pStr);
     std::string extendStr(changeEvent->pExtendStr);
