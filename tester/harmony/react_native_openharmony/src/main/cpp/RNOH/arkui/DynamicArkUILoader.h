@@ -20,11 +20,15 @@ class DynamicArkUILoader {
   static bool isAvailable();
   static int32_t (
       *getRunTaskFunction())(ArkUI_ContextHandle, void*, void (*)(void*));
+  static ArkUI_TextChangeEvent* (*getTextChangeEventFun())(
+      ArkUI_NodeEvent* event);
 
  private:
   static void* aceNdkHandle;
   static int32_t (
       *OH_ArkUI_RunTaskInScopeFun)(ArkUI_ContextHandle, void*, void (*)(void*));
+  static ArkUI_TextChangeEvent* (*OH_ArkUI_NodeEvent_GetTextChangeEventFun)(
+      ArkUI_NodeEvent* event);
   static bool initialized;
   static std::once_flag initFlag;
 };
