@@ -19,7 +19,9 @@ ArkUI_TextChangeEvent* (
     ArkUI_NodeEvent* event) = nullptr;
 
 bool DynamicArkUILoader::initialized = false;
+bool DynamicArkUILoader::initializedAPI15 = false;
 std::once_flag DynamicArkUILoader::initFlag;
+std::once_flag DynamicArkUILoader::initFlagAPI15;
 
 bool DynamicArkUILoader::init() {
   std::call_once(initFlag, []() {
@@ -30,26 +32,38 @@ bool DynamicArkUILoader::init() {
     }
     auto func = reinterpret_cast<decltype(OH_ArkUI_RunTaskInScopeFun)>(
         dlsym(aceNdkHandle, "OH_ArkUI_RunTaskInScope"));
-    auto func1 =
-        reinterpret_cast<decltype(OH_ArkUI_NodeEvent_GetTextChangeEventFun)>(
-            dlsym(aceNdkHandle, "OH_ArkUI_NodeEvent_GetTextChangeEvent"));
     if (!func) {
       LOG(ERROR) << "Failed to get OH_ArkUI_RunTaskInScope: " << dlerror();
       dlclose(aceNdkHandle);
       aceNdkHandle = nullptr;
       return;
     }
-    if (!func1) {
-      LOG(ERROR) << "Failed to get OH_ArkUI_RunTaskInScope: " << dlerror();
+    OH_ArkUI_RunTaskInScopeFun = func;
+    initialized = true;
+  });
+  return initialized;
+}
+
+bool DynamicArkUILoader::initAPI15() {
+  std::call_once(initFlagAPI15, []() {
+    aceNdkHandle = dlopen("libace_ndk.z.so", RTLD_LAZY);
+    if (!aceNdkHandle) {
+      LOG(ERROR) << "Failed to load libace_ndk.z.so: " << dlerror();
+      return;
+    }
+    auto func =
+        reinterpret_cast<decltype(OH_ArkUI_NodeEvent_GetTextChangeEventFun)>(
+            dlsym(aceNdkHandle, "OH_ArkUI_NodeEvent_GetTextChangeEvent"));
+    if (!func) {
+      LOG(ERROR) << "Failed to get OH_ArkUI_NodeEvent_GetTextChangeEvent: " << dlerror();
       dlclose(aceNdkHandle);
       aceNdkHandle = nullptr;
       return;
     }
-    OH_ArkUI_RunTaskInScopeFun = func;
-    OH_ArkUI_NodeEvent_GetTextChangeEventFun = func1;
-    initialized = true;
+    OH_ArkUI_NodeEvent_GetTextChangeEventFun = func;
+    initializedAPI15 = true;
   });
-  return initialized;
+  return initializedAPI15;
 }
 
 void DynamicArkUILoader::cleanup() {
@@ -59,6 +73,7 @@ void DynamicArkUILoader::cleanup() {
     OH_ArkUI_RunTaskInScopeFun = nullptr;
     OH_ArkUI_NodeEvent_GetTextChangeEventFun = nullptr;
     initialized = false;
+    initializedAPI15 = false;
   }
 }
 
