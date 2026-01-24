@@ -14,23 +14,22 @@
 namespace rnoh {
 
 class DynamicArkUILoader {
- public:
-  static bool init();
-  static void cleanup();
-  static bool isAvailable();
-  static int32_t (
-      *getRunTaskFunction())(ArkUI_ContextHandle, void*, void (*)(void*));
-  static ArkUI_TextChangeEvent* (*getTextChangeEventFun())(
-      ArkUI_NodeEvent* event);
+public:
+    static bool init();
+    static bool initAPI15();
+    static void cleanup();
+    static bool isAvailable();
+    static int32_t (*getRunTaskFunction())(ArkUI_ContextHandle, void *, void (*)(void *));
+    static ArkUI_TextChangeEvent *(*getTextChangeEventFun())(ArkUI_NodeEvent *event);
 
- private:
-  static void* aceNdkHandle;
-  static int32_t (
-      *OH_ArkUI_RunTaskInScopeFun)(ArkUI_ContextHandle, void*, void (*)(void*));
-  static ArkUI_TextChangeEvent* (*OH_ArkUI_NodeEvent_GetTextChangeEventFun)(
-      ArkUI_NodeEvent* event);
-  static bool initialized;
-  static std::once_flag initFlag;
+private:
+    static void *aceNdkHandle;
+    static int32_t (*OH_ArkUI_RunTaskInScopeFun)(ArkUI_ContextHandle, void *, void (*)(void *));
+    static ArkUI_TextChangeEvent *(*OH_ArkUI_NodeEvent_GetTextChangeEventFun)(ArkUI_NodeEvent *event);
+    static bool initialized;
+    static bool initializedAPI15;
+    static std::once_flag initFlag;
+    static std::once_flag initFlagAPI15;
 };
 
 } // namespace rnoh
