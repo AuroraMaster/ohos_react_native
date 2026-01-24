@@ -295,6 +295,7 @@ export interface AnyThreadTurboModuleContext {
   httpClient: HttpClient;
   caPathProvider: CAPathProvider;
   launchUri?: string;
+  reactNativeVersion: string;
 }
 
 /**
@@ -329,6 +330,7 @@ export type WorkerTurboModuleContextDependencies = {
   httpClient: HttpClient;
   caPathProvider: CAPathProvider;
   launchUri?: string;
+  reactNativeVersion: string;
 };
 
 /**
@@ -365,5 +367,9 @@ export class WorkerTurboModuleContext implements AnyThreadTurboModuleContext {
 
   get launchUri(): string | undefined {
     return this._workerTurboModuleContextDeps.launchUri;
+  }
+
+  get reactNativeVersion(): string {
+    return this._workerTurboModuleContextDeps.reactNativeVersion;
   }
 }

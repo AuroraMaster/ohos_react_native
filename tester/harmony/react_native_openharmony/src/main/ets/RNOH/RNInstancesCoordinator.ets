@@ -257,7 +257,7 @@ export class RNInstancesCoordinator {
       }
     }) : undefined
     this.workerTaskRunner = new WorkerTaskRunner(workerThreadPromise)
-
+    const reactNativeVersion = "0.72.5";
     this.rnInstanceRegistry = new RNInstanceRegistry(
       uiAbilityContext,
       this.envId,
@@ -273,6 +273,7 @@ export class RNInstancesCoordinator {
       this.uiAbilityContext.resourceManager,
       displayMetricsManager,
       workerThreadPromise,
+      reactNativeVersion,
       this.options?.launchURI,
       this.uiAbilityContext.cacheDir,
       (rnInstance) => {
@@ -285,7 +286,7 @@ export class RNInstancesCoordinator {
       }
     )
     this.rnohCoreContext = new InternalRNOHCoreContext({
-      reactNativeVersion: "0.72.5",
+      reactNativeVersion: reactNativeVersion,
       safeAreaInsetsProvider: new SafeAreaInsetsProvider(uiAbilityContext),
       logger: this.rawLogger,
       uiAbilityContext: this.uiAbilityContext,

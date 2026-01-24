@@ -50,6 +50,7 @@ interface CreateRNInstanceWorkerEnvPayload {
   architecture: "C_API" | "ARK_TS"
   assetsDest: string
   launchUri: string
+  reactNativeVersion: string
 }
 
 class CreateRNInstanceWorkerEnvAckPayload {
@@ -185,7 +186,8 @@ export async function setupRNOHWorker(config: RNOHWorkerConfig) {
                   rnInstance,
                   httpClient: rnInstanceConfig.httpClient ?? new DefaultHttpClient({ logger: workerLogger }),
                   caPathProvider: rnInstanceConfig.caPathProvider ?? ((url: string) => ''),
-                  launchUri
+                  launchUri,
+                  reactNativeVersion: typedMessagePayload.reactNativeVersion
                 },
                 uiTaskRunner: uiTaskRunner
               })

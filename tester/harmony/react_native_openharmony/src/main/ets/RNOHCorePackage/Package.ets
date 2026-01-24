@@ -55,13 +55,9 @@ export class RNOHCorePackage extends RNPackage {
       .set(DevSettingsTurboModule.NAME, (ctx) => new DevSettingsTurboModule(ctx))
       .set(DevMenuTurboModule.NAME, (ctx) => new DevMenuTurboModule(ctx))
       .set(ExceptionsManagerTurboModule.NAME, (ctx) => new ExceptionsManagerTurboModule(ctx))
-      .set(ImageLoaderTurboModule.NAME, (ctx) => new ImageLoaderTurboModule(ctx))
       .set(KeyboardObserverTurboModule.NAME, (ctx) => new KeyboardObserverTurboModule(ctx))
       .set(NativeAnimatedTurboModule.NAME, (ctx) => new NativeAnimatedTurboModule(ctx))
-      .set(PlatformColorTurboModule.NAME, (ctx) => new PlatformColorTurboModule(ctx))
-      .set(PlatformConstantsTurboModule.NAME, (ctx) => new PlatformConstantsTurboModule(ctx))
       .set(ShareTurboModule.NAME, (ctx) => new ShareTurboModule(ctx))
-      .set(SourceCodeTurboModule.NAME, (ctx) => new SourceCodeTurboModule(ctx))
       .set(TimingTurboModule.NAME, (ctx) => new TimingTurboModule(ctx))
       .set(I18nManagerTurboModule.NAME, (ctx) => new I18nManagerTurboModule(ctx))
       .set(LogBoxTurboModule.NAME, (ctx) => new LogBoxTurboModule(ctx))
@@ -92,6 +88,10 @@ export class RNOHCorePackage extends RNPackage {
       .set(FileReaderTurboModule.NAME, (ctx) => new FileReaderTurboModule(ctx))
       .set(LinkingManagerTurboModule.NAME, (ctx) => new LinkingManagerTurboModule(ctx))
       .set(AppStateTurboModule.NAME, (ctx) => new AppStateTurboModule(ctx))
+      .set(ImageLoaderTurboModule.NAME, (ctx) => new ImageLoaderTurboModule(ctx))
+      .set(PlatformColorTurboModule.NAME, (ctx) => new PlatformColorTurboModule(ctx))
+      .set(PlatformConstantsTurboModule.NAME, (ctx) => new PlatformConstantsTurboModule(ctx))
+      .set(SourceCodeTurboModule.NAME, (ctx) => new SourceCodeTurboModule(ctx))
   }
 
   override getDebugName() {
