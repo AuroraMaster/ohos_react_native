@@ -45,6 +45,7 @@ struct NodeChildData {
 
 // OH_ArkUI_RunTaskInScope is only supported in API Level 20 and above versions
 bool IsNewAPIVersion() {
+  DynamicArkUILoader::initAPI15();
   auto result = IsAtLeastApi20();
   if (result) {
     DynamicArkUILoader::init();

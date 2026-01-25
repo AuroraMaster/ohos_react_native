@@ -11,12 +11,12 @@
 #include "conversions.h"
 #include <deviceinfo.h>
 #include "RNOH/arkui/DynamicArkUILoader.h"
+#include "RNOH/ApiVersionCheck.h"
 
 static constexpr std::array TEXT_INPUT_NODE_EVENT_TYPES = {
     NODE_TEXT_INPUT_ON_PASTE,
     NODE_TEXT_INPUT_ON_CUT,
     NODE_TEXT_INPUT_ON_CHANGE,
-    NODE_TEXT_INPUT_ON_CHANGE_WITH_PREVIEW_TEXT,
     NODE_TEXT_INPUT_ON_SUBMIT,
     NODE_ON_FOCUS,
     NODE_ON_BLUR,
@@ -32,23 +32,27 @@ namespace rnoh {
 // API version >= 20, using const to avoid possible compiling issue. 
 const int32_t TEXT_INPUT_TYPE_ONE_TIME_CODE = 14;
 
-TextInputNode::TextInputNode(const ArkUINode::Context::Shared& context)
-    : TextInputNodeBase(context, ArkUI_NodeType::ARKUI_NODE_TEXT_INPUT),
-      m_textInputNodeDelegate(nullptr) {
-  for (auto eventType : TEXT_INPUT_NODE_EVENT_TYPES) {
-    registerNodeEvent(eventType);
-  }
+TextInputNode::TextInputNode(const ArkUINode::Context::Shared &context)
+    : TextInputNodeBase(context, ArkUI_NodeType::ARKUI_NODE_TEXT_INPUT), m_textInputNodeDelegate(nullptr) {
+    if (IsAtLeastApi15()) {
+        registerNodeEvent(NODE_TEXT_INPUT_ON_CHANGE_WITH_PREVIEW_TEXT);
+    }
+    for (auto eventType : TEXT_INPUT_NODE_EVENT_TYPES) {
+        registerNodeEvent(eventType);
+    }
 
-  ArkUI_NumberValue value = {.i32 = 1};
-  ArkUI_AttributeItem item = {&value, 1};
-  m_nodeApi->setAttribute(
-      m_nodeHandle, NODE_TEXT_INPUT_ENABLE_KEYBOARD_ON_FOCUS, &item);
+    ArkUI_NumberValue value = {.i32 = 1};
+    ArkUI_AttributeItem item = {&value, 1};
+    m_nodeApi->setAttribute(m_nodeHandle, NODE_TEXT_INPUT_ENABLE_KEYBOARD_ON_FOCUS, &item);
 }
 
 TextInputNode::~TextInputNode() {
-  for (auto eventType : TEXT_INPUT_NODE_EVENT_TYPES) {
-    unregisterNodeEvent(eventType);
-  }
+    if (IsAtLeastApi15()) {
+        unregisterNodeEvent(NODE_TEXT_INPUT_ON_CHANGE_WITH_PREVIEW_TEXT);
+    }
+    for (auto eventType : TEXT_INPUT_NODE_EVENT_TYPES) {
+        unregisterNodeEvent(eventType);
+    }
 }
 
 void TextInputNode::onNodeEvent(
@@ -131,7 +135,8 @@ void TextInputNode::onNodeEvent(
     m_textInputNodeDelegate->onWillDelete(
         this, static_cast<int>(round(arkUiValues[0].f32)), arkUiValues[1].i32);
   }
-  if (eventType == ArkUI_NodeEventType::NODE_TEXT_INPUT_ON_CHANGE_WITH_PREVIEW_TEXT) {
+  if (DynamicArkUILoader::getTextChangeEventFun() && eventType ==
+        ArkUI_NodeEventType::NODE_TEXT_INPUT_ON_CHANGE_WITH_PREVIEW_TEXT) {
     auto  changeEvent = DynamicArkUILoader::getTextChangeEventFun()(event);
     auto position = changeEvent->number;
     std::string content(changeEvent->pStr);
