@@ -49,21 +49,11 @@ std::string TextInputComponentInstance::getTextContentFromState(SharedConcreteSt
   return contentStream.str();
 }
 
-void TextInputComponentInstance::onChange(std::string text, std::string extendStr) {
-  m_extendStr = extendStr;
-  setTextContent(text, true);
-  m_isTriggerChange = true;
-  if (m_lastSelectionLocation == m_selectionLocation && m_selectionLength == 0) {
-    m_lastContent = m_content;
-    m_lastExtendStr = m_extendStr;
-    m_targetSelectionFromEnd = std::nullopt;
-    m_nativeEventCount++;
-    if (m_eventEmitter) {
-      m_eventEmitter->onChange(getOnChangeMetrics());
-    }
-    m_valueChanged = true;
-    m_isTriggerChange = false;
-  }
+void TextInputComponentInstance::onChange(std::string text) {
+  m_nativeEventCount++;
+  m_content = std::move(text);
+  m_eventEmitter->onChange(getOnChangeMetrics());
+  m_valueChanged = true;
 }
 
 void TextInputComponentInstance::onSubmit() {
@@ -72,6 +62,9 @@ void TextInputComponentInstance::onSubmit() {
 
 void TextInputComponentInstance::onBlur() {
   this->m_focused = false;
+  if (m_isControlledTextInput) {
+    m_caretPositionForControlledInput = m_selectionStart;
+  }
   if (m_props->traits.clearButtonMode ==
       facebook::react::TextInputAccessoryVisibilityMode::WhileEditing) {
     m_textInputNode.setCancelButtonMode(
@@ -130,28 +123,16 @@ void TextInputComponentInstance::onWillDelete(
 void TextInputComponentInstance::onTextSelectionChange(
     int32_t location,
     int32_t length) {
-  // If selectionFromEnd is not equal to m_targetSelectionFromEnd,
-  // it indicates that the cursor position has changed during the input process,
-  // the input content may be incorrect at this point, and should be skipped.
-  auto selectionFromEnd = countUtf16Characters(m_content) - location;
-  if (length == 0 &&
-      m_lastContent != m_content &&
-      (!m_extendStr.empty() || m_lastExtendStr.empty()) &&
-      m_targetSelectionFromEnd.has_value() &&
-      selectionFromEnd != m_targetSelectionFromEnd.value()) {
-    setTextContentAndSelection(m_lastContent, m_lastSelectionLocation, m_lastSelectionLocation);
-    return;
-  }
-  m_lastContent = m_content;
-  m_lastExtendStr = m_extendStr;
-  m_targetSelectionFromEnd = std::nullopt;
-  if (m_isTriggerChange) {
-    m_nativeEventCount++;
-    if (m_eventEmitter) {
-      m_eventEmitter->onChange(getOnChangeMetrics());
+  if (m_isControlledTextInput &&
+      m_hasLatestControlledValueChangeBeenProcessed) {
+    m_caretPositionForControlledInput = m_selectionStart;
+    /**
+     * `m_valueChanged` is used here because "setTextAndSelection" command is
+     * emitted only if value has changed.
+     */
+    if (m_valueChanged) {
+      m_hasLatestControlledValueChangeBeenProcessed = false;
     }
-    m_valueChanged = true;
-    m_isTriggerChange = false;
   }
   if (m_textWasPastedOrCut) {
     m_textWasPastedOrCut = false;
@@ -239,6 +220,7 @@ TextInputComponentInstance::getOnContentSizeChangeMetrics() {
 void TextInputComponentInstance::onPropsChanged(
     SharedConcreteProps const& props) {
   m_multiline = props->traits.multiline;
+  m_isControlledTextInput = !props->text.empty();
   if (m_multiline) {
     m_textInputNode.setTextInputNodeDelegate(nullptr);
     m_textAreaNode.setTextAreaNodeDelegate(this);
@@ -407,6 +389,14 @@ void TextInputComponentInstance::onPropsChanged(
         m_textInputNode.setAutoFocus(props->autoFocus);
     }
   }
+  if (!m_props || props->selection->start != m_props->selection->start ||
+    props->selection->end != m_props->selection->end) {
+    if (m_multiline == true) {
+        m_textAreaNode.setTextSelection(props->selection->start, props->selection->end);
+    } else {
+        m_textInputNode.setTextSelection(props->selection->start, props->selection->end);
+    }
+  }
   if (!m_props || *(props->selectionColor) != *(m_props->selectionColor)) {
     if (props->selectionColor) {
       m_textInputNode.setSelectedBackgroundColor(props->selectionColor);
@@ -546,28 +536,20 @@ int32_t TextInputComponentInstance::countUtf16Characters(const std::string& cont
   }
   return len;
 }
-void TextInputComponentInstance::setTextContentAndSelection(
-  std::string const &content,
-  size_t selectionStart,
-  size_t selectionEnd,
-  bool noNeedSet) {
-  if (selectionStart > selectionEnd) {
-    // swap to match behavior on Android
-    std::swap(selectionStart, selectionEnd);
-  }
-  if (!noNeedSet && m_extendStr.empty()) {
+void TextInputComponentInstance::setTextContentAndSelection(std::string const &content, size_t selectionStart, size_t selectionEnd) {
+   if (selectionStart > selectionEnd) {
+      // swap to match behavior on Android
+      std::swap(selectionStart, selectionEnd);
+    }
     m_textInputNode.setTextContent(content);      
     m_textAreaNode.setTextContent(content);
     m_textInputNode.setTextSelection(selectionStart, selectionEnd);
     m_textAreaNode.setTextSelection(selectionStart, selectionEnd);
-  }
-  m_selectionStart = selectionStart;
-  m_selectionLocation = selectionStart;
-  m_selectionEnd = selectionEnd;
-  m_content = content;
+    m_selectionStart = selectionStart;
+    m_selectionEnd = selectionEnd;
 }
 
-void TextInputComponentInstance::setTextContent(std::string const& content, bool noNeedSet) {
+void TextInputComponentInstance::setTextContent(std::string const& content) {
   // NOTE: if selection isn't set explicitly by JS side, we want it to stay
   // roughly in the same place, rather than have it move to the end of the
   // input (which is the ArkUI default behaviour)
@@ -581,10 +563,10 @@ void TextInputComponentInstance::setTextContent(std::string const& content, bool
   int32_t selectionEnd = selectionStart + m_selectionLength;
   selectionStart = std::max(0, std::min(selectionStart, contentLength));
   selectionEnd = std::max(selectionStart, std::min(selectionEnd, contentLength));
-  if (m_selectionStart == m_selectionEnd && m_selectionLength == 0 && m_focused) {
-    m_targetSelectionFromEnd = selectionFromEnd;
+  if (m_isControlledTextInput) {
+    m_caretPositionForControlledInput = selectionStart;
   }
-  setTextContentAndSelection(content, selectionStart, selectionEnd, noNeedSet);
+  setTextContentAndSelection(content, selectionStart, selectionEnd);
 }
 
 void TextInputComponentInstance::onCommandReceived(
@@ -601,16 +583,27 @@ void TextInputComponentInstance::onCommandReceived(
       m_textInputNode.setTextSelection(m_selectionStart, m_selectionEnd);
       m_textAreaNode.setTextSelection(m_selectionStart, m_selectionEnd);
     }
+    if (m_isControlledTextInput) {
+      m_caretPositionForControlledInput = m_selectionStart;
+    }
   } else if (commandName == "blur") {
     blur();
   } else if (
       commandName == "setTextAndSelection" && args.isArray() &&
       args.size() == 4 && args[0].asInt() >= m_nativeEventCount) {
+    m_hasLatestControlledValueChangeBeenProcessed = true;
     auto textContent = args[1].asString();
     auto selectionStart = args[2].asInt();
     auto selectionEnd = args[3].asInt();
     if (selectionStart < 0) {
-      setTextContent(textContent);
+      if (m_isControlledTextInput) {
+        setTextContentAndSelection(
+            textContent,
+            m_caretPositionForControlledInput,
+            m_caretPositionForControlledInput);
+      } else {
+        setTextContent(textContent);
+      }
     } else {
       setTextContentAndSelection(textContent, selectionStart, selectionEnd);
     }

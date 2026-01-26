@@ -40,12 +40,9 @@ class TextInputComponentInstance
   bool m_clearTextOnFocus{false};
 
   std::string m_content;
-  std::string m_lastContent;
-  std::string m_extendStr;
-  std::string m_lastExtendStr;
 
   int32_t m_selectionLocation = 0;
-  int32_t m_lastSelectionLocation = 0;
+
   int32_t m_selectionLength = 0;
 
   float m_contentSizeWidth = 0;
@@ -56,12 +53,29 @@ class TextInputComponentInstance
 
   bool m_focused{false};
   bool m_shouldIgnoreNextChangeEvent = false;
-  bool m_isTriggerChange = false;
 
   int32_t m_selectionStart = -1;
   int32_t m_selectionEnd = -1;
 
-  std::optional<int32_t> m_targetSelectionFromEnd = std::nullopt;
+  /**
+   * we want to record the focusing caret position when default value is set,
+   * so that when user input something we could restore the caret
+   * to the right position.
+   */
+  bool m_isControlledTextInput = false;
+  /**
+   * A desired caret position for controlled TextInput.
+   * When TextInput is controlled, and props->value wasn't updated on JS side
+   * after a key was pressed, ArkUI moves caret forward but caret position
+   * shouldn't change.
+   */
+  int32_t m_caretPositionForControlledInput = 0;
+  /**
+   * When a user types two keys quickly (with two fingers), and TextInput value
+   * is hardcoded on JS side, then a cursor can move forward. This property
+   * prevents updating `m_caretPositionForControlledInput` too quickly.
+   */
+  bool m_hasLatestControlledValueChangeBeenProcessed = true;
   
   bool m_autoFocus = false;
 
@@ -71,9 +85,8 @@ class TextInputComponentInstance
   void setTextContentAndSelection(
       std::string const& content,
       size_t selectionStart,
-      size_t selectionEnd,
-      bool noNeedSet = false);
-  void setTextContent(std::string const& content, bool noNeedSet = false);
+      size_t selectionEnd);
+  void setTextContent(std::string const& content);
 
  public:
   TextInputComponentInstance(Context context);
@@ -89,7 +102,7 @@ class TextInputComponentInstance
       std::string const& commandName,
       folly::dynamic const& args) override;
 
-  void onChange(std::string text, std::string extendStr) override;
+  void onChange(std::string text) override;
 
   void onBlur() override;
 

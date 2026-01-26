@@ -11,34 +11,6 @@
 
 namespace rnoh {
 
-std::size_t charToByteIndex(const std::string& content, std::size_t position) {
-  std::size_t byteIndex = 0;
-  std::size_t chars = 0;
-  std::size_t size = content.size();
-  const unsigned char* currentByte = reinterpret_cast<const unsigned char*>(content.data());
-  const unsigned char* endOfBytes = currentByte + size;
-
-  while (currentByte < endOfBytes && chars < position) {
-    std::size_t charLen;
-    if (*currentByte < 0x80) {
-      charLen = 1;
-    } else if ((*currentByte >> 5) == 0x06) {
-      charLen = 2;
-    } else if ((*currentByte >> 4) == 0x0E) {
-      charLen = 3;
-    } else if ((*currentByte >> 3) == 0x1E) {
-      charLen = 4;
-    } else {
-      charLen = 1;
-    }
-    byteIndex += charLen;
-    currentByte += charLen;
-    ++chars;
-  }
-  
-  return byteIndex;
-}
-
 TextInputNodeBase::TextInputNodeBase(const ArkUINode::Context::Shared& context, ArkUI_NodeType nodeType)
     : ArkUINode(context, nodeType) {}
 

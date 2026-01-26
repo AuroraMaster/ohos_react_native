@@ -121,11 +121,6 @@ static void receiveEvent(ArkUI_NodeEvent* event) {
       target->onNodeEvent(eventType, componentEvent->data);
       return;
     }
-    if (eventType == ArkUI_NodeEventType::NODE_TEXT_INPUT_ON_CHANGE_WITH_PREVIEW_TEXT ||
-        eventType == ArkUI_NodeEventType::NODE_TEXT_AREA_ON_CHANGE_WITH_PREVIEW_TEXT) {
-      target->onNodeEvent(eventType, event);
-      return;
-    }
     auto eventString = OH_ArkUI_NodeEvent_GetStringAsyncEvent(event);
     if (eventString != nullptr) {
       target->onNodeEvent(eventType, std::string_view(eventString->pStr));
