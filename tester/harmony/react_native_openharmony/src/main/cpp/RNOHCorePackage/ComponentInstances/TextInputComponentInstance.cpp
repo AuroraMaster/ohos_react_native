@@ -139,14 +139,14 @@ void TextInputComponentInstance::onTextSelectionChange(
   } else if (m_valueChanged) {
     std::u16string key;
     bool noPreviousSelection = m_selectionLength == 0;
-    bool cursorDidNotMove = location == m_lastSelectionLocation;
+    bool cursorDidNotMove = location == m_selectionLocation;
     bool cursorMovedBackwardsOrAtBeginningOfInput =
-        (location < m_lastSelectionLocation) || location <= 0;
+        (location < m_selectionLocation) || location <= 0;
     if (!cursorMovedBackwardsOrAtBeginningOfInput &&
         (noPreviousSelection || !cursorDidNotMove)) {
       auto utfContent = boost::locale::conv::utf_to_utf<char16_t>(m_content);
       if (location > 0 && location <= utfContent.size()) {
-        int changeLength = std::max(location - m_lastSelectionLocation, 1);
+        int changeLength = std::max(location - m_selectionLocation, 1);
         changeLength = std::min(changeLength, location);
         key = utfContent.substr(location - changeLength, changeLength);
       }
@@ -160,7 +160,6 @@ void TextInputComponentInstance::onTextSelectionChange(
     m_valueChanged = false;
   }
 
-  m_lastSelectionLocation = location;
   m_selectionLocation = location;
   m_selectionLength = length;
   m_selectionStart = location;
