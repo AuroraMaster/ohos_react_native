@@ -569,8 +569,8 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
           const auto surfaceId = transaction->getSurfaceId();
           const bool inConfigChangeWindow =
               splitMutation && isInConfigChangeWindow();
-          const bool inLoadWindow = (!splitMutation) || inConfigChangeWindow ||
-              isInInitialLoadWindow(surfaceId);
+          const bool inLoadWindow = IsSpecialEquipment() || (!splitMutation) ||
+              inConfigChangeWindow || isInInitialLoadWindow(surfaceId);
           if (inLoadWindow) {
             auto allOther = std::move(otherMutationList);
             performOnMainThread(

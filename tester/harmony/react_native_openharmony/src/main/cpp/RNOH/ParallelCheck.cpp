@@ -15,6 +15,8 @@ namespace rnoh {
 
 bool PARALLEL_RUNTIME_SWITCH = false;
 
+bool IS_SPECIAL_EQUIPMENT = false;
+
 void SetParallelizationEnabled(bool enabled) {
   bool oldValue = PARALLEL_RUNTIME_SWITCH;
   PARALLEL_RUNTIME_SWITCH = enabled;
@@ -32,6 +34,10 @@ void SetParallelizationEnabled(bool enabled) {
       LOG(INFO) << "SetParallelizationEnabled: ArkUINodeRegistry not initialized yet, skipping re-registration";
     }
   }
+}
+
+void setDeviceInfo(bool isSpecialEquipment) {
+  IS_SPECIAL_EQUIPMENT = isSpecialEquipment;
 }
 
 } // namespace rnoh
