@@ -71,6 +71,10 @@ public:
         if (imageCandidate.type != facebook::react::ImageSource::Type::Remote) {
             return imageUri;
         }
+        
+        if (imageUri.find("http", 0) != 0) {
+            return imageUri;
+        }
 
         {
             // Subscribe to get information about prefetched URIs.
