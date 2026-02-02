@@ -104,10 +104,12 @@ auto MountingManagerCAPI::getValidMutations(MutationList const& mutations)
         isArkTSMutation = !isCAPIComponent(mutation.oldChildShadowView);
         break;
       case facebook::react::ShadowViewMutation::Insert:
-        isArkTSMutation = !isCAPIComponent(mutation.newChildShadowView);
+        isArkTSMutation = !isCAPIComponent(mutation.parentShadowView) ||
+            !isCAPIComponent(mutation.newChildShadowView);
         break;
       case facebook::react::ShadowViewMutation::Remove:
-        isArkTSMutation = !isCAPIComponent(mutation.oldChildShadowView);
+        isArkTSMutation = !isCAPIComponent(mutation.parentShadowView) ||
+            !isCAPIComponent(mutation.oldChildShadowView);
         break;
       case facebook::react::ShadowViewMutation::RemoveDeleteTree:
         isArkTSMutation = false;
