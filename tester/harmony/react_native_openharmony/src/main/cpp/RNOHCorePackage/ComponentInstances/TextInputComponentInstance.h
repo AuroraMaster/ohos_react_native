@@ -56,37 +56,18 @@ class TextInputComponentInstance
 
   int32_t m_selectionStart = -1;
   int32_t m_selectionEnd = -1;
-
-  /**
-   * we want to record the focusing caret position when default value is set,
-   * so that when user input something we could restore the caret
-   * to the right position.
-   */
-  bool m_isControlledTextInput = false;
-  /**
-   * A desired caret position for controlled TextInput.
-   * When TextInput is controlled, and props->value wasn't updated on JS side
-   * after a key was pressed, ArkUI moves caret forward but caret position
-   * shouldn't change.
-   */
-  int32_t m_caretPositionForControlledInput = 0;
-  /**
-   * When a user types two keys quickly (with two fingers), and TextInput value
-   * is hardcoded on JS side, then a cursor can move forward. This property
-   * prevents updating `m_caretPositionForControlledInput` too quickly.
-   */
-  bool m_hasLatestControlledValueChangeBeenProcessed = true;
-  
-  bool m_autoFocus = false;
+  int32_t m_endOffset = 0;
 
   void focus();
   void blur();
 
-  void setTextContentAndSelection(
-      std::string const& content,
-      size_t selectionStart,
-      size_t selectionEnd);
   void setTextContent(std::string const& content);
+    
+  void setSelection(int32_t location, int32_t length);
+    
+  void setTextSelection(int32_t selectionStart, int32_t selectionEnd);
+  
+  void onKeyPressChange(int32_t location, std::string text);
 
  public:
   TextInputComponentInstance(Context context);
@@ -113,7 +94,7 @@ class TextInputComponentInstance
   void onPasteOrCut() override;
 
   void onTextSelectionChange(int32_t location, int32_t length) override;
-  
+
   void onContentScroll() override;
 
   void onContentSizeChange(float width, float height, bool multiline) override;

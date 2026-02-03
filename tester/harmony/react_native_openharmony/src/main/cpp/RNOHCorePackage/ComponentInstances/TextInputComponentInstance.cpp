@@ -29,7 +29,7 @@ TextInputComponentInstance::TextInputComponentInstance(Context context)
       m_textAreaNode(m_arkUINodeCtx) {}
 
 void TextInputComponentInstance::onContentSizeChange(float width, float height, bool multiline) {
-  if (multiline == m_multiline){
+  if (multiline == m_multiline) {
     m_contentSizeWidth = width;
     m_contentSizeHeight = height;
     m_eventEmitter->onContentSizeChange(getOnContentSizeChangeMetrics());
@@ -43,16 +43,29 @@ void TextInputComponentInstance::onContentScroll() {
 std::string TextInputComponentInstance::getTextContentFromState(SharedConcreteState const& state) {
   std::ostringstream contentStream;
   for (auto const& fragment :
-      state->getData().attributedStringBox.getValue().getFragments()) {
+       state->getData().attributedStringBox.getValue().getFragments()) {
     contentStream << fragment.string;
   }
   return contentStream.str();
 }
 
 void TextInputComponentInstance::onChange(std::string text) {
+  m_content = text;
   m_nativeEventCount++;
-  m_content = std::move(text);
-  m_eventEmitter->onChange(getOnChangeMetrics());
+  int32_t contentLength = countUtf16Characters(m_content);
+  // Cleaning content, endOffset need update 0.
+  if (contentLength == 0) {
+    m_endOffset = 0;
+  }
+  int32_t location = std::max<int32_t>(contentLength - m_endOffset, 0);
+  // Called before updating the cursor cache
+  onKeyPressChange(location, m_content);
+  // Update cursor cache and content
+  setSelection(location, 0);
+  if (m_eventEmitter) {
+    m_eventEmitter->onChange(getOnChangeMetrics());
+    m_eventEmitter->onSelectionChange(getTextInputMetrics());
+  }
   m_valueChanged = true;
 }
 
@@ -62,9 +75,6 @@ void TextInputComponentInstance::onSubmit() {
 
 void TextInputComponentInstance::onBlur() {
   this->m_focused = false;
-  if (m_isControlledTextInput) {
-    m_caretPositionForControlledInput = m_selectionStart;
-  }
   if (m_props->traits.clearButtonMode ==
       facebook::react::TextInputAccessoryVisibilityMode::WhileEditing) {
     m_textInputNode.setCancelButtonMode(
@@ -82,8 +92,9 @@ void TextInputComponentInstance::onBlur() {
 void TextInputComponentInstance::onFocus() {
   this->m_focused = true;
   if (this->m_clearTextOnFocus) {
-    m_textAreaNode.setTextContent("");
-    m_textInputNode.setTextContent("");
+    m_endOffset = 0;
+    setSelection(0, 0);
+    setTextContent("");
   }
   if (m_props->traits.clearButtonMode ==
       facebook::react::TextInputAccessoryVisibilityMode::WhileEditing) {
@@ -120,51 +131,26 @@ void TextInputComponentInstance::onWillDelete(
   }
 }
 
-void TextInputComponentInstance::onTextSelectionChange(
-    int32_t location,
-    int32_t length) {
-  if (m_isControlledTextInput &&
-      m_hasLatestControlledValueChangeBeenProcessed) {
-    m_caretPositionForControlledInput = m_selectionStart;
-    /**
-     * `m_valueChanged` is used here because "setTextAndSelection" command is
-     * emitted only if value has changed.
-     */
-    if (m_valueChanged) {
-      m_hasLatestControlledValueChangeBeenProcessed = false;
-    }
-  }
-  if (m_textWasPastedOrCut) {
-    m_textWasPastedOrCut = false;
-  } else if (m_valueChanged) {
-    std::u16string key;
-    bool noPreviousSelection = m_selectionLength == 0;
-    bool cursorDidNotMove = location == m_selectionLocation;
-    bool cursorMovedBackwardsOrAtBeginningOfInput =
-        (location < m_selectionLocation) || location <= 0;
-    if (!cursorMovedBackwardsOrAtBeginningOfInput &&
-        (noPreviousSelection || !cursorDidNotMove)) {
-      auto utfContent = boost::locale::conv::utf_to_utf<char16_t>(m_content);
-      if (location > 0 && location <= utfContent.size()) {
-        int changeLength = std::max(location - m_selectionLocation, 1);
-        changeLength = std::min(changeLength, location);
-        key = utfContent.substr(location - changeLength, changeLength);
-      }
-    }
-    auto keyPressMetrics = facebook::react::KeyPressMetrics();
-    keyPressMetrics.text = boost::locale::conv::utf_to_utf<char>(key);
-    keyPressMetrics.eventCount = m_nativeEventCount;
-    m_eventEmitter->onKeyPress(keyPressMetrics);
-  }
-  if (m_valueChanged) {
-    m_valueChanged = false;
-  }
-
+void TextInputComponentInstance::setSelection(int32_t location, int32_t length) {
   m_selectionLocation = location;
   m_selectionLength = length;
   m_selectionStart = location;
   m_selectionEnd = location + length;
-  if (m_eventEmitter != NULL) {
+}
+
+void TextInputComponentInstance::onTextSelectionChange(int32_t location, int32_t length) {
+  if (m_textWasPastedOrCut) {
+    m_textWasPastedOrCut = false;
+  }
+  // If the cursor controlled by onChange is not updated here,
+  if (m_valueChanged) {
+    m_valueChanged = false;
+    return;
+  }
+  int32_t contentLength = countUtf16Characters(m_content);
+  m_endOffset = std::max<int32_t>(contentLength - location - length, 0);
+  setSelection(location, length);
+  if (m_eventEmitter) {
     m_eventEmitter->onSelectionChange(getTextInputMetrics());
   }
 }
@@ -192,9 +178,7 @@ TextInputComponentInstance::getTextInputMetrics() {
   textInputMetrics.contentSize.width = this->m_contentSizeWidth;
   textInputMetrics.contentSize.height = this->m_contentSizeHeight;
   textInputMetrics.zoomScale = 1;
-  textInputMetrics.text = m_multiline
-      ? m_textAreaNode.getTextContent()
-      : m_textInputNode.getTextContent();
+  textInputMetrics.text = m_multiline ? m_textAreaNode.getTextContent() : m_textInputNode.getTextContent();
   return textInputMetrics;
 }
 
@@ -211,7 +195,7 @@ TextInputComponentInstance::getOnChangeMetrics() {
 facebook::react::Size
 TextInputComponentInstance::getOnContentSizeChangeMetrics() {
   auto OnContentSizeChangeMetrics = facebook::react::Size();
-  OnContentSizeChangeMetrics.width= this->m_contentSizeWidth;
+  OnContentSizeChangeMetrics.width = this->m_contentSizeWidth;
   OnContentSizeChangeMetrics.height = this->m_contentSizeHeight;
   return OnContentSizeChangeMetrics;
 }
@@ -219,7 +203,6 @@ TextInputComponentInstance::getOnContentSizeChangeMetrics() {
 void TextInputComponentInstance::onPropsChanged(
     SharedConcreteProps const& props) {
   m_multiline = props->traits.multiline;
-  m_isControlledTextInput = !props->text.empty();
   if (m_multiline) {
     m_textInputNode.setTextInputNodeDelegate(nullptr);
     m_textAreaNode.setTextAreaNodeDelegate(this);
@@ -245,18 +228,18 @@ void TextInputComponentInstance::onPropsChanged(
     m_textInputNode.setAutoFill(convertImportantForAutofill(props->importantForAutofill));
   }
   if (!m_props || props->traits.keyboardType != m_props->traits.keyboardType) {
-    if(m_multiline){
+    if (m_multiline) {
       if(props->traits.keyboardType == facebook::react::KeyboardType::DecimalPad){
         m_textAreaNode.setInputType(rnoh::convertTextAreaInputType(facebook::react::KeyboardType::Numeric));
-      }else{
+      } else {
         m_textAreaNode.setInputType(rnoh::convertTextAreaInputType(props->traits.keyboardType));
       }
-    }else{
+    } else {
       m_textInputNode.setInputType(
-        props->traits.secureTextEntry
-            ? ARKUI_TEXTINPUT_TYPE_PASSWORD
-            : rnoh::convertInputType(props->traits.keyboardType));
-      m_textInputNode.setPasswordIconVisibility(false);      
+          props->traits.secureTextEntry
+              ? ARKUI_TEXTINPUT_TYPE_PASSWORD
+              : rnoh::convertInputType(props->traits.keyboardType));
+      m_textInputNode.setPasswordIconVisibility(false);
     }
   }
   if (!m_props ||
@@ -266,7 +249,7 @@ void TextInputComponentInstance::onPropsChanged(
         props->traits.secureTextEntry
             ? ARKUI_TEXTINPUT_TYPE_PASSWORD
             : rnoh::convertInputType(props->traits.keyboardType));
-    m_textInputNode.setPasswordIconVisibility(false);        
+    m_textInputNode.setPasswordIconVisibility(false);
   }
   if (!m_props ||
       props->traits.textContentType != m_props->traits.textContentType) {
@@ -284,7 +267,7 @@ void TextInputComponentInstance::onPropsChanged(
   if (!m_props ||
         props->traits.passwordRules != 
           m_props->traits.passwordRules) {
-      m_textInputNode.setPasswordRules(props->traits.passwordRules);
+    m_textInputNode.setPasswordRules(props->traits.passwordRules);
   }
   if (!m_props ||
       *(props->textAttributes.foregroundColor) !=
@@ -302,12 +285,12 @@ void TextInputComponentInstance::onPropsChanged(
     m_textInputNode.setFont(props->textAttributes);
   }
   if (!m_props ||
-    props->textAttributes.lineHeight != m_props->textAttributes.lineHeight) {
+      props->textAttributes.lineHeight != m_props->textAttributes.lineHeight) {
     if (props->textAttributes.lineHeight) {
       m_textAreaNode.setTextInputLineHeight(props->textAttributes);
       m_textInputNode.setTextInputLineHeight(props->textAttributes);
     }
-  }  
+  }
   if (!m_props || *(props->backgroundColor) != *(m_props->backgroundColor)) {
     if (props->backgroundColor) {
       m_textAreaNode.setBackgroundColor(props->backgroundColor);
@@ -317,16 +300,16 @@ void TextInputComponentInstance::onPropsChanged(
       m_textInputNode.setBackgroundColor(facebook::react::clearColor());
     }
   }
-  if (props->rawProps.count("textAlignVertical") != 0){
+  if (props->rawProps.count("textAlignVertical") != 0) {
     std::string rawAlignment = props->rawProps["textAlignVertical"].asString();
     ArkUI_Alignment aligment;
-    if (rawAlignment == "top"){
+    if (rawAlignment == "top") {
       aligment = ARKUI_ALIGNMENT_TOP;
-    } else if(rawAlignment == "center"){
+    } else if (rawAlignment == "center") {
       aligment = ARKUI_ALIGNMENT_CENTER;
-    } else if(rawAlignment == "bottom"){
+    } else if (rawAlignment == "bottom") {
       aligment = ARKUI_ALIGNMENT_BOTTOM;
-    } else if(rawAlignment == "auto"){
+    } else if (rawAlignment == "auto") {
       aligment = ARKUI_ALIGNMENT_CENTER;
     }
     m_textInputNode.setAlignment(aligment);
@@ -381,21 +364,13 @@ void TextInputComponentInstance::onPropsChanged(
   m_textInputNode.setId(getIdFromProps(props));
 
   if (!m_props || props->autoFocus != m_props->autoFocus) {
-    m_autoFocus = props->autoFocus;
     if (m_multiline == true) {
-        m_textAreaNode.setAutoFocus(props->autoFocus);
+      m_textAreaNode.setAutoFocus(props->autoFocus);
     } else if (m_multiline == false) {
-        m_textInputNode.setAutoFocus(props->autoFocus);
+      m_textInputNode.setAutoFocus(props->autoFocus);
     }
   }
-  if (!m_props || props->selection->start != m_props->selection->start ||
-    props->selection->end != m_props->selection->end) {
-    if (m_multiline == true) {
-        m_textAreaNode.setTextSelection(props->selection->start, props->selection->end);
-    } else {
-        m_textInputNode.setTextSelection(props->selection->start, props->selection->end);
-    }
-  }
+
   if (!m_props || *(props->selectionColor) != *(m_props->selectionColor)) {
     if (props->selectionColor) {
       m_textInputNode.setSelectedBackgroundColor(props->selectionColor);
@@ -468,7 +443,7 @@ void TextInputComponentInstance::onPropsChanged(
   }
   if (!m_props || props->traits.editable != m_props->traits.editable) {
     m_textAreaNode.setEnabled(props->traits.editable);
-  m_textInputNode.setEnabled(props->traits.editable);
+    m_textInputNode.setEnabled(props->traits.editable);
   }
   if (!m_props || props->traits.selectTextOnFocus != m_props->traits.selectTextOnFocus) {
     m_textInputNode.setSelectAll(props->traits.selectTextOnFocus);
@@ -480,7 +455,7 @@ void TextInputComponentInstance::onLayoutChanged(
     facebook::react::LayoutMetrics const& layoutMetrics) {
   CppComponentInstance::onLayoutChanged(layoutMetrics);
   if (m_multiline) {
-     m_textInputNode.setLayoutRect(
+    m_textInputNode.setLayoutRect(
         layoutMetrics.frame.origin,
         layoutMetrics.frame.size,
         layoutMetrics.pointScaleFactor);
@@ -535,40 +510,53 @@ int32_t TextInputComponentInstance::countUtf16Characters(const std::string& cont
   }
   return len;
 }
-void TextInputComponentInstance::setTextContentAndSelection(
-    std::string const& content,
-    size_t selectionStart,
-    size_t selectionEnd) {
-  if (selectionStart > selectionEnd) {
-    // swap to match behavior on Android
-    std::swap(selectionStart, selectionEnd);
-  }
-  m_textInputNode.setTextContent(content);
-  m_textAreaNode.setTextContent(content);
-  m_textInputNode.setTextSelection(selectionStart, selectionEnd);
-  m_textAreaNode.setTextSelection(selectionStart, selectionEnd);
-  m_selectionStart = selectionStart;
-  m_selectionEnd = selectionEnd;
-}
 
 void TextInputComponentInstance::setTextContent(std::string const& content) {
-  // NOTE: if selection isn't set explicitly by JS side, we want it to stay
-  // roughly in the same place, rather than have it move to the end of the
-  // input (which is the ArkUI default behaviour)
-  //auto selectionFromEnd = m_content.size() - m_selectionLocation;
-  if (m_selectionLocation == 0 && !content.empty() && m_autoFocus) {
-    m_selectionLocation = countUtf16Characters(content);
+  m_content = content;
+  m_textInputNode.setTextContent(content);
+  m_textAreaNode.setTextContent(content);
+}
+
+void TextInputComponentInstance::setTextSelection(int32_t selectionStart, int32_t selectionEnd) {
+  if (selectionStart < 0 || selectionEnd < 0) {
+    int32_t contentLength = countUtf16Characters(m_content);
+    int32_t location = contentLength - m_endOffset;
+    setSelection(location, 0);
+    m_textInputNode.setTextSelection(location, location);
+    m_textAreaNode.setTextSelection(location, location);
+    return;
   }
-  int32_t contentLength = countUtf16Characters(content);
-  int32_t selectionFromEnd = countUtf16Characters(m_content) - m_selectionLocation;
-  int32_t selectionStart = contentLength - selectionFromEnd;
-  int32_t selectionEnd = selectionStart + m_selectionLength;
-  selectionStart = std::max(0, std::min(selectionStart, contentLength));
-  selectionEnd = std::max(selectionStart, std::min(selectionEnd, contentLength));
-  if (m_isControlledTextInput) {
-    m_caretPositionForControlledInput = selectionStart;
+  if (selectionStart > selectionEnd) {
+    std::swap(selectionStart, selectionEnd);
   }
-  setTextContentAndSelection(content, selectionStart, selectionEnd);
+  int32_t length = selectionEnd - selectionStart;
+  setSelection(selectionStart, length);
+  m_textInputNode.setTextSelection(selectionStart, selectionEnd);
+  m_textAreaNode.setTextSelection(selectionStart, selectionEnd);
+}
+
+void TextInputComponentInstance::onKeyPressChange(int32_t location, std::string text) {
+  int32_t newCursorPosition = location;
+  int32_t previousCursorPosition = m_selectionLocation;
+  std::u16string newCharUtf16;
+  bool noPreviousSelection = previousCursorPosition == 0;
+  bool cursorDidNotMove = newCursorPosition == previousCursorPosition;
+  bool cursorMovedBackwardsOrAtBeginningOfInput =
+      (newCursorPosition < previousCursorPosition) || newCursorPosition <= 0;
+  if (!cursorMovedBackwardsOrAtBeginningOfInput && (noPreviousSelection || !cursorDidNotMove)) {
+    auto utfContent = boost::locale::conv::utf_to_utf<char16_t>(text);
+    if (newCursorPosition > 0 && newCursorPosition <= utfContent.size()) {
+      int onlyNewContentLength = std::max(newCursorPosition - previousCursorPosition, 1);
+      onlyNewContentLength = std::min(onlyNewContentLength, newCursorPosition);
+      newCharUtf16 = utfContent.substr(newCursorPosition - onlyNewContentLength, onlyNewContentLength);
+    }
+  }
+  auto keyPressMetrics = facebook::react::KeyPressMetrics();
+  keyPressMetrics.text = boost::locale::conv::utf_to_utf<char>(newCharUtf16);
+  keyPressMetrics.eventCount = m_nativeEventCount;
+  if (m_eventEmitter) {
+    m_eventEmitter->onKeyPress(keyPressMetrics);
+  }
 }
 
 void TextInputComponentInstance::onCommandReceived(
@@ -582,33 +570,18 @@ void TextInputComponentInstance::onCommandReceived(
     }
     focus();
     if (m_selectionStart != -1 && m_selectionEnd != -1 && !m_props->traits.selectTextOnFocus) {
-      m_textInputNode.setTextSelection(m_selectionStart, m_selectionEnd);
-      m_textAreaNode.setTextSelection(m_selectionStart, m_selectionEnd);
-    }
-    if (m_isControlledTextInput) {
-      m_caretPositionForControlledInput = m_selectionStart;
+      setTextSelection(m_selectionStart, m_selectionEnd);
     }
   } else if (commandName == "blur") {
     blur();
   } else if (
       commandName == "setTextAndSelection" && args.isArray() &&
       args.size() == 4 && args[0].asInt() >= m_nativeEventCount) {
-    m_hasLatestControlledValueChangeBeenProcessed = true;
     auto textContent = args[1].asString();
     auto selectionStart = args[2].asInt();
     auto selectionEnd = args[3].asInt();
-    if (selectionStart < 0) {
-      if (m_isControlledTextInput) {
-        setTextContentAndSelection(
-            textContent,
-            m_caretPositionForControlledInput,
-            m_caretPositionForControlledInput);
-      } else {
-        setTextContent(textContent);
-      }
-    } else {
-      setTextContentAndSelection(textContent, selectionStart, selectionEnd);
-    }
+    setTextContent(textContent);
+    setTextSelection(selectionStart, selectionEnd);
   }
 }
 
@@ -621,6 +594,9 @@ void TextInputComponentInstance::onStateChanged(
 
   auto content = getTextContentFromState(state);
   setTextContent(content);
+  int32_t contentLength = countUtf16Characters(content);
+  int32_t location = contentLength - m_endOffset;
+  setTextSelection(location, location);
 }
 
 ArkUINode& TextInputComponentInstance::getLocalRootArkUINode() {
