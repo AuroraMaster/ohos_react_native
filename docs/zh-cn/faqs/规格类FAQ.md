@@ -98,3 +98,18 @@ export default App;
 - API13之前，不支持该功能。
 - 应用配置fontSizeMaxScale字段，限制字体缩放倍数，默认工程无配置。
 - 配置后，调整系统字体大小或者显示大小，RN页面组件仅放大到当前配置的倍数，超过该倍数不再放大。
+
+### StatusBar 使用建议与能力边界说明
+
+请参考[使用类FAQ - StatusBar 使用说明](./使用类FAQ.md#使用-rn-statusbar-在-harmonyos-上可能出现状态不符合预期的原因说明)，
+该文档中对 HarmonyOS 平台下 StatusBar 的系统能力边界、常见使用风险以及推荐使用方式进行了详细说明。
+
+* HarmonyOS 平台中，StatusBar 控制能力属于**系统级能力**，所有设置均对整个系统窗口全局生效。
+* React Native 的 `StatusBar` 组件设计为**页面级能力**，该设计与 HarmonyOS 的系统能力模型不一致。
+* 基于平台能力限制，RNOH **无法在 HarmonyOS 上实现与 Android / iOS 一致的页面级 StatusBar 管理与自动回退机制**。
+
+**使用建议：**
+
+* HarmonyOS 场景下，**推荐使用系统默认状态栏策略**。
+* **不建议**在 RN 页面中频繁或动态控制 `StatusBar`。
+* 若业务确有特殊需求，可在**页面**中使用 RN `StatusBar` 接口，但需自行保证页面切换时的状态一致性，避免影响其他页面。
