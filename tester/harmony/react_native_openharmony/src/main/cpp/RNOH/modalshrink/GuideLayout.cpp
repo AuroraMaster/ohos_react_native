@@ -55,6 +55,31 @@ bool GuideLayout::scanAndScaleModalSubtrees(YGNodeRef rootYogaNode) {
       collectModalSubtreeTags(child);
     }
 
+    // Add marginTop to L5 node for vertical centering after scaling
+    // Modal (L0) -> L1 -> L2 -> L3 -> L4 -> L5
+    // Calculate offset: screenHeight * (1 - scaleFactor) / 2
+    if (scaleFactor_ < 1.0f && screenHeight_ > 0) {
+      YGNodeRef L4 = findL4Node(rootYogaNode);
+      if (L4 && YGNodeGetChildCount(L4) > 0) {
+        YGNodeRef L5 = YGNodeGetChild(L4, 0);
+        if (L5) {
+          float marginTopOffset = screenHeight_ * (1.0f - scaleFactor_) / 2.0f;
+          auto styleL5 = L5->getStyle();
+          
+          // Get existing marginTop and add offset
+          YGValue existingMargin = styleL5.margin()[YGEdgeTop];
+          float existingValue = 0.0f;
+          if (existingMargin.unit == YGUnitPoint && !YGFloatIsUndefined(existingMargin.value)) {
+            existingValue = existingMargin.value;
+          }
+          
+          styleL5.margin()[YGEdgeTop] = YGValue{existingValue + marginTopOffset, YGUnitPoint};
+          L5->setStyle(styleL5);
+          L5->setDirty(true);
+        }
+      }
+    }
+
     foundModal = true;
     // No need to continue recursion, Modal's subtree has been processed
     return true;
@@ -80,9 +105,26 @@ void GuideLayout::scaleYogaNodeStyleWithPercentHandling(
     return;
   }
 
-  // Save original style before any modification (only save once per node)
-  if (originalStyles_.find(yogaNode) == originalStyles_.end()) {
-    originalStyles_[yogaNode] = yogaNode->getStyle();
+  // Get ShadowNode Tag for stable identification across clones
+  void* context = yogaNode->getContext();
+  int32_t tag = -1;
+  if (context) {
+    auto* shadowNode = static_cast<ShadowNode*>(context);
+    if (shadowNode) {
+      tag = shadowNode->getTag();
+    }
+  }
+
+  // Save original style before any modification (only save once per tag)
+  // Use Tag as key because YGNodeRef changes when ShadowTree is cloned
+  if (tag >= 0 && originalStyles_.find(tag) == originalStyles_.end()) {
+    originalStyles_[tag] = std::make_pair(yogaNode, yogaNode->getStyle());
+  } else if (tag >= 0) {
+    // Tag already exists - update YGNodeRef and restore original style first
+    // This prevents double scaling when node is cloned with already-scaled style
+    originalStyles_[tag].first = yogaNode;
+    // Restore original style before scaling
+    yogaNode->setStyle(originalStyles_[tag].second);
   }
 
   auto style = yogaNode->getStyle();
@@ -198,12 +240,15 @@ void GuideLayout::collectModalSubtreeTags(YGNodeRef yogaNode) {
     auto* shadowNode = static_cast<ShadowNode*>(context);
     if (shadowNode) {
       int32_t tag = shadowNode->getTag();
-      modalSubtreeTags_.insert(tag);
+      {
+        std::lock_guard<std::mutex> lock(mutex_);
+        modalSubtreeTags_.insert(tag);
 
-      // If it's a Paragraph node, mark it as needing content cache refresh
-      const char* componentName = shadowNode->getComponentName();
-      if (componentName && std::strcmp(componentName, "Paragraph") == 0) {
-        needsContentRefreshTags_.insert(tag);
+        // If it's a Paragraph node, mark it as needing content cache refresh
+        const char* componentName = shadowNode->getComponentName();
+        if (componentName && std::strcmp(componentName, "Paragraph") == 0) {
+          needsContentRefreshTags_.insert(tag);
+        }
       }
     }
   }
@@ -303,30 +348,54 @@ YGNodeRef GuideLayout::findModalNode(YGNodeRef rootYogaNode) {
   return nullptr;
 }
 
-float GuideLayout::calculateTopDistance(YGNodeRef modalNode) {
-  // Calculate top distance: L4.top + L5.top
-  // Modal (L0) -> L1 -> L2 -> L3 -> L4 -> L5
+YGNodeRef GuideLayout::findL4Node(YGNodeRef modalNode) {
+  // Find L4 node: Modal (L0) -> L1 -> L2 -> L3 -> L4
+  if (!modalNode) {
+    return nullptr;
+  }
 
   // Get L1: Modal's first child
   YGNodeRef L1 = YGNodeGetChild(modalNode, 0);
-  if (!L1) {return 100.0f;}
+  if (!L1) {
+    return nullptr;
+  }
 
   // Get L2: L1's first child
   YGNodeRef L2 = YGNodeGetChild(L1, 0);
-  if (!L2) {return 100.0f;}
+  if (!L2) {
+    return nullptr;
+  }
 
   // Get L3: L2's first child
   YGNodeRef L3 = YGNodeGetChild(L2, 0);
-  if (!L3) {return 100.0f;}
+  if (!L3) {
+    return nullptr;
+  }
 
   // Get L4: L3's first child
   YGNodeRef L4 = YGNodeGetChild(L3, 0);
-  if (!L4) {return 100.0f;}
+
+  return L4;
+}
+
+float GuideLayout::calculateTopDistance(YGNodeRef modalNode) {
+  // Calculate top distance: L4.top + L5.top
+  // Modal (L0) -> L1 -> L2 -> L3 -> L4 -> L5
+  const float DEFAULT_VALUE = 100.0f;
+
+  // Reuse findL4Node to get L4
+  YGNodeRef L4 = findL4Node(modalNode);
+  if (!L4) {
+    return DEFAULT_VALUE;
+  }
+
   float L4Top = YGNodeLayoutGetTop(L4);
 
   // Get L5: L4's first child
   YGNodeRef L5 = YGNodeGetChild(L4, 0);
-  if (!L5) {return L4Top + 100.0f;}
+  if (!L5) {
+    return L4Top + DEFAULT_VALUE;
+  }
   float L5Top = YGNodeLayoutGetTop(L5);
 
   return L4Top + L5Top;
@@ -449,14 +518,14 @@ void GuideLayout::resetYogaTreeState(YGNodeRef node) {
 
 void GuideLayout::restoreOriginalStyles() {
   for (const auto& pair : originalStyles_) {
-    YGNodeRef node = pair.first;
-    const YGStyle& style = pair.second;
+    YGNodeRef node = pair.second.first;
+    const YGStyle& style = pair.second.second;
     if (node) {
       node->setStyle(style);
       // No need to setDirty since layout calculation is already done
     }
   }
-  originalStyles_.clear();
+  // Do not clear - keep cache for future use as Tag-based lookup
 }
 
 } // namespace react
