@@ -95,9 +95,9 @@ void TextAreaNode::onNodeEvent(
   if (eventType == ArkUI_NodeEventType::NODE_TEXT_AREA_ON_CHANGE) {
     if (m_textAreaNodeDelegate != nullptr) {
       std::string text(eventString);
-      if (m_setTextContent == true && text==m_textContent){ //it does not trigger onChange when using setTextContent
+      if (m_setTextContent == true && text == m_textContent){ //it does not trigger onChange when using setTextContent
         m_setTextContent = false;
-      } else{
+      } else {
         m_setTextContent = false;
         m_textAreaNodeDelegate->onChange(std::move(text));
       }

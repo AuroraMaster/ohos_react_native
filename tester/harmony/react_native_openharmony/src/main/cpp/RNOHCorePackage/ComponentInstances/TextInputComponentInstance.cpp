@@ -535,17 +535,20 @@ int32_t TextInputComponentInstance::countUtf16Characters(const std::string& cont
   }
   return len;
 }
-void TextInputComponentInstance::setTextContentAndSelection(std::string const &content, size_t selectionStart, size_t selectionEnd) {
-   if (selectionStart > selectionEnd) {
-      // swap to match behavior on Android
-      std::swap(selectionStart, selectionEnd);
-    }
-    m_textInputNode.setTextContent(content);      
-    m_textAreaNode.setTextContent(content);
-    m_textInputNode.setTextSelection(selectionStart, selectionEnd);
-    m_textAreaNode.setTextSelection(selectionStart, selectionEnd);
-    m_selectionStart = selectionStart;
-    m_selectionEnd = selectionEnd;
+void TextInputComponentInstance::setTextContentAndSelection(
+    std::string const& content,
+    size_t selectionStart,
+    size_t selectionEnd) {
+  if (selectionStart > selectionEnd) {
+    // swap to match behavior on Android
+    std::swap(selectionStart, selectionEnd);
+  }
+  m_textInputNode.setTextContent(content);
+  m_textAreaNode.setTextContent(content);
+  m_textInputNode.setTextSelection(selectionStart, selectionEnd);
+  m_textAreaNode.setTextSelection(selectionStart, selectionEnd);
+  m_selectionStart = selectionStart;
+  m_selectionEnd = selectionEnd;
 }
 
 void TextInputComponentInstance::setTextContent(std::string const& content) {
