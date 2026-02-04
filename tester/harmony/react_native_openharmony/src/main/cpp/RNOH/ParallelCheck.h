@@ -14,12 +14,15 @@ namespace rnoh {
 class RNInstanceCAPI;
 
 extern bool PARALLEL_RUNTIME_SWITCH;
-     
+extern bool IS_SPECIAL_EQUIPMENT;
+
 inline bool GetParallelizationEnabled() {
   return PARALLEL_RUNTIME_SWITCH;
 }
 
 void SetParallelizationEnabled(bool enabled);
+
+void setDeviceInfo(bool isSpecialEquipment);
 
 inline bool IsParallelizationWorkable() {
   #ifdef PARALLELIZATION_ON
@@ -27,6 +30,10 @@ inline bool IsParallelizationWorkable() {
   #else
     return false;
   #endif
+}
+
+inline bool IsSpecialEquipment() {
+  return IS_SPECIAL_EQUIPMENT;
 }
 
 } // namespace rnoh
