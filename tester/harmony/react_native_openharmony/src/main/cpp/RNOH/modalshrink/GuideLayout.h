@@ -8,6 +8,7 @@
 #ifndef GUIDE_LAYOUT_H
 #define GUIDE_LAYOUT_H
 
+#include <unordered_map>
 #include <unordered_set>
 #include <yoga/YGNode.h>
 
@@ -26,11 +27,13 @@ class GuideLayout {
   }
 
   // Scaling function with percentage handling
-  // hasScaledPercent: tracks whether the first node with percentage has been
-  // scaled
+  // parentHasPercentWidth: whether any ancestor node has percentage width
+  // parentHasPercentHeight: whether any ancestor node has percentage height
+  // If parent has percentage, child's percentage won't be scaled (it inherits from parent's scaling)
   void scaleYogaNodeStyleWithPercentHandling(
       YGNodeRef yogaNode,
-      bool& hasScaledPercent);
+      bool parentHasPercentWidth,
+      bool parentHasPercentHeight);
 
   // Scan Yoga tree, find Modal nodes and scale their subtrees
   // Returns whether Modal was found and processed
@@ -49,6 +52,9 @@ class GuideLayout {
 
   // Reset Yoga tree layout state (used for recalculation)
   void resetYogaTreeState(YGNodeRef node);
+
+  // Restore original styles after layout calculation
+  void restoreOriginalStyles();
 
   // Set Modal content scaling feature toggle
   void setModalContentShrinkEnabled(bool enabled) {
@@ -70,6 +76,11 @@ class GuideLayout {
     return screenHeight_;
   }
 
+  // Get top distance (sum of L4.top and L5.top in Modal subtree)
+  float getTopDistance() const {
+    return topDistance_;
+  }
+
   // Check if a node is in Modal subtree (used for font scaling)
   bool isInModalSubtree(int32_t tag) const {
     return modalSubtreeTags_.find(tag) != modalSubtreeTags_.end();
@@ -86,24 +97,19 @@ class GuideLayout {
     needsContentRefreshTags_.erase(tag);
   }
 
-  // Mark the beginning of a new layout cycle
-  void beginLayoutCycle() {
-    // Only clear scaling records for each new layout cycle, keep
-    // modalSubtreeTags_ to maintain font scaling state
-    scaledModalTags_.clear();
-    needsContentRefreshTags_.clear();
-  }
-
   // Clear all records when Modal no longer exists
   void clearAllModalState() {
-    scaledModalTags_.clear();
     modalSubtreeTags_.clear();
     needsContentRefreshTags_.clear();
+    originalStyles_.clear();
+    modalScaleCache_.clear();
+    topDistance_ = 0.0f;
   }
 
   // Reset Modal subtree records (called before rescaling)
   void resetModalSubtreeTags() {
     modalSubtreeTags_.clear();
+    needsContentRefreshTags_.clear();
   }
 
   // Delete copy constructor and assignment operator
@@ -120,10 +126,11 @@ class GuideLayout {
   // Cached screen height
   float screenHeight_ = 0.0f;
 
-  bool enableModalContentShrink_ = true;
+  // Top distance: sum of L4.top and L5.top in Modal subtree
+  // Modal -> L1 -> L2 -> L3 -> L4 -> L5
+  float topDistance_ = 0.0f;
 
-  // Track Modal nodes that have been scaled (using ShadowNode's tag)
-  std::unordered_set<int32_t> scaledModalTags_;
+  bool enableModalContentShrink_ = true;
 
   // Track all node Tags in Modal subtree (used for font scaling judgment)
   std::unordered_set<int32_t> modalSubtreeTags_;
@@ -131,8 +138,23 @@ class GuideLayout {
   // Track Paragraph nodes that need content cache refresh
   std::unordered_set<int32_t> needsContentRefreshTags_;
 
+  // Store original styles for restoration after layout calculation
+  std::unordered_map<YGNodeRef, YGStyle> originalStyles_;
+
+  // Cached scale info for each Modal (key: Modal Tag)
+  struct ModalScaleInfo {
+    float scaleFactor = 1.0f;
+    float topDistance = 0.0f;
+    bool needsScale = false;
+  };
+  std::unordered_map<int32_t, ModalScaleInfo> modalScaleCache_;
+
   // Collect all node Tags in Modal subtree
   void collectModalSubtreeTags(YGNodeRef yogaNode);
+
+  // Calculate top distance: L4.top + L5.top
+  // Modal -> L1 -> L2 -> L3 -> L4 -> L5
+  float calculateTopDistance(YGNodeRef modalNode);
 
   // Private constructor
   GuideLayout() = default;
