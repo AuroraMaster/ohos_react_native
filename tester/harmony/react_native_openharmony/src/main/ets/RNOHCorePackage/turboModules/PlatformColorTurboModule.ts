@@ -7,13 +7,14 @@
 
 import resourceManager from '@ohos.resourceManager';
 import { BusinessError } from '@ohos.base';
-import { TurboModule, TurboModuleContext } from '../../RNOH/TurboModule';
+import { AnyThreadTurboModule } from '../../RNOH/TurboModule';
+import { AnyThreadTurboModuleContext } from '../../RNOH/RNOHContext';
 import { convertColorValueToRGBA } from '../../RNOH/CppBridgeUtils';
 
-export class PlatformColorTurboModule extends TurboModule {
+export class PlatformColorTurboModule extends AnyThreadTurboModule {
   public static readonly NAME = 'PlatformColor';
 
-  constructor(ctx: TurboModuleContext) {
+  constructor(ctx: AnyThreadTurboModuleContext) {
     super(ctx);
   }
 

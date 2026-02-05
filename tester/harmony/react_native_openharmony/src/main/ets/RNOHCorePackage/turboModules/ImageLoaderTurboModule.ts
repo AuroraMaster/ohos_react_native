@@ -5,22 +5,22 @@
  * LICENSE-MIT file in the root directory of this source tree.
  */
 
-import { UITurboModule } from '../../RNOH/TurboModule';
+import { AnyThreadTurboModule } from '../../RNOH/TurboModule';
 import {
   RemoteImageDiskCache,
   RemoteImageLoader, RemoteImageMemoryCache,
   RemoteImageLoaderError
 } from '../../RemoteImageLoader';
-import { UITurboModuleContext } from '../../RNOH/RNOHContext';
+import { AnyThreadTurboModuleContext } from '../../RNOH/RNOHContext';
 import image from '@ohos.multimedia.image';
 import { RemoteImageSource } from '../../RemoteImageLoader/RemoteImageSource';
 
-export class ImageLoaderTurboModule extends UITurboModule {
+export class ImageLoaderTurboModule extends AnyThreadTurboModule {
   static NAME = "ImageLoader" as const
 
   private imageLoader: RemoteImageLoader
 
-  constructor(protected ctx: UITurboModuleContext) {
+  constructor(protected ctx: AnyThreadTurboModuleContext) {
     super(ctx)
     this.imageLoader = new RemoteImageLoader(
       new RemoteImageMemoryCache(128), new RemoteImageDiskCache(128, `${ctx.uiAbilityContext.cacheDir}/rn_image_cache`),

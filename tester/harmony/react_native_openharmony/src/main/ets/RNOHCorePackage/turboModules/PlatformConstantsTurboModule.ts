@@ -6,10 +6,14 @@
  */
 
 import deviceInfo from "@ohos.deviceInfo";
-import { TurboModule } from "../../RNOH/TurboModule";
-
-export class PlatformConstantsTurboModule extends TurboModule {
+import { AnyThreadTurboModule } from '../../RNOH/TurboModule';
+import { AnyThreadTurboModuleContext } from '../../RNOH/RNOHContext';
+export class PlatformConstantsTurboModule extends AnyThreadTurboModule {
   public static readonly NAME = 'PlatformConstants';
+
+  constructor(protected ctx: AnyThreadTurboModuleContext) {
+    super(ctx);
+  }
 
   getConstants() {
     let versionParts: unknown[] = this.ctx.reactNativeVersion.split('.', 3);

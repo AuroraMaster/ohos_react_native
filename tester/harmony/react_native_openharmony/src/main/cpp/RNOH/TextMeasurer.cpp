@@ -218,8 +218,10 @@ std::pair<ArkUITypographyBuilder, ArkUITypography> TextMeasurer::findFitFontSize
   if (!isnan(paragraphAttributes.minimumFontScale)) {
     minFontSize = ceil(paragraphAttributes.minimumFontScale * maxFontSize);
   }
+  int minFontSizeLimit = minFontSize;
   int finalFontSize = minFontSize;
   int initFontSize = maxFontSize;
+  bool hasFit = false;
   auto backupAttributedString = attributedString;
   // check if already fit
   auto finalTypographyBuilder = measureTypography(attributedString, paragraphAttributes, layoutConstraints);
@@ -243,10 +245,23 @@ std::pair<ArkUITypographyBuilder, ArkUITypography> TextMeasurer::findFitFontSize
       finalFontSize = curFontSize;
       finalTypography = std::move(typography);
       finalTypographyBuilder = std::move(typographyBuilder);
+      hasFit = true;
       minFontSize = curFontSize + 1;
     } else {
       maxFontSize = curFontSize - 1;
     }
+  }
+  if (!hasFit) {
+    finalFontSize = minFontSizeLimit;
+    float ratio = 1.0 * finalFontSize / initFontSize;
+    for (int i = 0; i < attributedString.getFragments().size(); ++i) {
+      int newFontSize = ceil(
+          backupAttributedString.getFragments()[i].textAttributes.fontSize *
+          ratio);
+      attributedString.getFragments()[i].textAttributes.fontSize = newFontSize;
+    }
+    finalTypographyBuilder = measureTypography(attributedString, paragraphAttributes, layoutConstraints);
+    finalTypography = finalTypographyBuilder.build();
   }
   float ratio = 1.0 * finalFontSize / initFontSize;
   for (int i = 0; i < attributedString.getFragments().size(); ++i) {

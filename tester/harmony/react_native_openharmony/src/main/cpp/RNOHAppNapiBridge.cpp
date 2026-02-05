@@ -837,6 +837,16 @@ static napi_value setParallelizationEnabled(
   });
 }
 
+static napi_value setDeviceInfo(napi_env env, napi_callback_info info) {
+  return invoke(env, [&] {
+    ArkJS arkJS(env);
+    auto args = arkJS.getCallbackArgs(info, 1);
+    auto isSpecialEquipment = arkJS.getBoolean(args[0]);
+    rnoh::setDeviceInfo(isSpecialEquipment);
+    return arkJS.getUndefined();
+  });
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
   napi_property_descriptor desc[] = {
@@ -1059,6 +1069,14 @@ static napi_value Init(napi_env env, napi_value exports) {
       {"setParallelizationEnabled",
        nullptr,
        ::setParallelizationEnabled,
+       nullptr,
+       nullptr,
+       nullptr,
+       napi_default,
+       nullptr},
+      {"setDeviceInfo",
+       nullptr,
+       ::setDeviceInfo,
        nullptr,
        nullptr,
        nullptr,

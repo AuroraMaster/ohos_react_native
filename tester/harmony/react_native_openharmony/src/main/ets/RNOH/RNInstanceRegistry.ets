@@ -48,6 +48,7 @@ export class RNInstanceRegistry {
   private workerThreadPromise: Promise<WorkerThread> | undefined
   private launchUri?: string
   private cacheDir?: string
+  private reactNativeVersion: string
   private onInstanceCreated?: (rnInstance: RNInstanceImpl) => void
 
   constructor(
@@ -63,6 +64,7 @@ export class RNInstanceRegistry {
     resourceManager: resourceManager.ResourceManager,
     displayMetricsManager: DisplayMetricsManager,
     workerThreadPromise: Promise<WorkerThread> | undefined,
+    reactNativeVersion: string,
     launchUri: string | undefined,
     cacheDir: string | undefined,
     onInstanceCreated?: (rnInstance: RNInstanceImpl) => void,
@@ -81,6 +83,7 @@ export class RNInstanceRegistry {
     this.workerThreadPromise = workerThreadPromise
     this.launchUri = launchUri
     this.cacheDir = cacheDir
+    this.reactNativeVersion = reactNativeVersion
     this.onInstanceCreated = onInstanceCreated
   }
 
@@ -159,6 +162,7 @@ export class RNInstanceRegistry {
         architecture: options.enableCAPIArchitecture ? "C_API" : "ARK_TS",
         assetsDest: options.assetsDest ?? DEFAULT_ASSETS_DEST,
         launchUri: this.launchUri,
+        reactNativeVersion: this.reactNativeVersion,
       })
     }, 0)
     await workerThread.waitForMessage("RNOH_CREATE_WORKER_RN_INSTANCE_ACK",
