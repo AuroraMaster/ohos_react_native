@@ -18,11 +18,7 @@ namespace rnoh {
 class TextAreaNodeDelegate {
  public:
   virtual ~TextAreaNodeDelegate() = default;
-  // You can only override one of these two onChange methods.
-  // It is recommended to use `onChange(std::string text, std::string extendStr)`
-  // as it supports the pre-editing feature.
   virtual void onChange(std::string text) {};
-  virtual void onChange(std::string text, std::string extendStr) {};
   virtual void onBlur() {};
   virtual void onFocus() {};
   virtual void onPasteOrCut() {};
@@ -45,8 +41,6 @@ class TextAreaNode : public TextInputNodeBase {
   bool m_autofocus{false};
   bool m_setTextContent{false};
   std::string m_textContent;
-
-  void onChange(const std::string& text, const std::string& extendStr = "");
  protected:
   TextAreaNodeDelegate* m_textAreaNodeDelegate;
 
