@@ -14,6 +14,9 @@
 #include <react/debug/react_native_assert.h>
 #include "JSVMUtil.h"
 #include "folly/dynamic.h"
+#include <jsi/instrumentation.h>
+#include <chrono>
+#include <iosfwd>
 
 namespace rnjsvm {
 
@@ -47,6 +50,10 @@ class JSVMRuntime : public Runtime {
   std::string description();
 
   bool isInspectable();
+
+  void notifyMemoryPressure(JSVM_MemoryPressureLevel level);
+
+  Instrumentation& instrumentation() override;
 
  protected:
   Runtime::PointerValue* cloneSymbol(const Runtime::PointerValue* pv);
@@ -168,6 +175,46 @@ class JSVMRuntime : public Runtime {
   static bool initialized;
   std::shared_ptr<facebook::react::MessageQueueThread> jsQueue;
   JSVM_Ref hostObjectClass;
+
+  class JSVMInstrumentation : public Instrumentation {
+   public:
+    explicit JSVMInstrumentation(JSVMRuntime& runtime) : runtime_(runtime) {}
+
+    std::string getRecordedGCStats() override {
+      return "";
+    }
+
+    std::unordered_map<std::string, int64_t> getHeapInfo(bool) override {
+      return std::unordered_map<std::string, int64_t>{};
+    }
+
+    void collectGarbage(std::string cause) override;
+
+    void startTrackingHeapObjectStackTraces(
+        std::function<void(
+            uint64_t,
+            std::chrono::microseconds,
+            std::vector<HeapStatsUpdate>)>) override {}
+    void stopTrackingHeapObjectStackTraces() override {}
+
+    void startHeapSampling(size_t) override {}
+    void stopHeapSampling(std::ostream&) override {}
+
+    void createSnapshotToFile(const std::string&) override {}
+    void createSnapshotToStream(std::ostream&) override {}
+
+    std::string flushAndDisableBridgeTrafficTrace() override {
+      return "";
+    }
+
+    void writeBasicBlockProfileTraceToFile(const std::string&) const override {}
+    void dumpProfilerSymbolsToFile(const std::string&) const override {}
+
+   private:
+    JSVMRuntime& runtime_;
+  };
+
+  JSVMInstrumentation instrumentation_;
 
  private:
     enum {

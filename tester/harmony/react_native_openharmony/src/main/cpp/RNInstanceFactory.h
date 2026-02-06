@@ -91,6 +91,8 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
       featureFlagRegistry->getFeatureFlagStatus("ENABLE_MODAL_CONTENT_SHRINK");
   facebook::react::GuideLayout::getInstance().setModalContentShrinkEnabled(
       enableModalContentShrink);
+  auto shouldEnableBackgroundGC =
+      featureFlagRegistry->getFeatureFlagStatus("ENABLE_BACKGROUND_GC");
   auto taskExecutor = std::make_shared<TaskExecutor>(
       env, std::move(workerTaskRunner), shouldEnableBackgroundExecutor);
   auto arkTSChannel = std::make_shared<ArkTSChannel>(
@@ -292,6 +294,7 @@ std::shared_ptr<RNInstanceInternal> createRNInstance(
         std::move(nativeResourceManager),
         shouldEnableDebugger,
         shouldEnableBackgroundExecutor,
+        shouldEnableBackgroundGC,
         hspModuleName,
         cacheDir);
     rnInstance->onCreate();
