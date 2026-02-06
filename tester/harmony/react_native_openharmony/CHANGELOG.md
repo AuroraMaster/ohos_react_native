@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.72.118
+
+- [chore]: updated to version 6.1.0.300(0.72.118),([9479901e6](https://gitcode.com/openharmony-sig/ohos_react_native/commit/9479901e6629a9882b4c804ec21cbb3d8949b71b))
+- fix:Text enlarges when scaled below minimumFontScale(0.72).,([dfbfc290b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/dfbfc290b47dd7b95667c6894c0542ba0e45618e))
+- 处理格式化问题,([b2859614e](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b2859614e72adbbea2cbdfd6009c311661a0a1be))
+- fix:Modify the relevant logic for modal scaling detection,([4cb038118](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4cb038118692d7cd18e54c10b8a596e900ddfb06))
+- feat: Some turbomodules are executed in the worker thread.,([30d97048f](https://gitcode.com/openharmony-sig/ohos_react_native/commit/30d97048f416f8d565e7eeb099cb5b31e02f48be))
+- Fix: Mounting issue for CAPI components under ArkTS components,([a9435a002](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a9435a002e73c845fe9b5282ed9cb834f423b5b5))
+
 ## 0.72.114
 
 - fix：Limit font scaling,([970882813](https://gitcode.com/openharmony-sig/ohos_react_native/commit/9708828136bab521af263f69e8517abc85f1adaf))
