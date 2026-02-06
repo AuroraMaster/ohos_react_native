@@ -60,6 +60,7 @@
             </filefilter>
             </filefilter>
             <filefilter name="binaryFileTypePolicyFilter" desc="">
+                <filteritem type="filename" name="libhermes*.so" desc="Precompiled hermes binaries" />
                 <filteritem type="filename" name="rnoh-testerino-.*.tgz" desc="测试工程依赖" />
                 <filteritem type="filename" name="rnoh-hvigor-plugin-.*.tgz" desc="autolink需要的hvigor额外配置项" />
                 <filteritem type="filename" name="*.jpg|*.png|*.ttf" desc="desc files" />

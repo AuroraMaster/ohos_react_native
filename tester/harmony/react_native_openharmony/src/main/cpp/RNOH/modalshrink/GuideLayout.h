@@ -8,8 +8,10 @@
 #ifndef GUIDE_LAYOUT_H
 #define GUIDE_LAYOUT_H
 
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <yoga/YGNode.h>
 
 // Forward declaration of YGNodeRef
@@ -41,6 +43,9 @@ class GuideLayout {
 
   // Find Modal node
   YGNodeRef findModalNode(YGNodeRef rootYogaNode);
+
+  // Find L4 node (content container): Modal -> L1 -> L2 -> L3 -> L4
+  YGNodeRef findL4Node(YGNodeRef modalNode);
 
   // Check if Modal needs scaling (based on post-layout height)
   // If scaling is needed, automatically calculates and saves scale factor
@@ -83,22 +88,26 @@ class GuideLayout {
 
   // Check if a node is in Modal subtree (used for font scaling)
   bool isInModalSubtree(int32_t tag) const {
+    std::lock_guard<std::mutex> lock(mutex_);
     return modalSubtreeTags_.find(tag) != modalSubtreeTags_.end();
   }
 
   // Check if a node needs content cache refresh (used for Paragraph font
   // scaling)
   bool needsContentRefresh(int32_t tag) const {
+    std::lock_guard<std::mutex> lock(mutex_);
     return needsContentRefreshTags_.find(tag) != needsContentRefreshTags_.end();
   }
 
   // Mark that a node's content cache has been refreshed
   void markContentRefreshed(int32_t tag) {
+    std::lock_guard<std::mutex> lock(mutex_);
     needsContentRefreshTags_.erase(tag);
   }
 
   // Clear all records when Modal no longer exists
   void clearAllModalState() {
+    std::lock_guard<std::mutex> lock(mutex_);
     modalSubtreeTags_.clear();
     needsContentRefreshTags_.clear();
     originalStyles_.clear();
@@ -108,6 +117,7 @@ class GuideLayout {
 
   // Reset Modal subtree records (called before rescaling)
   void resetModalSubtreeTags() {
+    std::lock_guard<std::mutex> lock(mutex_);
     modalSubtreeTags_.clear();
     needsContentRefreshTags_.clear();
   }
@@ -139,7 +149,8 @@ class GuideLayout {
   std::unordered_set<int32_t> needsContentRefreshTags_;
 
   // Store original styles for restoration after layout calculation
-  std::unordered_map<YGNodeRef, YGStyle> originalStyles_;
+  // Key: ShadowNode Tag (stable across clones), Value: {YGNodeRef, Style}
+  std::unordered_map<int32_t, std::pair<YGNodeRef, YGStyle>> originalStyles_;
 
   // Cached scale info for each Modal (key: Modal Tag)
   struct ModalScaleInfo {
@@ -155,6 +166,9 @@ class GuideLayout {
   // Calculate top distance: L4.top + L5.top
   // Modal -> L1 -> L2 -> L3 -> L4 -> L5
   float calculateTopDistance(YGNodeRef modalNode);
+
+  // Mutex for thread-safe access to shared data structures
+  mutable std::mutex mutex_;
 
   // Private constructor
   GuideLayout() = default;

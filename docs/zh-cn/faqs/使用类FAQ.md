@@ -607,3 +607,113 @@
     最佳的解决方案应该是将 RNOH 中默认的 onClick 事件去掉。但考虑到有三方库或者某些伙伴的自定义组件可能会用到这个onClick事件，因此从 0.72.95 版本开始我们增加了一个编译选项 `ALL_CONTAINERS_CLICKABLE`，在模块的 `CMakeLists.txt` 文件中添加一行 `set(ALL_CONTAINERS_CLICKABLE OFF)` 即可取消掉默认的 onClick 监听。
 
     > 需要注意的是，当将 `ALL_CONTAINERS_CLICKABLE` 设置为 `OFF` 后，RNOH 框架不再默认监听 onClick 事件，因此设置之前需要检查所用到的三方库或者自定义组件是否依赖 onClick （对应 CAPI 属性为 NODE_ON_CLICK） 事件，以免影响其他业务。如果发现有组件依赖到 onClick 事件，则需要自行注册事件监听器来处理 onClick 事件（可参考 ArkUI 的文档 [addnodeeventreceiver](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/capi-arkui-nativemodule-arkui-nativenodeapi-1#addnodeeventreceiver)）。
+
+### 使用 RN StatusBar 在 HarmonyOS 上可能出现状态不符合预期的原因说明
+
+* 现象
+
+  在 HarmonyOS 平台上使用 React Native 的 `StatusBar` 相关接口时，部分场景下可能出现状态栏样式与当前页面预期不一致的情况，例如：
+
+  * 页面切换后，状态栏样式未如预期发生变化
+  * 返回某个页面时，状态栏样式未恢复为该页面期望的状态
+  * RN 页面与原生页面切换后，状态栏表现不符合页面自身配置
+
+  上述现象通常表现为：**状态栏未严格随页面切换而变化**。
+
+---
+
+* 原因
+
+  该问题的根本原因在于 HarmonyOS 与 React Native 对 StatusBar 的能力模型不同。
+
+  **平台能力模型差异：**
+
+  * 在 Android / iOS 平台中，状态栏能力与页面级容器（**Activity** / **ViewController**）生命周期强绑定
+    页面创建与销毁天然对应状态栏样式的生效与回退
+  * 在 HarmonyOS 中，StatusBar 属于**系统级 UI 能力**
+    状态栏配置由系统统一管理，不与单个页面生命周期绑定
+
+  在此基础上，以下两类场景更容易暴露差异：
+
+  1. **系统行为介入的场景**
+
+     系统可能因应用切后台、进入系统页面等行为主动调整状态栏。
+     此类调整不一定伴随 RN 页面重新渲染，导致页面状态与状态栏状态出现偏差。
+
+  2. **页面切换相关场景**
+
+     页面切换或页面卸载时，RN 会重新计算并同步当前应生效的 `StatusBar` 配置。
+     在 HarmonyOS 上，该同步行为会直接作用于全局系统状态栏。
+
+---
+
+* 典型场景示例（页面卸载触发的全局回退）
+
+  **场景说明：**
+
+  * 页面 A：业务页面，需要沉浸式效果，主动设置了 `StatusBar`
+  * 页面 B：普通页面，未显式设置 `StatusBar`，期望使用系统默认状态栏样式
+
+  **示例流程：**
+
+  1.  应用进入 **页面 A**
+      页面 A 挂载时调用 RN `StatusBar` 接口，成功修改系统状态栏样式。
+
+  2.  从 **页面 A 跳转至页面 B**
+      如果此时**页面 A 被卸载**，其对应的 `StatusBar` 配置从 RN 内部栈中移除。
+
+  3.  RN 触发状态栏回退逻辑
+      当不存在其他页面的 `StatusBar` 配置时，RN 会将状态栏状态合并为 `StatusBar._defaultProps`，并同步到平台侧。
+
+      需要注意的是：
+
+      * 该“默认状态”并非系统原生默认状态
+      * 而是 RN 定义的一组默认配置（如 `barStyle: "default"`、`hidden: false` 等）
+
+  **HarmonyOS 上的实际结果**
+
+  * 在 HarmonyOS 平台上，StatusBar 属于**系统级 UI 能力**，其状态由系统统一管理，并不与单个页面生命周期严格绑定。
+  * 当 RN 页面卸载时，RN 内部的 `StatusBar` 销毁逻辑会重新计算当前生效的状态，并将合并后的**默认配置**直接应用到当前应用窗口的系统状态栏上。
+  * 需要注意的是，在 HarmonyOS 场景下，StatusBar 的**默认配置（由 RN 在页面卸载阶段通过默认 Props 合并得到）**的部分视觉属性，并不会自动回退到“系统进入页面前的真实状态”，而是回退至 **RN 内部默认配置在 HarmonyOS 状态栏能力上的映射结果**。
+    该行为源于 HarmonyOS 状态栏能力模型与 React Native 以页面为中心的设计理念之间的差异。
+
+  最终导致：
+
+  * 页面 B 本身并未显式设置任何 `StatusBar` 相关逻辑
+  * 但系统状态栏已在页面 A 卸载时被应用了 RN 的默认回退配置
+  * 页面 B 实际展示的状态栏样式与其页面设计预期不一致
+
+---
+
+* 说明
+
+  上述现象并非 RNOH 框架或 RN `StatusBar` 接口的实现缺陷，而是由 HarmonyOS 平台系统能力边界所决定。
+
+  在 HarmonyOS 上，**页面生命周期与状态栏状态并非一一对应关系**。
+  RN 的 `StatusBar` 在页面卸载时并不会“停止控制状态栏”，而是会**显式将状态栏还原为一组默认值，并作用于全局系统窗口**。
+
+---
+
+* 使用建议
+
+  * HarmonyOS 场景下，**优先使用系统默认状态栏策略**
+  * 避免在多个页面中频繁或动态控制 `StatusBar`
+  * 若业务确有特殊需求（如沉浸式页面），建议：
+
+    * 将 `StatusBar` 的使用范围限制在封闭页面内
+    * 明确页面进入与退出时的状态栏预期
+    * 不依赖页面卸载自动恢复状态栏样式
+
+---
+
+* 多端代码一致性建议
+
+  为保持 Android / iOS / HarmonyOS 三端 RN 代码结构一致，建议对 `StatusBar` 的使用进行统一封装：
+
+  * **平台适配封装（推荐）**
+    在封装组件内部根据平台判断：
+
+    * Android / iOS：正常使用 RN `StatusBar`
+    * HarmonyOS：不渲染或直接返回空组件
+
+  该方式可避免 HarmonyOS 上的全局状态污染，同时保持业务代码一致性。
