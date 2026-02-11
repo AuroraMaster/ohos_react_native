@@ -7,6 +7,7 @@
 
 #include "RegisterPageNameTurboModule.h"
 #include <dlfcn.h>
+#include <vector>
 #include "AbilityKit/ability_runtime/application_context.h"
 #include "RNOH/ApiVersionCheck.h"
 #include "RNOH/ArkTSMessageHandler.h"
@@ -18,6 +19,8 @@ using namespace facebook;
 
 double RegisterPageName::s_windowId = 0;
 std::string RegisterPageName::s_bundleCodeDir;
+// 定义函数指针类型
+typedef int32_t (*NotifyPageChangedFunc)(const char*, int32_t, int32_t);
 
 void RegisterPageNameMessageHandler::handleArkTSMessage(
     const ArkTSMessageHandler::Context& ctx) {
@@ -46,21 +49,28 @@ RegisterPageName::RegisterPageName(
         if (count > 0 && args[0].isString()) {
           std::string param = RegisterPageName::s_bundleCodeDir + "/" +
               args[0].asString(rt).utf8(rt);
+          // 动态加载 libability_runtime.z.so
+          void* handle = dlopen("libability_runtime.so", RTLD_LAZY);
+          if (!handle) {
+            LOG(ERROR) << "Failed to dlopen libability_runtime.so: "
+                       << dlerror();
+            return jsi::Value::undefined();
+          }
           const char* pageName = param.c_str();
           int32_t pageNameLen = param.length();
           int32_t windowId = RegisterPageName::s_windowId;
-          using NotifyPageChangedFunc =
-              int32_t (*)(const char*, int32_t, int32_t);
           auto notifyPageChanged = (NotifyPageChangedFunc)dlsym(
-              RTLD_DEFAULT,
-              "OH_AbilityRuntime_ApplicationContextNotifyPageChanged");
+              handle, "OH_AbilityRuntime_ApplicationContextNotifyPageChanged");
           if (notifyPageChanged != nullptr) {
             int32_t result = notifyPageChanged(pageName, pageNameLen, windowId);
+            dlclose(handle);
             return jsi::String::createFromUtf8(rt, std::to_string(result));
           } else {
             LOG(ERROR) << "DPI scaling capability is not supported.";
+            dlclose(handle);
           }
         }
+        return jsi::Value::undefined();
       }};
 }
 
