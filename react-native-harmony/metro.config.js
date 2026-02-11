@@ -10,7 +10,13 @@ const pathUtils = require('path');
 const fs = require('fs');
 const colors = require('colors/safe');
 
+const baseJSBundle = require('metro/src/DeltaBundler/Serializers/baseJSBundle');
+const bundleToString = require('metro/src/lib/bundleToString');
+
 let shouldPrintInfoAboutRNRedirection = true;
+let CURRENT_BUNDLE_PLATFORM = null;
+let METRO_SERVER_PORT = null;
+const HARMONY_PLATFORM_NAME = 'harmony';
 
 /**
  * @param msg {string}
@@ -28,6 +34,22 @@ function createHarmonyMetroConfig(options) {
   const reactNativeHarmonyName =
     options?.reactNativeHarmonyPackageName ?? 'react-native-harmony';
   return {
+    server: {
+      enhanceMiddleware: (middleware, server) => {
+        return (req, res, next) => {
+          try {
+            const url = new URL(req.url, 'http://localhost');
+            const platform = url.searchParams.get('platform');
+            CURRENT_BUNDLE_PLATFORM = platform;
+            const metroPort = server?._config?.server?.port ?? 8081;
+            METRO_SERVER_PORT = metroPort;
+          } catch (e) {
+            return middleware(req, res, next);
+          }
+          return middleware(req, res, next);
+        };
+      },
+    },
     transformer: {
       assetRegistryPath: 'react-native/Libraries/Image/AssetRegistry',
       getTransformOptions: async () => ({
@@ -142,6 +164,23 @@ function createHarmonyMetroConfig(options) {
         return ctx.resolveRequest(ctx, moduleName, platform);
       },
     },
+    serializer: {
+      customSerializer: (entryPoint, preModules, graph, options) => {
+        if (CURRENT_BUNDLE_PLATFORM !== HARMONY_PLATFORM_NAME) {
+          return bundleToString(
+            baseJSBundle(entryPoint, preModules, graph, options)
+          ).code;
+        }
+
+        const modifiedOptions = {
+          ...options,
+          sourceMapUrl: `http://localhost:${METRO_SERVER_PORT}/index.map?platform=harmony&dev=true&minify=false`,
+        };
+        return bundleToString(
+          baseJSBundle(entryPoint, preModules, graph, modifiedOptions)
+        ).code;
+      },
+    }
   };
 }
 
