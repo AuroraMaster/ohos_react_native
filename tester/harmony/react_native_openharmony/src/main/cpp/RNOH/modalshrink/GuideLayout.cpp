@@ -6,7 +6,9 @@
  */
 
 #include "GuideLayout.h"
+#include <react/renderer/components/view/YogaStylableProps.h>
 #include <react/renderer/core/ShadowNode.h>
+#include <cmath>
 #include <cstring>
 
 namespace facebook {
@@ -65,15 +67,17 @@ bool GuideLayout::scanAndScaleModalSubtrees(YGNodeRef rootYogaNode) {
         if (L5) {
           float marginTopOffset = screenHeight_ * (1.0f - scaleFactor_) / 2.0f;
           auto styleL5 = L5->getStyle();
-          
+
           // Get existing marginTop and add offset
           YGValue existingMargin = styleL5.margin()[YGEdgeTop];
           float existingValue = 0.0f;
-          if (existingMargin.unit == YGUnitPoint && !YGFloatIsUndefined(existingMargin.value)) {
+          if (existingMargin.unit == YGUnitPoint &&
+              !YGFloatIsUndefined(existingMargin.value)) {
             existingValue = existingMargin.value;
           }
-          
-          styleL5.margin()[YGEdgeTop] = YGValue{existingValue + marginTopOffset, YGUnitPoint};
+
+          styleL5.margin()[YGEdgeTop] =
+              YGValue{existingValue + marginTopOffset, YGUnitPoint};
           L5->setStyle(styleL5);
           L5->setDirty(true);
         }
@@ -105,36 +109,16 @@ void GuideLayout::scaleYogaNodeStyleWithPercentHandling(
     return;
   }
 
-  // Get ShadowNode Tag for stable identification across clones
-  void* context = yogaNode->getContext();
-  int32_t tag = -1;
-  if (context) {
-    auto* shadowNode = static_cast<ShadowNode*>(context);
-    if (shadowNode) {
-      tag = shadowNode->getTag();
-    }
-  }
-
-  // Save original style before any modification (only save once per tag)
-  // Use Tag as key because YGNodeRef changes when ShadowTree is cloned
-  if (tag >= 0 && originalStyles_.find(tag) == originalStyles_.end()) {
-    originalStyles_[tag] = std::make_pair(yogaNode, yogaNode->getStyle());
-  } else if (tag >= 0) {
-    // Tag already exists - update YGNodeRef and restore original style first
-    // This prevents double scaling when node is cloned with already-scaled style
-    originalStyles_[tag].first = yogaNode;
-    // Restore original style before scaling
-    yogaNode->setStyle(originalStyles_[tag].second);
-  }
-
-  auto style = yogaNode->getStyle();
+  auto& style = yogaNode->getStyle();
   bool modified = false;
 
   // Check if current node has percentage width/height
   YGValue width = style.dimensions()[YGDimensionWidth];
   YGValue height = style.dimensions()[YGDimensionHeight];
-  bool currentHasPercentWidth = (width.unit == YGUnitPercent && width.value > 0);
-  bool currentHasPercentHeight = (height.unit == YGUnitPercent && height.value > 0);
+  bool currentHasPercentWidth =
+      (width.unit == YGUnitPercent && width.value > 0);
+  bool currentHasPercentHeight =
+      (height.unit == YGUnitPercent && height.value > 0);
 
   // Scale width - supports percentage
   if (width.unit == YGUnitPoint && width.value > 0) {
@@ -143,7 +127,8 @@ void GuideLayout::scaleYogaNodeStyleWithPercentHandling(
     modified = true;
   } else if (currentHasPercentWidth && !parentHasPercentWidth) {
     // Scale percentage width only if parent doesn't have percentage width
-    // If parent has percentage, child's percentage is relative to parent's scaled size
+    // If parent has percentage, child's percentage is relative to parent's
+    // scaled size
     style.dimensions()[YGDimensionWidth] =
         YGValue{width.value * scaleFactor_, YGUnitPercent};
     modified = true;
@@ -156,7 +141,8 @@ void GuideLayout::scaleYogaNodeStyleWithPercentHandling(
     modified = true;
   } else if (currentHasPercentHeight && !parentHasPercentHeight) {
     // Scale percentage height only if parent doesn't have percentage height
-    // If parent has percentage, child's percentage is relative to parent's scaled size
+    // If parent has percentage, child's percentage is relative to parent's
+    // scaled size
     style.dimensions()[YGDimensionHeight] =
         YGValue{height.value * scaleFactor_, YGUnitPercent};
     modified = true;
@@ -213,19 +199,21 @@ void GuideLayout::scaleYogaNodeStyleWithPercentHandling(
   }
 
   if (modified) {
-    yogaNode->setStyle(style);
     yogaNode->setDirty(true);
   }
 
   // Recursively process child nodes
   // Pass whether current node or any ancestor has percentage width/height
-  bool childParentHasPercentWidth = parentHasPercentWidth || currentHasPercentWidth;
-  bool childParentHasPercentHeight = parentHasPercentHeight || currentHasPercentHeight;
+  bool childParentHasPercentWidth =
+      parentHasPercentWidth || currentHasPercentWidth;
+  bool childParentHasPercentHeight =
+      parentHasPercentHeight || currentHasPercentHeight;
 
   size_t childCount = YGNodeGetChildCount(yogaNode);
   for (size_t i = 0; i < childCount; ++i) {
     YGNodeRef child = YGNodeGetChild(yogaNode, i);
-    scaleYogaNodeStyleWithPercentHandling(child, childParentHasPercentWidth, childParentHasPercentHeight);
+    scaleYogaNodeStyleWithPercentHandling(
+        child, childParentHasPercentWidth, childParentHasPercentHeight);
   }
 }
 
@@ -350,41 +338,54 @@ YGNodeRef GuideLayout::findModalNode(YGNodeRef rootYogaNode) {
 
 YGNodeRef GuideLayout::findL4Node(YGNodeRef modalNode) {
   // Find L4 node: Modal (L0) -> L1 -> L2 -> L3 -> L4
+  // At each level, pick the first child that itself has children,
+  // to skip leaf nodes like overlay.
   if (!modalNode) {
     return nullptr;
   }
 
-  // Get L1: Modal's first child
-  YGNodeRef L1 = YGNodeGetChild(modalNode, 0);
+  auto pickChild = [](YGNodeRef parent) -> YGNodeRef {
+    if (!parent) {
+      return nullptr;
+    }
+    size_t count = YGNodeGetChildCount(parent);
+    for (size_t i = 0; i < count; ++i) {
+      YGNodeRef child = YGNodeGetChild(parent, i);
+      if (child && YGNodeGetChildCount(child) > 0) {
+        return child;
+      }
+    }
+    // fallback: return first child even if it has no children
+    return (count > 0) ? YGNodeGetChild(parent, 0) : nullptr;
+  };
+
+  // L0 -> L1
+  YGNodeRef L1 = pickChild(modalNode);
   if (!L1) {
     return nullptr;
   }
 
-  // Get L2: L1's first child
-  YGNodeRef L2 = YGNodeGetChild(L1, 0);
+  // L1 -> L2
+  YGNodeRef L2 = pickChild(L1);
   if (!L2) {
     return nullptr;
   }
 
-  // Get L3: L2's first child
-  YGNodeRef L3 = YGNodeGetChild(L2, 0);
+  // L2 -> L3
+  YGNodeRef L3 = pickChild(L2);
   if (!L3) {
     return nullptr;
   }
-
-  // Get L4: L3's first child
-  YGNodeRef L4 = YGNodeGetChild(L3, 0);
-
+  // L3 -> L4
+  YGNodeRef L4 = pickChild(L3);
   return L4;
 }
 
-float GuideLayout::calculateTopDistance(YGNodeRef modalNode) {
+float GuideLayout::calculateTopDistance(YGNodeRef L4) {
   // Calculate top distance: L4.top + L5.top
-  // Modal (L0) -> L1 -> L2 -> L3 -> L4 -> L5
-  const float DEFAULT_VALUE = 100.0f;
+  // L4 -> L5
+  const int DEFAULT_VALUE = 100;
 
-  // Reuse findL4Node to get L4
-  YGNodeRef L4 = findL4Node(modalNode);
   if (!L4) {
     return DEFAULT_VALUE;
   }
@@ -392,9 +393,12 @@ float GuideLayout::calculateTopDistance(YGNodeRef modalNode) {
   float L4Top = YGNodeLayoutGetTop(L4);
 
   // Get L5: L4's first child
+  if (YGNodeGetChildCount(L4) == 0) {
+    return DEFAULT_VALUE;
+  }
   YGNodeRef L5 = YGNodeGetChild(L4, 0);
   if (!L5) {
-    return L4Top + DEFAULT_VALUE;
+    return DEFAULT_VALUE;
   }
   float L5Top = YGNodeLayoutGetTop(L5);
 
@@ -417,115 +421,244 @@ bool GuideLayout::checkModalNeedsScaling(
   }
 
   // Cache available height
-  screenHeight_ = availableHeight;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    screenHeight_ = availableHeight;
+  }
 
   // Find Modal node
   YGNodeRef modalNode = findModalNode(rootYogaNode);
   if (!modalNode) {
     // No Modal, reset scale factor
+    std::lock_guard<std::mutex> lock(mutex_);
     scaleFactor_ = 1.0f;
     return false;
   }
 
-  // Get Modal's Tag for cache lookup
-  void* context = modalNode->getContext();
+  // Get Modal Tag for dedup check
+  void* modalContext = modalNode->getContext();
   int32_t modalTag = -1;
-  if (context) {
-    auto* shadowNode = static_cast<ShadowNode*>(context);
-    if (shadowNode) {
-      modalTag = shadowNode->getTag();
+  if (modalContext) {
+    auto* modalShadowNode = static_cast<ShadowNode*>(modalContext);
+    if (modalShadowNode) {
+      modalTag = modalShadowNode->getTag();
     }
   }
 
-  // Check if we have cached scale info for this Modal
+  // Get L4 node from Modal
+  YGNodeRef L4 = findL4Node(modalNode);
+  if (!L4) {
+    // L4 not found, cannot proceed with scaling
+    std::lock_guard<std::mutex> lock(mutex_);
+    scaleFactor_ = 1.0f;
+    return false;
+  }
+
+  // Recursively find maximum content height in L5 subtree
+  // At this point, if Modal was previously scaled, the caller has already
+  // restored original styles and relaid out, so layout results are original
+  YGNodeRef L5 =
+      (YGNodeGetChildCount(L4) > 0) ? YGNodeGetChild(L4, 0) : nullptr;
+  float maxContentHeight = L5 ? findMaxContentHeight(L5, screenHeight) : 0;
+
+  // Check cache: if content hasn't changed, reuse cached result
   if (modalTag >= 0) {
+    std::lock_guard<std::mutex> lock(mutex_);
     auto cacheIt = modalScaleCache_.find(modalTag);
     if (cacheIt != modalScaleCache_.end()) {
-      // Use cached values
-      scaleFactor_ = cacheIt->second.scaleFactor;
-      topDistance_ = cacheIt->second.topDistance;
-      return cacheIt->second.needsScale;
+      bool contentChanged =
+          std::abs(maxContentHeight - cacheIt->second.maxContentHeight) > 1.0f;
+      bool screenChanged =
+          std::abs(screenHeight - cacheIt->second.screenHeight) > 1.0f;
+      if (!contentChanged && !screenChanged) {
+        scaleFactor_ = cacheIt->second.scaleFactor;
+        topDistance_ = cacheIt->second.topDistance;
+        return cacheIt->second.needsScale;
+      }
+      // Content changed, clear cache and recalculate
+      scaledModalTags_.erase(modalTag);
+      modalScaleCache_.erase(cacheIt);
     }
   }
 
-  // Recursively find maximum content height in Modal subtree (use original
-  // screen height as reference)
-  float maxContentHeight = findMaxContentHeight(modalNode, screenHeight);
-
   // Calculate top distance: L4.top + L5.top
-  topDistance_ = calculateTopDistance(modalNode);
+  float topDist = calculateTopDistance(L4);
 
   bool needsScale = maxContentHeight > screenHeight + 0.5;
 
   // Additional scaling condition: if topDistance_ < 30
   constexpr float MIN_TOP_THRESHOLD = 30.0f;
-  bool needsScaleForSmallTop = (topDistance_ < MIN_TOP_THRESHOLD);
+  bool needsScaleForSmallTop = (topDist < MIN_TOP_THRESHOLD);
+  float newScaleFactor = scaleFactor_;
   if (needsScale) {
     // Auto-calculate scale factor: available height / content height
     float calculatedScale =
         (maxContentHeight > 0) ? availableHeight / maxContentHeight : 1.0f;
     // Scale factor cannot be less than MIN_SCALE_FACTOR (0.85)
-    scaleFactor_ = (calculatedScale < MIN_SCALE_FACTOR) ? MIN_SCALE_FACTOR
-                                                        : calculatedScale;
+    newScaleFactor = (calculatedScale < MIN_SCALE_FACTOR) ? MIN_SCALE_FACTOR
+                                                         : calculatedScale;
   } else if (needsScaleForSmallTop) {
     // Scale when top offset is too small (< 30)
     // Scale factor = (screenHeight - 30) / (screenHeight - topDistance_)
     float adjustedAvailableHeight = screenHeight - MIN_TOP_THRESHOLD;
-    float adjustedContentHeight = screenHeight - topDistance_;
+    float adjustedContentHeight = screenHeight - topDist;
     float calculatedScale = (adjustedContentHeight > 0)
-        ? adjustedAvailableHeight / adjustedContentHeight : 1.0f;
-    calculatedScale = (calculatedScale < scaleFactor_) ? calculatedScale
-                                                        : scaleFactor_;
+        ? adjustedAvailableHeight / adjustedContentHeight
+        : 1.0f;
+    calculatedScale =
+        (calculatedScale < newScaleFactor) ? calculatedScale : newScaleFactor;
     // Scale factor cannot be less than MIN_SCALE_FACTOR (0.85)
-    scaleFactor_ = (calculatedScale < MIN_SCALE_FACTOR) ? MIN_SCALE_FACTOR
-                                                        : calculatedScale;
+    newScaleFactor = (calculatedScale < MIN_SCALE_FACTOR) ? MIN_SCALE_FACTOR
+                                                         : calculatedScale;
     needsScale = true;
   } else {
     // No scaling needed, reset to 1.0
-    scaleFactor_ = 1.0f;
+    newScaleFactor = 1.0f;
   }
 
-  // Cache the calculated scale info for this Modal
-  if (modalTag >= 0) {
-    ModalScaleInfo info;
-    info.scaleFactor = scaleFactor_;
-    info.topDistance = topDistance_;
-    info.needsScale = needsScale;
-    modalScaleCache_[modalTag] = info;
+  // Cache the calculated scale info and mark as scaled
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    scaleFactor_ = newScaleFactor;
+    topDistance_ = topDist;
+    if (modalTag >= 0) {
+      ModalScaleInfo info;
+      info.scaleFactor = scaleFactor_;
+      info.topDistance = topDistance_;
+      info.maxContentHeight = maxContentHeight;
+      info.screenHeight = screenHeight;
+      info.needsScale = needsScale;
+      modalScaleCache_[modalTag] = info;
+      if (needsScale) {
+        scaledModalTags_.insert(modalTag);
+      }
+    }
   }
 
   return needsScale;
 }
 
-void GuideLayout::resetYogaTreeState(YGNodeRef node) {
-  if (!node) {
+void GuideLayout::resetYogaTreeState(YGNodeRef nodeRef) {
+  if (!nodeRef) {
     return;
   }
 
-  // Reset layout flag
-  node->setHasNewLayout(false);
-  node->setDirty(true);
+  nodeRef->setHasNewLayout(false);
+  nodeRef->setDirty(true);
 
-  // Recursively process child nodes
-  size_t childCount = YGNodeGetChildCount(node);
+  size_t childCount = YGNodeGetChildCount(nodeRef);
   for (size_t i = 0; i < childCount; ++i) {
-    YGNodeRef child = YGNodeGetChild(node, i);
+    YGNodeRef child = YGNodeGetChild(nodeRef, i);
     if (child) {
       resetYogaTreeState(child);
     }
   }
 }
 
-void GuideLayout::restoreOriginalStyles() {
-  for (const auto& pair : originalStyles_) {
-    YGNodeRef node = pair.second.first;
-    const YGStyle& style = pair.second.second;
-    if (node) {
-      node->setStyle(style);
-      // No need to setDirty since layout calculation is already done
+// Check if a Modal has already been scaled by looking up its tag in the
+// scaledModalTags_ set. Used to decide whether original styles need to be
+// restored before re-evaluating scaling.
+bool GuideLayout::isModalAlreadyScaled(YGNodeRef modalNode) {
+  if (!modalNode) {
+    return false;
+  }
+  void* context = modalNode->getContext();
+  if (!context) {
+    return false;
+  }
+  auto* shadowNode = static_cast<ShadowNode*>(context);
+  if (!shadowNode) {
+    return false;
+  }
+  int32_t tag = shadowNode->getTag();
+  std::lock_guard<std::mutex> lock(mutex_);
+  return scaledModalTags_.find(tag) != scaledModalTags_.end();
+}
+
+// Restore original yoga styles for all children of the given Modal node.
+// Called before re-evaluating scaling so that checkModalNeedsScaling reads
+// accurate original layout results instead of previously scaled values.
+void GuideLayout::restoreModalSubtreeStyles(YGNodeRef modalNode) {
+  if (!modalNode) {
+    return;
+  }
+  size_t childCount = YGNodeGetChildCount(modalNode);
+  for (size_t i = 0; i < childCount; ++i) {
+    YGNodeRef child = YGNodeGetChild(modalNode, i);
+    if (child) {
+      restoreOriginalStyles(child);
     }
   }
-  // Do not clear - keep cache for future use as Tag-based lookup
+}
+
+void GuideLayout::restoreOriginalStyles(YGNodeRef yogaNode) {
+  if (!yogaNode) {
+    return;
+  }
+
+  // Get the ShadowNode from context to access original props
+  void* context = yogaNode->getContext();
+  if (context) {
+    auto* shadowNode = static_cast<ShadowNode*>(context);
+    if (shadowNode) {
+      auto props = shadowNode->getProps();
+      if (props) {
+        auto* yogaProps = dynamic_cast<const YogaStylableProps*>(props.get());
+        if (yogaProps) {
+          // Restore the original yogaStyle from props
+          // This undoes any previous scaling that was applied to yogaNode_
+          yogaNode->setStyle(yogaProps->yogaStyle);
+        }
+      }
+    }
+  }
+
+  // Recursively restore children
+  size_t childCount = YGNodeGetChildCount(yogaNode);
+  for (size_t i = 0; i < childCount; ++i) {
+    YGNodeRef child = YGNodeGetChild(yogaNode, i);
+    if (child) {
+      restoreOriginalStyles(child);
+    }
+  }
+}
+
+void GuideLayout::clearModalScalingState(YGNodeRef modalNode) {
+  if (!modalNode) {
+    return;
+  }
+
+  // Collect all Paragraph nodes in the Modal subtree so their content
+  // caches get invalidated (needsContentRefreshTags_ is populated inside
+  // collectModalSubtreeTags). After collection we move only the refresh
+  // tags out, then clear the rest of the scaling bookkeeping.
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    modalSubtreeTags_.clear();
+    needsContentRefreshTags_.clear();
+  }
+
+  // Re-collect subtree tags - this fills both modalSubtreeTags_ and
+  // needsContentRefreshTags_ for every Paragraph under the Modal.
+  size_t childCount = YGNodeGetChildCount(modalNode);
+  for (size_t i = 0; i < childCount; ++i) {
+    YGNodeRef child = YGNodeGetChild(modalNode, i);
+    if (child) {
+      collectModalSubtreeTags(child);
+    }
+  }
+
+  // Now clear all scaling state but keep needsContentRefreshTags_ so that
+  // ParagraphShadowNode::getContent() will invalidate its cached content
+  // (which still holds the old scaled font sizes).
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    modalSubtreeTags_.clear();
+    modalScaleCache_.clear();
+    scaledModalTags_.clear();
+    scaleFactor_ = 1.0f;
+    topDistance_ = 0.0f;
+  }
 }
 
 } // namespace react
