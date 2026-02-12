@@ -29,7 +29,6 @@ std::mutex JSVMRuntime::codeCacheMtx;
 std::unordered_map<std::string, std::vector<uint8_t>> JSVMRuntime::codeCacheL2 = {};
 thread_local bool JSVMPointerValue::isJsThread = false;
 thread_local JSVMPointerValue *JSVMPointerValue::head = nullptr;
-static constexpr bool kCodeCacheEnabled = false;
 
 JSVMRuntime::JSVMRuntime(folly::dynamic initOptions)
     : hostObjectClass(nullptr) {
@@ -91,13 +90,10 @@ Value JSVMRuntime::evaluateJavaScript(const std::shared_ptr<const Buffer> &buffe
     auto jsSrc = std::make_shared<JSVM_Value>();
     OH_JSVM_CreateStringUtf8(env, reinterpret_cast<const char *>(buffer->data()), buffer->size(), jsSrc.get());
     bool cacheRejected = true;
-    std::vector<uint8_t> cache;
-    if (kCodeCacheEnabled) {
-      std::string name = std::filesystem::is_regular_file(sourceURL)
-        ? cachePath + sourceURL
-        : (cachePath/std::filesystem::path(sourceURL)).string();
-      cache = GetCodeCache(name);
-    }
+    std::string name = std::filesystem::is_regular_file(sourceURL)
+      ? cachePath + sourceURL
+      : (cachePath/std::filesystem::path(sourceURL)).string();
+    auto cache = GetCodeCache(name);
 
     // Memory leaks! OH_JSVM_ReleaseScript not available on NEXT-DB3
     auto script = std::make_shared<JSVM_Script>();
@@ -109,10 +105,7 @@ Value JSVMRuntime::evaluateJavaScript(const std::shared_ptr<const Buffer> &buffe
     auto result = std::make_shared<JSVM_Value>();
     CALL_JSVM_AND_THROW(OH_JSVM_RunScript(env, *script, result.get()));
 
-    if (kCodeCacheEnabled && (cache.empty() || cacheRejected)) {
-      std::string name = std::filesystem::is_regular_file(sourceURL)
-        ? cachePath + sourceURL
-        : (cachePath/std::filesystem::path(sourceURL)).string();
+    if (cache.empty() || cacheRejected) {
       const uint8_t* data;
       size_t len;
       CALL_JSVM_AND_THROW(OH_JSVM_CreateCodeCache(env, *script, &data, &len));

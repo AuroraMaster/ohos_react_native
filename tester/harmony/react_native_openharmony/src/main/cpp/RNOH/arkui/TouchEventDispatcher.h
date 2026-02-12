@@ -13,6 +13,13 @@
 #include "TouchEvent.h"
 
 namespace rnoh {
+struct ScrollInfo {
+  float offset = 0.0f;
+  float absX = 0.0f;
+  float width = 0.0f;
+  bool rectInitialized = false;
+};
+
 /**
  * TouchEventDispatcher handles the dispatching of touch events from root target
  * components(e.g., ViewComponentInstance, ModalHostViewComponentInstance)
@@ -22,6 +29,11 @@ namespace rnoh {
 class TouchEventDispatcher {
  public:
   using TouchId = int;
+  void updateOffset(int32_t nodeId, float offset);
+
+  float getOffsetForNode(int32_t nodeId) const;
+
+  void removeOffset(int32_t nodeId);
 
   /**
    * @brief Dispatch the touch events to JS.
@@ -75,4 +87,6 @@ class TouchEventDispatcher {
   std::unordered_map<TouchId, TouchTarget::Shared> m_touchTargetByTouchId;
   facebook::react::TouchEvent m_previousEvent;
 };
+
+extern TouchEventDispatcher dispatcher;
 } // namespace rnoh

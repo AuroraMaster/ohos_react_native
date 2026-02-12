@@ -7,6 +7,7 @@
 
 #include "CustomNodeComponentInstance.h"
 #include "conversions.h"
+#include "RNOH/arkui/TouchEventDispatcher.h"
 
 namespace rnoh {
 CustomNodeComponentInstance::CustomNodeComponentInstance(Context context)
@@ -165,4 +166,11 @@ CustomNode& CustomNodeComponentInstance::getLocalRootArkUINode()
   return m_customNode;
 }
 
+void CustomNodeComponentInstance::onScroll(int32_t nodeId, float offset) {
+  dispatcher.updateOffset(nodeId, offset / getPointScaleFactor());
+}
+
+float CustomNodeComponentInstance::getPointScaleFactor() const {
+  return m_layoutMetrics.pointScaleFactor;
+}
 } // namespace rnoh
