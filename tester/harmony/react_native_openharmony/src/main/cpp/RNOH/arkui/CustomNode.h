@@ -8,6 +8,19 @@
 #pragma once
 
 #include "ArkUINode.h"
+#include <thread>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
+
+// When the enum is available, use it; otherwise use the known integer value
+#ifdef NODE_ON_CUSTOM_OVERFLOW_SCROLL
+  constexpr int CUSTOM_OVERFLOW_SCROLL_EVENT = static_cast<int>(ArkUI_NodeEventType::NODE_ON_CUSTOM_OVERFLOW_SCROLL);
+#else
+  // Known value for NODE_ON_CUSTOM_OVERFLOW_SCROLL in API 23+
+  // This needs to match the actual enum value from the SDK
+  constexpr int CUSTOM_OVERFLOW_SCROLL_EVENT = 34; // Placeholder - needs actual value
+#endif
 
 namespace rnoh {
 class CustomNodeDelegate {
@@ -16,6 +29,7 @@ class CustomNodeDelegate {
   virtual void onClick(){};
   virtual void onHoverIn(){};
   virtual void onHoverOut(){};
+  virtual void onScroll(facebook::react::Tag nodeId, float offset) {};
 };
 
 struct UserCallback {
@@ -25,6 +39,7 @@ struct UserCallback {
 class CustomNode : public ArkUINode {
  protected:
   CustomNodeDelegate* m_customNodeDelegate;
+  int32_t m_activeScrollChildId = -1;
 
  public:
   explicit CustomNode(const ArkUINode::Context::Shared& context = nullptr);
@@ -44,6 +59,16 @@ class CustomNode : public ArkUINode {
  private:
   UserCallback *userCallback_ = nullptr;
   void (*eventReceiver)(ArkUI_NodeCustomEvent* event);
+  // Debounce timer for insertChild
+  std::thread m_debounceThread;
+  std::atomic<bool> m_timerRunning{false};
+  std::atomic<bool> m_timerCancelled{false};
+  std::mutex m_timerMutex;
+  std::condition_variable m_timerCV;
+  
+  void startDebounceTimer();
+  void stopDebounceTimer();
+  void debounceTimerFunc();
 };
 
 } // namespace rnoh

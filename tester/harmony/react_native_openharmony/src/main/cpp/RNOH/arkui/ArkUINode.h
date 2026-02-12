@@ -83,6 +83,9 @@ class ArkUINode {
   ArkUINode(ArkUI_NodeHandle nodeHandle);
   ArkUINode(const ArkUINode::Context::Shared context, ArkUI_NodeType nodeType);
 
+  ArkUINodeDelegate* getArkUINodeDelegate() const {
+    return m_arkUINodeDelegate;
+  }
   void setArkUINodeDelegate(ArkUINodeDelegate* arkUiNodeDelegate);
 
   void markDirty();
