@@ -58,8 +58,12 @@ class GuideLayout {
   // Reset Yoga tree layout state (used for recalculation)
   void resetYogaTreeState(YGNodeRef node);
 
-  // Restore original styles after layout calculation
-  void restoreOriginalStyles();
+  // Check if a Modal has already been scaled (by its YGNodeRef)
+  bool isModalAlreadyScaled(YGNodeRef modalNode);
+
+  // Restore original styles for Modal's subtree (used before relayout
+  // to get accurate original maxContentHeight)
+  void restoreModalSubtreeStyles(YGNodeRef modalNode);
 
   // Set Modal content scaling feature toggle
   void setModalContentShrinkEnabled(bool enabled) {
@@ -110,8 +114,8 @@ class GuideLayout {
     std::lock_guard<std::mutex> lock(mutex_);
     modalSubtreeTags_.clear();
     needsContentRefreshTags_.clear();
-    originalStyles_.clear();
     modalScaleCache_.clear();
+    scaledModalTags_.clear();
     topDistance_ = 0.0f;
   }
 
@@ -122,11 +126,19 @@ class GuideLayout {
     needsContentRefreshTags_.clear();
   }
 
+  // Clear Modal scaling state when transitioning from scaled to unscaled.
+  // Forces Paragraph nodes to refresh their cached content (which contains
+  // scaled font sizes) and resets all scaling-related tracking.
+  void clearModalScalingState(YGNodeRef modalNode);
+
   // Delete copy constructor and assignment operator
   GuideLayout(const GuideLayout&) = delete;
   GuideLayout& operator=(const GuideLayout&) = delete;
 
  private:
+  // Mutex for thread-safe access to shared data
+  mutable std::mutex mutex_;
+
   // Minimum scale factor limit
   static constexpr float MIN_SCALE_FACTOR = 0.85f;
 
@@ -148,27 +160,29 @@ class GuideLayout {
   // Track Paragraph nodes that need content cache refresh
   std::unordered_set<int32_t> needsContentRefreshTags_;
 
-  // Store original styles for restoration after layout calculation
-  // Key: ShadowNode Tag (stable across clones), Value: {YGNodeRef, Style}
-  std::unordered_map<int32_t, std::pair<YGNodeRef, YGStyle>> originalStyles_;
-
   // Cached scale info for each Modal (key: Modal Tag)
   struct ModalScaleInfo {
     float scaleFactor = 1.0f;
     float topDistance = 0.0f;
+    float maxContentHeight = 0.0f;
+    float screenHeight = 0.0f;
     bool needsScale = false;
   };
   std::unordered_map<int32_t, ModalScaleInfo> modalScaleCache_;
+
+  // Track which Modals have already been scaled (by Modal Tag)
+  // Prevents repeated scaling on subsequent layoutTree calls
+  std::unordered_set<int32_t> scaledModalTags_;
+
+  // Restore original yoga styles from ShadowNode props
+  // Used before re-scaling to ensure consistent state
+  void restoreOriginalStyles(YGNodeRef yogaNode);
 
   // Collect all node Tags in Modal subtree
   void collectModalSubtreeTags(YGNodeRef yogaNode);
 
   // Calculate top distance: L4.top + L5.top
-  // Modal -> L1 -> L2 -> L3 -> L4 -> L5
-  float calculateTopDistance(YGNodeRef modalNode);
-
-  // Mutex for thread-safe access to shared data structures
-  mutable std::mutex mutex_;
+  float calculateTopDistance(YGNodeRef L4);
 
   // Private constructor
   GuideLayout() = default;

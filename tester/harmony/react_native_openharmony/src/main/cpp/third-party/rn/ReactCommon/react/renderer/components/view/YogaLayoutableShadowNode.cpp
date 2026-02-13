@@ -626,18 +626,25 @@ void YogaLayoutableShadowNode::layoutTree(
     YGNodeRef modalNode = GuideLayout::getInstance().findModalNode(&yogaNode_);
 
     if (modalNode) {
-      // Check if Modal height exceeds screen
+      bool wasScaled =
+          GuideLayout::getInstance().isModalAlreadyScaled(modalNode);
+      GuideLayout::getInstance().restoreModalSubtreeStyles(modalNode);
+
+      if (wasScaled) {
+        GuideLayout::getInstance().clearModalScalingState(modalNode);
+      }
+
+      GuideLayout::getInstance().resetYogaTreeState(&yogaNode_);
+      YGNodeCalculateLayout(&yogaNode_, ownerWidth, ownerHeight, direction);
+
       bool needsRescale = GuideLayout::getInstance().checkModalNeedsScaling(
           &yogaNode_, ownerHeight);
+
       if (needsRescale) {
-        // Reset state, apply scaling, recalculate
         GuideLayout::getInstance().resetModalSubtreeTags();
         GuideLayout::getInstance().resetYogaTreeState(&yogaNode_);
         GuideLayout::getInstance().scanAndScaleModalSubtrees(&yogaNode_);
         YGNodeCalculateLayout(&yogaNode_, ownerWidth, ownerHeight, direction);
-        // Restore original styles after layout calculation to prevent repeated
-        // scaling
-        GuideLayout::getInstance().restoreOriginalStyles();
       }
     } else {
       // Clear all state when Modal doesn't exist

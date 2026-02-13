@@ -12,6 +12,9 @@
 
 namespace rnoh {
 using Point = facebook::react::Point;
+TouchEventDispatcher dispatcher;
+
+std::unordered_map<int32_t, float> m_nodeOffsets;
 
 static std::pair<TouchTarget::Shared, Point> findTargetForTouchPoint(
     Point const& point,
@@ -242,6 +245,26 @@ void TouchEventDispatcher::findTargetAndSendTouchEvent(
   }
 
   sendEvent(touches, changedTouches, touchEvent.action);
+}
+
+void TouchEventDispatcher::updateOffset(int32_t nodeId, float offset) {
+  if (m_nodeOffsets.find(nodeId) != m_nodeOffsets.end()) {
+    m_nodeOffsets[nodeId] += offset;
+  } else {
+    m_nodeOffsets[nodeId] = offset;
+  }
+}
+
+float TouchEventDispatcher::getOffsetForNode(int32_t nodeId) const {
+  auto it = m_nodeOffsets.find(nodeId);
+  if (it != m_nodeOffsets.end()) {
+    return it->second;
+  }
+  return 0.0f;
+}
+
+void TouchEventDispatcher::removeOffset(int32_t nodeId) {
+  m_nodeOffsets.erase(nodeId);
 }
 
 void TouchEventDispatcher::dispatchTouchEvent(

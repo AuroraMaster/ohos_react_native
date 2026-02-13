@@ -26,6 +26,7 @@ class CustomNodeComponentInstance
       facebook::react::Point currentOffset,
       facebook::react::Rect parentBoundingBox);
   void setIsJSResponder(bool isJSResponder) override;
+  bool isAncestor(int32_t nodeId);
  public:
   CustomNodeComponentInstance(Context context);
 
@@ -46,5 +47,7 @@ class CustomNodeComponentInstance
   void onHoverOut() override;
   bool isJSResponder() const override;
   CustomNode& getLocalRootArkUINode() override;
+  void onScroll (int32_t nodeId, float offset) override;
+  float getPointScaleFactor() const;
 };
 } // namespace rnoh

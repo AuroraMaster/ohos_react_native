@@ -1,4 +1,5 @@
 #include "TouchTarget.h"
+#include "RNOH/arkui/TouchEventDispatcher.h"
 
 std::optional<facebook::react::Transform> invertTransform(
     const facebook::react::Transform& transform);
@@ -11,6 +12,8 @@ auto rnoh::TouchTarget::computeChildPoint(
     TouchTarget::Shared const& child) const -> Point {
   auto childLayout = child->getLayoutMetrics();
   auto childTransform = child->getTransform();
+  float scrollOffsetY = dispatcher.getOffsetForNode(this->getTouchTargetTag());
+  Point scrolledPoint = {point.x, point.y - scrollOffsetY};
 
   // the center of the view (relative to its origin)
   Point center{
@@ -28,7 +31,7 @@ auto rnoh::TouchTarget::computeChildPoint(
 
   // transform the vector from the origin of the transformation
   auto transformedOffsetFromCenter =
-      (point + this->getCurrentOffset() - transformationOrigin) *
+      (scrolledPoint + this->getCurrentOffset() - transformationOrigin) *
       inverseTransform.value();
 
   // add back the offset of the center relative to the origin of the view
