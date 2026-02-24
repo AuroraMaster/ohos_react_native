@@ -16,12 +16,13 @@ ThreadTaskRunner::ThreadTaskRunner(
   std::mutex mtx;
   std::condition_variable cv;
   std::unique_lock lock(mtx);
-  m_thread = std::thread{[&] {
+    m_thread = std::thread{[&] {
     uv::EventLoop eventLoop;
     {
       std::unique_lock lock(mtx);
       this->m_wrappedTaskRunner = std::make_unique<EventLoopTaskRunner>(
           name, eventLoop.handle(), exceptionHandler);
+      this->m_wrappedTaskRunner->setThreadId(std::this_thread::get_id());
       cv.notify_one();
     }
     eventLoop.run();
