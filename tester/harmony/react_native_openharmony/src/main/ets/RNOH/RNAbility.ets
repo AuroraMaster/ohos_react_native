@@ -86,11 +86,36 @@ export abstract class RNAbility extends UIAbility {
 
   // endregion
 
-
-  private unregisterWindowListenerCallback = () => {
-  }
+  private mainWindow: window.Window | undefined = undefined
+  private windowStage: window.WindowStage | undefined = undefined
   private rnInstancesCoordinator!: RNInstancesCoordinator
   private logger!: RNOHLogger
+
+  private onWindowSizeChange = (windowSize: window.Size) => {
+    this.rnInstancesCoordinator?.onWindowSizeChange(windowSize)
+  }
+  private onWindowRectChange = (data: window.RectChangeOptions) => {
+    this.rnInstancesCoordinator?.onWindowRectChange(data)
+  }
+  private onWindowStageChange = (windowStageEvent: window.WindowStageEventType) => {
+    this.rnInstancesCoordinator?.onWindowStageChange(windowStageEvent)
+  }
+
+  private subscribeWindowListeners() {
+    this.mainWindow?.on('windowSizeChange', this.onWindowSizeChange)
+    this.mainWindow?.on('windowRectChange', this.onWindowRectChange)
+    this.windowStage?.on('windowStageEvent', this.onWindowStageChange)
+  }
+
+  private unsubscribeWindowListeners() {
+    try {
+      this.mainWindow?.off('windowSizeChange', this.onWindowSizeChange)
+      this.mainWindow?.off('windowRectChange', this.onWindowRectChange)
+      this.windowStage?.off('windowStageEvent', this.onWindowStageChange)
+    } catch {
+      this.logger?.error("Error when trying to unsubscribe from window changes")
+    }
+  }
 
   onCreate(want: Want, launchParam?: AbilityConstant.LaunchParam) {
     this.logger = this.createLogger().clone("RNAbility")
@@ -123,6 +148,7 @@ export abstract class RNAbility extends UIAbility {
   onDestroy() {
     // this method seems to be never called
     this.rnInstancesCoordinator?.onDestroy()
+    this.unsubscribeWindowListeners()
   }
 
   onWindowStageCreate(windowStage: window.WindowStage) {
@@ -131,36 +157,26 @@ export abstract class RNAbility extends UIAbility {
     this.onAppSetup(windowStage).finally(stopTracing)
   }
 
+  onWindowStageDestroy() {
+    this.unsubscribeWindowListeners()
+  }
+
   private async onAppSetup(windowStage: window.WindowStage) {
     const logger = this.logger.clone("onWindowSetup");
     const stopTracing = logger.startTracing()
     try {
+      this.unsubscribeWindowListeners()
+      this.windowStage = windowStage
       await this.onPrepareRNInstance(AppStorage.get<RNOHCoreContext>('RNOHCoreContext')!)
       const mainWindow = await windowStage.getMainWindow();
+      this.mainWindow = mainWindow
       const windowID = mainWindow.getWindowProperties().id;
       this.rnInstancesCoordinator?.postMessageToCpp("WINDOW_ID", windowID);
       this.rnInstancesCoordinator?.postMessageToCpp("BUNDLE_CODE_DIR", this.context.bundleCodeDir);
       this.rnInstancesCoordinator?.setMainWindow(mainWindow);
-      const onWindowSizeChange = (windowSize: window.Size) => {
-        this.rnInstancesCoordinator?.onWindowSizeChange(windowSize)
-      }
-      const onWindowReactChange = (data: window.RectChangeOptions) => {
-        this.rnInstancesCoordinator?.onWindowRectChange(data)
-      }
-      const onWindowStageChange = (windowStageEvent: window.WindowStageEventType) => {
-        this.rnInstancesCoordinator?.onWindowStageChange(windowStageEvent)
-      }
-      mainWindow.on('windowSizeChange', onWindowSizeChange)
-      mainWindow.on('windowRectChange', onWindowReactChange)
-      windowStage.on('windowStageEvent', onWindowStageChange)
-      this.unregisterWindowListenerCallback()
-      this.unregisterWindowListenerCallback = () => {
-        try {
-          mainWindow.off("windowSizeChange", onWindowSizeChange)
-        } catch {
-          this.logger?.error("Error when trying to unsubscribe from window size changes")
-        }
-      }
+      
+      this.subscribeWindowListeners()
+
       await this.onWindowSetup(mainWindow)
       await this.onWindowStageSetup(windowStage)
       let windowSize = mainWindow.getWindowProperties().windowRect
