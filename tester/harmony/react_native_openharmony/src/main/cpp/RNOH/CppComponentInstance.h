@@ -701,7 +701,7 @@ class CppComponentInstance : public ComponentInstance,
  private:
   std::vector<std::string> m_accessibilityLabelledBy{};
   std::string m_accessibilityLabel;
-  bool m_accessibilityGroup;
+  bool m_accessibilityGroup = false;
 };
 
 inline facebook::react::Rect transformRectAroundPoint(
