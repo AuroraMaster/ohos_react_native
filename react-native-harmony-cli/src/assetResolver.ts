@@ -9,6 +9,15 @@ import pathUtils from 'path';
 import type { AssetData } from 'metro';
 import { Logger } from './io';
 
+const ENABLE_DEBUG_LOG = process.env.RNOH_BUNDLE_DEBUG === 'true';
+
+function debugLog(message: string) {
+  if (ENABLE_DEBUG_LOG) {
+    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 23);
+    console.log(`[${timestamp}] ${message}`);
+  }
+}
+
 type Path = string;
 type CopiedFiles = Record<Path, Path>;
 
@@ -104,7 +113,9 @@ function copyFiles(logger: Logger, fileDestBySrc: CopiedFiles) {
               assetFilesCount === 1 ? 'asset' : 'assets'
             }`
         );
+        debugLog('All assets copied, resolving promise...');
         resolve();
+        debugLog('Assets copy promise resolved');
       } else {
         // fileSources.length === 0 is checked in previous branch, so this is string
         const src = fileSources.shift()!;
@@ -127,8 +138,31 @@ function copyFile(
       onFinished(err);
       return;
     }
-    fs.createReadStream(src)
-      .pipe(fs.createWriteStream(dest))
-      .on('finish', onFinished);
+    const readStream = fs.createReadStream(src);
+    const writeStream = fs.createWriteStream(dest);
+    
+    let finished = false;
+    const handleError = (err: Error) => {
+      if (!finished) {
+        finished = true;
+        console.error(`[Asset Copy Error] ${src} -> ${dest}:`, err.message);
+        readStream.destroy();
+        writeStream.destroy();
+        onFinished(err);
+      }
+    };
+    
+    const handleFinish = () => {
+      if (!finished) {
+        finished = true;
+        onFinished();
+      }
+    };
+    
+    readStream.on('error', handleError);
+    writeStream.on('error', handleError);
+    writeStream.on('finish', handleFinish);
+    
+    readStream.pipe(writeStream);
   });
 }

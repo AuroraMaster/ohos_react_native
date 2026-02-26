@@ -16,6 +16,15 @@ import { copyAssets } from '../assetResolver';
 import { ConfigT as MetroConfig } from 'metro-config';
 import { Logger } from '../io';
 
+const ENABLE_DEBUG_LOG = process.env.RNOH_BUNDLE_DEBUG === 'true';
+
+function debugLog(message: string) {
+  if (ENABLE_DEBUG_LOG) {
+    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 23);
+    console.log(`[${timestamp}] ${message}`);
+  }
+}
+
 const ARK_RESOURCE_PATH = './harmony/entry/src/main/resources/rawfile';
 const ASSETS_DEFAULT_DEST_PATH =
   './harmony/entry/src/main/resources/rawfile/assets';
@@ -70,6 +79,7 @@ export const commandBundleHarmony: Command = {
   ],
   func: async (argv, config, args: any) => {
     const logger = new Logger();
+    debugLog('Starting bundle-harmony process...');
     const buildOptions: BuildOptions = {
       entry: args.entryFile,
       platform: 'harmony',
@@ -79,10 +89,14 @@ export const commandBundleHarmony: Command = {
       sourceMapUrl: args.sourcemapOutput,
     };
     const metroConfig = await loadMetroConfig(args.config);
+    debugLog('Creating bundle...');
     const bundle = await createBundle(metroConfig, buildOptions);
     await saveBundle(bundle, args.bundleOutput, args.sourcemapOutput);
     const assets = await retrieveAssetsData(metroConfig, buildOptions);
-    copyAssets(logger, assets, args.assetsDest);
+    debugLog('Copying assets...');
+    await copyAssets(logger, assets, args.assetsDest);
+    debugLog('Assets copy completed, cleaning up...');
+    debugLog('Bundle process finished, exiting');
   },
 };
 
