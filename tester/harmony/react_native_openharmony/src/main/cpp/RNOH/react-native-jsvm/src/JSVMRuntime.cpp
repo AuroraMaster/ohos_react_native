@@ -11,6 +11,8 @@
 #include "mutex.h"
 #include "hostProxy.h"
 #include "JSVMUtil.h"
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <random>
@@ -31,7 +33,7 @@ thread_local bool JSVMPointerValue::isJsThread = false;
 thread_local JSVMPointerValue *JSVMPointerValue::head = nullptr;
 
 JSVMRuntime::JSVMRuntime(folly::dynamic initOptions)
-    : hostObjectClass(nullptr) {
+    : hostObjectClass(nullptr), instrumentation_(*this) {
   DFX();
   static std::mutex lockInit;
   {
@@ -194,6 +196,34 @@ std::string JSVMRuntime::description()
 bool JSVMRuntime::isInspectable()
 {
     return false;
+}
+
+void JSVMRuntime::notifyMemoryPressure(JSVM_MemoryPressureLevel level)
+{
+    DFX();
+    if (unlikely(env == nullptr)) {
+      LOG(WARNING)
+          << "JSVMRuntime::notifyMemoryPressure called with null env";
+      return;
+    }
+    auto status = OH_JSVM_MemoryPressureNotification(env, level);
+    ClearException(status);
+}
+
+
+Instrumentation& JSVMRuntime::instrumentation()
+{
+    return instrumentation_;
+}
+
+void JSVMRuntime::JSVMInstrumentation::collectGarbage(std::string cause)
+{
+    DFX();
+    if (cause.find("TRIM_MEMORY_BACKGROUND") != std::string::npos) {
+      DLOG(INFO) << "JSVMInstrumentation::collectGarbage cause=" << cause
+                 << ", mappedLevel=CRITICAL";
+      runtime_.notifyMemoryPressure(JSVM_MEMORY_PRESSURE_LEVEL_CRITICAL);
+    }
 }
 
 inline Runtime::PointerValue *JSVMRuntime::clone(const Runtime::PointerValue *pv) {

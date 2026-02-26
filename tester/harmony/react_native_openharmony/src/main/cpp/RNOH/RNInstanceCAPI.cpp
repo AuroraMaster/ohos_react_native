@@ -223,8 +223,26 @@ void rnoh::RNInstanceCAPI::onMemoryLevel(size_t memoryLevel) {
   DLOG(INFO) << "RNInstanceCAPI::onMemoryLevel";
   // Android memory levels are 5, 10, 15, while Ark's are 0, 1, 2
   static const int memoryLevels[] = {5, 10, 15};
+  constexpr size_t memoryLevelsCount = std::size(memoryLevels);
+  if (memoryLevel >= memoryLevelsCount) {
+    LOG(WARNING) << "RNInstanceCAPI::onMemoryLevel: invalid memoryLevel="
+                 << memoryLevel;
+    return;
+  }
   if (this->instance) {
     this->instance->handleMemoryPressure(memoryLevels[memoryLevel]);
+  }
+}
+
+void rnoh::RNInstanceCAPI::onBackground() {
+  DLOG(INFO) << "RNInstanceCAPI::onBackground";
+  // Match TRIM_MEMORY_BACKGROUND (40). JSIExecutor will translate
+  // that to a "TRIM_MEMORY_BACKGROUND" cause and trigger runtime GC.
+  if (m_shouldEnableBackgroundGC) {
+    constexpr int TRIM_MEMORY_BACKGROUND = 40;
+    if (this->instance) {
+      this->instance->handleMemoryPressure(TRIM_MEMORY_BACKGROUND);
+    }
   }
 }
 
@@ -675,6 +693,8 @@ void RNInstanceCAPI::handleArkTSMessage(
   facebook::react::SystraceSection s("RNInstanceCAPI::handleArkTSMessage");
   if (name == "CONFIGURATION_UPDATE") {
     onConfigurationChange(payload);
+  } else if (name == "BACKGROUND") {
+    onBackground();
   }
   std::lock_guard<std::mutex> lock(m_arkTSMessageHandlersMtx);
   for (auto& arkTSMessageHandler : m_arkTSMessageHandlers) {
