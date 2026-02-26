@@ -76,6 +76,7 @@ class RNInstanceCAPI : public RNInstanceInternal,
       SharedNativeResourceManager nativeResourceManager,
       bool shouldEnableDebugger,
       bool shouldEnableBackgroundExecutor,
+      bool shouldEnableBackgroundGC,
       std::string hspModuleName,
       std::string cacheDir)
       : RNInstanceInternal(
@@ -95,6 +96,7 @@ class RNInstanceCAPI : public RNInstanceInternal,
         m_mountingManager(std::move(mountingManager)),
         m_shouldEnableDebugger(shouldEnableDebugger),
         m_shouldEnableBackgroundExecutor(shouldEnableBackgroundExecutor),
+        m_shouldEnableBackgroundGC(shouldEnableBackgroundGC),
         m_arkTSMessageHub(std::move(arkTSMessageHub)),
         m_componentInstanceRegistry(componentInstanceRegistry),
         m_componentInstanceFactory(componentInstanceFactory),
@@ -242,6 +244,7 @@ class RNInstanceCAPI : public RNInstanceInternal,
     return m_id;
   }
   std::string getCacheDir() override {return m_cacheDir;}
+  void onBackground();
   std::optional<Surface::Weak> getSurfaceByRootTag(
       facebook::react::Tag rootTag) override;
   void registerFont(
@@ -281,6 +284,7 @@ class RNInstanceCAPI : public RNInstanceInternal,
   std::shared_ptr<MessageQueueThread> m_jsQueue;
   bool m_shouldEnableDebugger;
   bool m_shouldEnableBackgroundExecutor;
+  bool m_shouldEnableBackgroundGC;
   std::unordered_map<facebook::react::SurfaceId, ArkUISurface::Shared>
       m_surfaceById;
   ComponentInstanceRegistry::Shared m_componentInstanceRegistry;

@@ -39,7 +39,8 @@ export type CppFeatureFlag =
   | 'ENABLE_NDK_TEXT_MEASURING'
   | 'C_API_ARCH'
   | 'WORKER_THREAD_ENABLED'
-  | 'ENABLE_MODAL_CONTENT_SHRINK';
+  | 'ENABLE_MODAL_CONTENT_SHRINK'
+  | 'ENABLE_BACKGROUND_GC';
 
 type RawRNOHError = {
   message: string,

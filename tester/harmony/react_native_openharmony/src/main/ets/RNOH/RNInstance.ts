@@ -494,6 +494,12 @@ export type RNInstanceOptions = {
    * @default: true
    */
   enableModalContentShrink?: boolean;
+  /**
+   * Enables automatic garbage collection when the app goes to background.
+   * When enabled, JSVM will perform memory cleanup to free up resources.
+   * @default: false
+   */
+  enableBackgroundGC?: boolean;
 };
 
 /**
@@ -575,7 +581,8 @@ export class RNInstanceImpl implements RNInstance {
     private jsvmInitOptions?: ReadonlyArray<JSVMInitOption>,
     private hspModuleName?: string,
     cacheDir?: string,
-    private shouldEnableModalContentShrink: boolean = true
+    private shouldEnableModalContentShrink: boolean = true,
+    private shouldEnableBackgroundGC: boolean = false
   ) {
     this.defaultProps = { concurrentRoot: !disableConcurrentRoot };
     this.httpClient = httpClient ?? httpClientProvider.getInstance(this);
@@ -683,6 +690,9 @@ export class RNInstanceImpl implements RNInstance {
     }
     if (this.shouldEnableModalContentShrink) {
       cppFeatureFlags.push('ENABLE_MODAL_CONTENT_SHRINK');
+    }
+    if (this.shouldEnableBackgroundGC) {
+      cppFeatureFlags.push('ENABLE_BACKGROUND_GC');
     }
     this.napiBridge.onCreateRNInstance(
       this.envId,
