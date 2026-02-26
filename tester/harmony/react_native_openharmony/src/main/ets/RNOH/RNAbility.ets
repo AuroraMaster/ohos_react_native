@@ -148,7 +148,6 @@ export abstract class RNAbility extends UIAbility {
   onDestroy() {
     // this method seems to be never called
     this.rnInstancesCoordinator?.onDestroy()
-    this.unsubscribeWindowListeners()
   }
 
   onWindowStageCreate(windowStage: window.WindowStage) {
@@ -157,7 +156,7 @@ export abstract class RNAbility extends UIAbility {
     this.onAppSetup(windowStage).finally(stopTracing)
   }
 
-  onWindowStageDestroy() {
+  onWindowStageWillDestroy() {
     this.unsubscribeWindowListeners()
   }
 
