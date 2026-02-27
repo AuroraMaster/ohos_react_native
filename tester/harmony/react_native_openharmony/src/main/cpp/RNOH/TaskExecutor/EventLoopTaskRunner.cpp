@@ -88,6 +88,14 @@ void EventLoopTaskRunner::setExceptionHandler(ExceptionHandler handler) {
   m_exceptionHandler = std::move(handler);
 }
 
+bool EventLoopTaskRunner::isOnCurrentThread() const {
+  return m_threadId == std::this_thread::get_id();
+}
+
+void EventLoopTaskRunner::setThreadId(std::thread::id threadId) {
+  m_threadId = threadId;
+}
+
 void EventLoopTaskRunner::executeTask() {
   Task task = popNextTask();
   if (task) {

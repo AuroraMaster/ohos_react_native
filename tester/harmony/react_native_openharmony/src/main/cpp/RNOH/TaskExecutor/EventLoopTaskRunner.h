@@ -40,6 +40,10 @@ class EventLoopTaskRunner : public AbstractTaskRunner {
 
   void setExceptionHandler(ExceptionHandler handler) override;
 
+  bool isOnCurrentThread() const override;
+
+  void setThreadId(std::thread::id threadId);
+
  protected:
   virtual void executeTask();
 
@@ -58,6 +62,7 @@ class EventLoopTaskRunner : public AbstractTaskRunner {
   std::unordered_map<DelayedTaskId, uv::Timer> m_timerByTaskId;
   ExceptionHandler m_exceptionHandler;
   bool cleanedUp = false;
+  std::thread::id m_threadId;
 
   friend class ThreadTaskRunner;
 };
