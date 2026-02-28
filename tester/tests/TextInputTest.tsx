@@ -650,6 +650,37 @@ export function TextInputTest() {
         automatically move past the space after encountering one.">
         <TextInputBankCardNumber />
       </TestCase.Example>
+      <TestCase.Example
+        modal
+        itShould="cursor should be at the end when focusing a textinput with value"
+      >
+        <FocusWithCursorTest />
+      </TestCase.Example>
+      <TestCase.Example
+        modal
+        itShould="show textinput with predefined selection">
+        <SelectionTestComponent />
+      </TestCase.Example>
+      <TestCase.Example
+        modal
+        itShould="display onKeyPress event data">
+        <OnKeyPressTest />
+      </TestCase.Example>
+      <TestCase.Example
+        modal
+        itShould="display onChange event data">
+        <OnChangeTest />
+      </TestCase.Example>
+      <TestCase.Example
+        modal
+        itShould="clear textinput by calling clear method">
+        <ClearButtonTest />
+      </TestCase.Example>
+      <TestCase.Example
+        modal
+        itShould="format zipcode input (add dash after 5 digits)">
+        <ZipCodeTextInputMask />
+      </TestCase.Example>
     </TestSuite>
   );
 }
@@ -1195,4 +1226,209 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 20,
   },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
 });
+
+// Focus with cursor at position test
+const FocusWithCursorTest = () => {
+  const ref = useRef<TextInput>(null);
+  const [value, setValue] = useState('12345');
+
+  const handleFocus = () => {
+    ref.current?.focus();
+  };
+
+  return (
+    <View>
+      <TextInput
+        ref={ref}
+        style={styles.textInput}
+        value={value}
+        onChangeText={setValue}
+      />
+      <Button label="点击后focus" onPress={handleFocus} />
+    </View>
+  );
+};
+
+
+// Selection test
+const SelectionTestComponent = () => {
+  return (
+    <View>
+      <Text>1. start less than end (选中文本): start=2, end=5</Text>
+      <TextInput
+        style={{
+          height: 40,
+          borderColor: 'gray',
+          borderWidth: 1,
+          marginBottom: 16,
+          paddingHorizontal: 8,
+        }}
+        defaultValue="点击输入框可以选择文字"
+        selection={{start: 2, end: 5}}
+      />
+
+      <Text>2. start equals end (光标位置): start=5, end=5</Text>
+      <TextInput
+        style={{
+          height: 40,
+          borderColor: 'gray',
+          borderWidth: 1,
+          marginBottom: 16,
+          paddingHorizontal: 8,
+        }}
+        defaultValue="点击输入框可以选择文字"
+        selection={{start: 5, end: 5}}
+      />
+
+      <Text>3. start greater than end (反向选择): start=8, end=3</Text>
+      <TextInput
+        style={{
+          height: 40,
+          borderColor: 'gray',
+          borderWidth: 1,
+          marginBottom: 16,
+          paddingHorizontal: 8,
+        }}
+        defaultValue="点击输入框可以选择文字"
+        selection={{start: 8, end: 3}}
+      />
+    </View>
+  );
+};
+
+// OnKeyPress test
+const OnKeyPressTest = () => {
+  const [value, setValue] = useState('');
+  const [data, setData] = useState('');
+
+  const handleKeyPress = (event: any) => {
+    setData(event.nativeEvent.key);
+  };
+
+  return (
+    <View>
+      <Text>onKeyPress 参数</Text>
+      <TextInput
+        style={{
+          height: 40,
+          borderColor: 'gray',
+          borderWidth: 1,
+          marginBottom: 16,
+          paddingHorizontal: 8,
+        }}
+        value={value}
+        onChangeText={setValue}
+        onKeyPress={handleKeyPress}
+      />
+      <Text>keyPress内容为：{data}</Text>
+    </View>
+  );
+};
+
+// OnChange test
+const OnChangeTest = () => {
+  const [value, setValue] = useState('');
+  const [onChangeData, setOnChangeData] = useState('');
+
+  const handleChange = (text: string) => {
+    setValue(text);
+  };
+
+  const handleChangeEvent = (event: any) => {
+    setOnChangeData(event.nativeEvent.text);
+  };
+
+  return (
+    <View>
+      <Text>onChange 参数</Text>
+      <TextInput
+        style={{
+          height: 40,
+          borderColor: 'gray',
+          borderWidth: 1,
+          marginBottom: 16,
+          paddingHorizontal: 8,
+        }}
+        value={value}
+        onChangeText={handleChange}
+        onChange={handleChangeEvent}
+      />
+      <Text>当前输入值: {value}</Text>
+      <Text>onChange内容为：{onChangeData}</Text>
+    </View>
+  );
+};
+
+// Clear button test
+const ClearButtonTest = () => {
+  const ref = useRef<TextInput>(null);
+  const [value, setValue] = useState('');
+
+  return (
+    <View>
+      <Text>点击按钮调用clear清空</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="输入输入"
+        value={value}
+        onChangeText={setValue}
+        ref={ref}
+      />
+      <Button label="清空" onPress={() => ref.current?.clear()} />
+    </View>
+  );
+};
+
+// ZipCode format test
+const ZipCodeTextInputMask = () => {
+  const [code, setCode] = useState('');
+  const [rawCode, setRawCode] = useState('');
+
+  const handleCodeChange = (text: string) => {
+    // 保存原始值（去除横线）
+    const raw = text.replace(/-/g, '');
+    setRawCode(raw);
+
+    // 格式化：前5位后加横线
+    let formatted = '';
+    for (let i = 0; i < raw.length; i++) {
+      if (i === 5) {
+        formatted += '-' + raw[i];
+      } else {
+        formatted += raw[i];
+      }
+    }
+    setCode(formatted);
+  };
+
+  return (
+    <View>
+      <TextInput
+        value={code}
+        onChangeText={handleCodeChange}
+        style={styles.input}
+        placeholder="输入邮政编码"
+        keyboardType="number-pad"
+      />
+      <Text>格式化值: {code}</Text>
+      <Text>原始值: {rawCode}</Text>
+
+      <View style={{marginTop: 10, backgroundColor: '#f0f0f0', padding: 10}}>
+        <Text style={{fontWeight: 'bold'}}>测试用例：</Text>
+        <Text>输入 "123" → 期望: "123"</Text>
+        <Text>输入 "12345" → 期望: "12345"</Text>
+        <Text>输入 "123456" → 期望: "12345-6"</Text>
+        <Text>输入 "12345678" → 期望: "12345-678"</Text>
+      </View>
+    </View>
+  );
+};
+
