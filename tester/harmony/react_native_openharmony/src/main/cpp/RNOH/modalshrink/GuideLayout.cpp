@@ -120,6 +120,19 @@ void GuideLayout::scaleYogaNodeStyleWithPercentHandling(
   bool currentHasPercentHeight =
       (height.unit == YGUnitPercent && height.value > 0);
 
+  // Check if current node has explicit dimensions (points or percentage).
+  // Nodes without explicit dimensions (e.g., flex layout) derive their size
+  // from the parent container. Scaling their padding would alter the content
+  // area and cause percentage-based children to be scaled incorrectly.
+  bool hasExplicitWidth =
+      (width.unit == YGUnitPoint && !YGFloatIsUndefined(width.value) &&
+       width.value > 0) ||
+      currentHasPercentWidth;
+  bool hasExplicitHeight =
+      (height.unit == YGUnitPoint && !YGFloatIsUndefined(height.value) &&
+       height.value > 0) ||
+      currentHasPercentHeight;
+
   // Scale width - supports percentage
   if (width.unit == YGUnitPoint && width.value > 0) {
     style.dimensions()[YGDimensionWidth] =
@@ -189,10 +202,57 @@ void GuideLayout::scaleYogaNodeStyleWithPercentHandling(
   }
 
   // Scale padding (only process absolute values)
+  // Skip padding on axes where the node has no explicit dimension (flex layout),
+  // because scaling such padding would change the content area and interfere
+  // with the scaling of percentage-based children.
   for (int edge = YGEdgeLeft; edge <= YGEdgeAll; ++edge) {
-    YGValue padding = style.padding()[static_cast<YGEdge>(edge)];
-    if (padding.unit == YGUnitPoint && padding.value > 0) {
-      style.padding()[static_cast<YGEdge>(edge)] =
+    auto padEdge = static_cast<YGEdge>(edge);
+
+    // Skip horizontal padding when node has no explicit width
+    if (!hasExplicitWidth &&
+        (padEdge == YGEdgeLeft || padEdge == YGEdgeRight ||
+         padEdge == YGEdgeStart || padEdge == YGEdgeEnd ||
+         padEdge == YGEdgeHorizontal)) {
+      continue;
+    }
+    // Skip vertical padding when node has no explicit height
+    if (!hasExplicitHeight &&
+        (padEdge == YGEdgeTop || padEdge == YGEdgeBottom ||
+         padEdge == YGEdgeVertical)) {
+      continue;
+    }
+    // Edge::All applies to all axes. When one axis has an explicit dimension
+    // but the other does not, we cannot simply scale or skip Edge::All.
+    // Instead, decompose it: scale only the axes that have explicit dimensions.
+    if (padEdge == YGEdgeAll) {
+      YGValue padding = style.padding()[YGEdgeAll];
+      if (padding.unit == YGUnitPoint && !YGFloatIsUndefined(padding.value) &&
+          padding.value > 0) {
+        if (hasExplicitWidth && hasExplicitHeight) {
+          // Both axes explicit: scale Edge::All as before
+          style.padding()[YGEdgeAll] =
+              YGValue{padding.value * scaleFactor_, YGUnitPoint};
+          modified = true;
+        } else if (hasExplicitWidth && !hasExplicitHeight) {
+          // Only width explicit: scale horizontal padding, keep vertical
+          style.padding()[YGEdgeHorizontal] =
+              YGValue{padding.value * scaleFactor_, YGUnitPoint};
+          modified = true;
+        } else if (!hasExplicitWidth && hasExplicitHeight) {
+          // Only height explicit: scale vertical padding, keep horizontal
+          style.padding()[YGEdgeVertical] =
+              YGValue{padding.value * scaleFactor_, YGUnitPoint};
+          modified = true;
+        }
+        // Neither axis explicit: skip entirely
+      }
+      continue;
+    }
+
+    YGValue padding = style.padding()[padEdge];
+    if (padding.unit == YGUnitPoint && !YGFloatIsUndefined(padding.value) &&
+        padding.value > 0) {
+      style.padding()[padEdge] =
           YGValue{padding.value * scaleFactor_, YGUnitPoint};
       modified = true;
     }
