@@ -14,10 +14,9 @@ import Want from '@ohos.app.ability.Want';
 import { RNInstancesCoordinator } from "./RNInstancesCoordinator"
 import AbilityConstant from '@ohos.app.ability.AbilityConstant';
 import AbilityConfiguration from '@ohos.app.ability.Configuration';
-import { HttpClient, DefaultHttpClient } from "../HttpClient"
-import { EnvironmentCallback } from '@kit.AbilityKit';
-import { BusinessError } from '@kit.BasicServicesKit';
-import { EventEmitter } from './EventEmitter';
+import { HttpClient, DefaultHttpClient } from "../HttpClient";
+import { deviceInfo } from '@kit.BasicServicesKit';
+import { OH_API_LEVEL_15 } from '.';
 
 /**
  Application developers are expected to extend this class. RNAbility aims to move much of the code to the RNOH side in order to improve stability.
@@ -90,7 +89,9 @@ export abstract class RNAbility extends UIAbility {
   private windowStage: window.WindowStage | undefined = undefined
   private rnInstancesCoordinator!: RNInstancesCoordinator
   private logger!: RNOHLogger
-
+  private config: AbilityConfiguration.Configuration | undefined = undefined
+  private configKeys: string[] =
+    ['language', 'colorMode', 'direction', 'displayId', 'fontId', 'fontSizeScale', 'fontWeightScale']
   private onWindowSizeChange = (windowSize: window.Size) => {
     this.rnInstancesCoordinator?.onWindowSizeChange(windowSize)
   }
@@ -100,11 +101,49 @@ export abstract class RNAbility extends UIAbility {
   private onWindowStageChange = (windowStageEvent: window.WindowStageEventType) => {
     this.rnInstancesCoordinator?.onWindowStageChange(windowStageEvent)
   }
+  private onSystemDensityChange = (density: number) => {
+    if (this.isOnlyChangeDensity(this.config, this.context.config)) {
+      this.config = this.context.config;
+      this.rnInstancesCoordinator?.onConfigurationUpdate(this.config)
+    }
+  }
+
+  private isOnlyChangeDensity(oldConfig: AbilityConfiguration.Configuration | undefined,
+    newConfig: AbilityConfiguration.Configuration): boolean {
+    let isOnlyChangeDensity = false
+    if (!oldConfig) {
+      return isOnlyChangeDensity
+    }
+    for (const key of this.configKeys) {
+      if (oldConfig[key] == newConfig[key]) {
+        // Other fields are the same; it indicates that it is only the screenDensity that changes.
+        isOnlyChangeDensity = true
+      } else {
+        // Other fields differ, indicating that onConfigurationUpdate is necessarily triggered.
+        isOnlyChangeDensity = false
+        break
+      }
+    }
+    // if only change density, log printing other key change
+    if (isOnlyChangeDensity) {
+      const allKeys = Object.keys(newConfig)
+      for (const key of allKeys) {
+        if (oldConfig[key] == newConfig[key]) {
+          continue
+        }
+        this.logger?.warn(`Configuration the change key: ${key} value：${newConfig[key]}`)
+      }
+    }
+    return isOnlyChangeDensity
+  }
 
   private subscribeWindowListeners() {
     this.mainWindow?.on('windowSizeChange', this.onWindowSizeChange)
     this.mainWindow?.on('windowRectChange', this.onWindowRectChange)
     this.windowStage?.on('windowStageEvent', this.onWindowStageChange)
+    if (deviceInfo.sdkApiVersion >= OH_API_LEVEL_15) {
+      this.mainWindow?.on('systemDensityChange', this.onSystemDensityChange)
+    }
   }
 
   private unsubscribeWindowListeners() {
@@ -112,6 +151,9 @@ export abstract class RNAbility extends UIAbility {
       this.mainWindow?.off('windowSizeChange', this.onWindowSizeChange)
       this.mainWindow?.off('windowRectChange', this.onWindowRectChange)
       this.windowStage?.off('windowStageEvent', this.onWindowStageChange)
+      if (deviceInfo.sdkApiVersion >= OH_API_LEVEL_15) {
+        this.mainWindow?.off('systemDensityChange', this.onSystemDensityChange)
+      }
     } catch {
       this.logger?.error("Error when trying to unsubscribe from window changes")
     }
@@ -119,6 +161,7 @@ export abstract class RNAbility extends UIAbility {
 
   onCreate(want: Want, launchParam?: AbilityConstant.LaunchParam) {
     this.logger = this.createLogger().clone("RNAbility")
+    this.config = this.context.config;
     this.rnInstancesCoordinator = RNInstancesCoordinator.create({
       logger: this.createLogger(),
       uiAbilityContext: this.context,
@@ -173,7 +216,7 @@ export abstract class RNAbility extends UIAbility {
       this.rnInstancesCoordinator?.postMessageToCpp("WINDOW_ID", windowID);
       this.rnInstancesCoordinator?.postMessageToCpp("BUNDLE_CODE_DIR", this.context.bundleCodeDir);
       this.rnInstancesCoordinator?.setMainWindow(mainWindow);
-      
+
       this.subscribeWindowListeners()
 
       await this.onWindowSetup(mainWindow)
@@ -194,7 +237,16 @@ export abstract class RNAbility extends UIAbility {
   }
 
   onConfigurationUpdate(config: AbilityConfiguration.Configuration) {
-    this.rnInstancesCoordinator?.onConfigurationUpdate(config)
+    // API15 and above, add the systemDensityChange interface to only handle density changes，It is not triggered only
+    // when Density changes.
+    if (deviceInfo.sdkApiVersion >= OH_API_LEVEL_15) {
+      if (!this.isOnlyChangeDensity(this.config, config)) {
+        this.rnInstancesCoordinator?.onConfigurationUpdate(config)
+      }
+    } else {
+      this.rnInstancesCoordinator?.onConfigurationUpdate(config)
+    }
+    this.config = config
   }
 
   onForeground() {
