@@ -15,7 +15,7 @@ namespace rnoh {
 ArkUI_NativeNodeAPI_1* NativeNodeApi::INSTANCE = nullptr;
 std::mutex NativeNodeApi::instanceMutex;
 
-ArkUI_NativeNodeAPI_1* NativeNodeApi::getInstance() {
+__attribute__((visibility("protected"))) ArkUI_NativeNodeAPI_1* NativeNodeApi::getInstance() {
 #ifdef C_API_ARCH
   std::lock_guard<std::mutex> lock(instanceMutex);
   if (INSTANCE == nullptr) {
