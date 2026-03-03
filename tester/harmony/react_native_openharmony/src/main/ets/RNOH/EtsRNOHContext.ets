@@ -116,6 +116,11 @@ export type RNComponentDataSourceFactory = (ctx: RNComponentDataSourceFactoryCon
 /**
  * @api
  */
+export type RNArkTSComponentDelegate = Record<string, Function>;
+
+/**
+ * @api
+ */
 export class RNComponentContext extends RNOHContext {
   /**
    * @internal
@@ -130,6 +135,7 @@ export class RNComponentContext extends RNOHContext {
   public wrappedRNChildrenBuilder: WrappedRNChildrenBuilder
   public wrappedRNComponentBuilder: WrappedRNComponentBuilder
   private dataSourceFactoriesByType: Map<string, RNComponentDataSourceFactory>
+  private arkTSComponentDelegateByTag: Map<Tag, RNArkTSComponentDelegate> = new Map()
 
   public createComponentDataSource(ctx: RNComponentDataSourceFactoryContext) {
     const descriptorWrapper = this.descriptorRegistry.findDescriptorWrapperByTag(ctx.tag);
@@ -162,6 +168,31 @@ export class RNComponentContext extends RNOHContext {
    */
   public __deleteContentForTag(tag: Tag) {
     this.contentByTag.delete(tag);
+  }
+
+  /**
+   * @brief Sets the delegate for a specified ArkTS component identified by tag.
+   *
+   * @param tag - Component instance identifier
+   * @param delegate - Delegate is a collection of external interfaces provided by ArkTS components,
+   *                   through which internal methods of the component can be invoked
+   */
+  public setArkTSComponentDelegateForTag(tag: Tag, delegate: RNArkTSComponentDelegate) {
+    this.arkTSComponentDelegateByTag.set(tag, delegate);
+  }
+
+  /**
+   * @internal
+   */
+  public __getArkTSComponentDelegateForTag(tag: Tag): RNArkTSComponentDelegate | undefined {
+    return this.arkTSComponentDelegateByTag.get(tag)
+  }
+
+  /**
+   * @internal
+   */
+  public __deleteArkTSComponentDelegateForTag(tag: Tag) {
+    this.arkTSComponentDelegateByTag.delete(tag);
   }
 
   constructor(

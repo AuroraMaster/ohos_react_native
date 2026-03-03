@@ -61,14 +61,12 @@ class ComponentInstanceFactory {
     auto maybeCustomComponentWrapper =
         m_customComponentArkUINodeHandleFactory->create(tag, componentName);
     if (maybeCustomComponentWrapper.has_value()) {
-      auto [nodeHandle, nodeContent, deleter] =
+      auto [nodeHandle, nodeContent, deleter, arkTSComponentDelegateGetter] =
           std::move(maybeCustomComponentWrapper.value());
       auto arkUINode = std::make_unique<ArkUINode>(nodeHandle);
-      auto arkUIComponentInstance = std::make_shared<FallbackComponentInstance>(
-          ctx,
-          std::move(arkUINode),
-          std::move(nodeContent),
-          std::move(deleter));
+      auto arkUIComponentInstance =
+          std::make_shared<FallbackComponentInstance>(ctx, std::move(arkUINode), std::move(nodeContent),
+                                                      std::move(deleter), std::move(arkTSComponentDelegateGetter));
       return arkUIComponentInstance;
     }
     return nullptr;
