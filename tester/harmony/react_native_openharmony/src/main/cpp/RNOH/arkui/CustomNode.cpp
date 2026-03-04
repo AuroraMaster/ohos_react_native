@@ -186,12 +186,12 @@ void CustomNode::startDebounceTimer() {
   // Cancel any existing timer
   m_timerCancelled = true;
   m_timerCV.notify_all();
-  
-  // Wait for previous thread to finish
+
+  // Detach previous thread
   if (m_debounceThread.joinable()) {
-    m_debounceThread.join();
+    m_debounceThread.detach();
   }
-  
+
   // Start new timer
   m_timerCancelled = false;
   m_timerRunning = true;
