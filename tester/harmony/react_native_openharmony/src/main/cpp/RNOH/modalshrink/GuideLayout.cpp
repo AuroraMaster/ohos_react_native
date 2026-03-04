@@ -505,6 +505,27 @@ bool GuideLayout::checkModalNeedsScaling(
     }
   }
 
+  // During keyboard transitions, reuse cached result to avoid
+  // reading KAV-distorted layout measurements.
+  if (modalTag >= 0) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto cacheIt = modalScaleCache_.find(modalTag);
+    if (cacheIt != modalScaleCache_.end()) {
+      auto timeSinceKbChange =
+          std::chrono::steady_clock::now() - lastKeyboardChangeTime_;
+      bool recentKeyboardChange =
+          timeSinceKbChange < std::chrono::milliseconds(500);
+      bool keyboardUp = keyboardHeight_ > 0 ||
+          screenHeight < cacheIt->second.screenHeight - 1.0f ||
+          recentKeyboardChange;
+      if (keyboardUp) {
+        scaleFactor_ = cacheIt->second.scaleFactor;
+        topDistance_ = cacheIt->second.topDistance;
+        return cacheIt->second.needsScale;
+      }
+    }
+  }
+
   // Get L4 node from Modal
   YGNodeRef L4 = findL4Node(modalNode);
   if (!L4) {
@@ -514,12 +535,29 @@ bool GuideLayout::checkModalNeedsScaling(
     return false;
   }
 
-  // Recursively find maximum content height in L5 subtree
-  // At this point, if Modal was previously scaled, the caller has already
-  // restored original styles and relaid out, so layout results are original
-  YGNodeRef L5 =
-      (YGNodeGetChildCount(L4) > 0) ? YGNodeGetChild(L4, 0) : nullptr;
-  float maxContentHeight = L5 ? findMaxContentHeight(L5, screenHeight) : 0;
+  // Iterate all L4 children, skip absolute positioned nodes,
+  // take max of (childTop + childHeight) for accurate content height.
+  float maxContentHeight = 0;
+  {
+    size_t l4ChildCount = YGNodeGetChildCount(L4);
+    for (size_t i = 0; i < l4ChildCount; ++i) {
+      YGNodeRef child = YGNodeGetChild(L4, i);
+      if (!child) {
+        continue;
+      }
+      // Skip absolute positioned nodes - out of normal document flow
+      auto childStyle = child->getStyle();
+      if (childStyle.positionType() == YGPositionTypeAbsolute) {
+        continue;
+      }
+      float childTop = YGNodeLayoutGetTop(child);
+      float childHeight = findMaxContentHeight(child, screenHeight);
+      float childBottom = childTop + childHeight;
+      if (childBottom > maxContentHeight) {
+        maxContentHeight = childBottom;
+      }
+    }
+  }
 
   // Check cache: if content hasn't changed, reuse cached result
   if (modalTag >= 0) {
@@ -556,7 +594,7 @@ bool GuideLayout::checkModalNeedsScaling(
         (maxContentHeight > 0) ? availableHeight / maxContentHeight : 1.0f;
     // Scale factor cannot be less than MIN_SCALE_FACTOR (0.85)
     newScaleFactor = (calculatedScale < MIN_SCALE_FACTOR) ? MIN_SCALE_FACTOR
-                                                         : calculatedScale;
+                                                          : calculatedScale;
   } else if (needsScaleForSmallTop) {
     // Scale when top offset is too small (< 30)
     // Scale factor = (screenHeight - 30) / (screenHeight - topDistance_)
@@ -569,7 +607,7 @@ bool GuideLayout::checkModalNeedsScaling(
         (calculatedScale < newScaleFactor) ? calculatedScale : newScaleFactor;
     // Scale factor cannot be less than MIN_SCALE_FACTOR (0.85)
     newScaleFactor = (calculatedScale < MIN_SCALE_FACTOR) ? MIN_SCALE_FACTOR
-                                                         : calculatedScale;
+                                                          : calculatedScale;
     needsScale = true;
   } else {
     // No scaling needed, reset to 1.0
@@ -719,6 +757,40 @@ void GuideLayout::clearModalScalingState(YGNodeRef modalNode) {
     scaleFactor_ = 1.0f;
     topDistance_ = 0.0f;
   }
+}
+
+bool GuideLayout::isModalSubtreeStyleDirty(YGNodeRef modalNode) {
+  if (!modalNode) {
+    return false;
+  }
+
+  YGNodeRef L4 = findL4Node(modalNode);
+  if (!L4) {
+    return false;
+  }
+
+  void* ctx = L4->getContext();
+  auto* shadowNode = ctx ? static_cast<ShadowNode*>(ctx) : nullptr;
+  if (!shadowNode) {
+    return false;
+  }
+
+  auto props = shadowNode->getProps();
+  auto* yogaProps =
+      props ? dynamic_cast<const YogaStylableProps*>(props.get()) : nullptr;
+  if (!yogaProps) {
+    return false;
+  }
+
+  // Compare L4's live yoga style dimensions against the authored values
+  // from props. A mismatch means stale scaled styles were carried over
+  // by ShadowNode cloning.
+  const auto& cur = L4->getStyle();
+  const auto& orig = yogaProps->yogaStyle;
+  return cur.dimensions()[YGDimensionHeight] !=
+      orig.dimensions()[YGDimensionHeight] ||
+      cur.dimensions()[YGDimensionWidth] !=
+      orig.dimensions()[YGDimensionWidth];
 }
 
 } // namespace react

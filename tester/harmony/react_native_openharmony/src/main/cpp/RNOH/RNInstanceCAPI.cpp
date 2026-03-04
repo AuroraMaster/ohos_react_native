@@ -30,6 +30,7 @@
 #include "RNOH/TurboModuleFactory.h"
 #include "RNOH/TurboModuleProvider.h"
 #include "RNOHCorePackage/TurboModules/DeviceInfoTurboModule.h"
+#include "RNOH/modalshrink/GuideLayout.h"
 #include "TaskExecutor/TaskExecutor.h"
 #include "TextMeasurer.h"
 
@@ -695,6 +696,13 @@ void RNInstanceCAPI::handleArkTSMessage(
     onConfigurationChange(payload);
   } else if (name == "BACKGROUND") {
     onBackground();
+  } else if (name == "KEYBOARD_VISIBLE") {
+    float h = payload.count("keyboardHeight")
+        ? static_cast<float>(payload["keyboardHeight"].asDouble())
+        : 0.0f;
+    facebook::react::GuideLayout::getInstance().setKeyboardHeight(h);
+  } else if (name == "KEYBOARD_HIDDEN") {
+    facebook::react::GuideLayout::getInstance().setKeyboardHeight(0.0f);
   }
   std::lock_guard<std::mutex> lock(m_arkTSMessageHandlersMtx);
   for (auto& arkTSMessageHandler : m_arkTSMessageHandlers) {

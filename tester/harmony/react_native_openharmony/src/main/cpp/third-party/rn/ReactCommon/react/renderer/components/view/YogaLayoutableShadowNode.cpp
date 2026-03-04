@@ -628,17 +628,19 @@ void YogaLayoutableShadowNode::layoutTree(
     if (modalNode) {
       bool wasScaled =
           GuideLayout::getInstance().isModalAlreadyScaled(modalNode);
-      GuideLayout::getInstance().restoreModalSubtreeStyles(modalNode);
+      bool styleDirty = !wasScaled &&
+          GuideLayout::getInstance().isModalSubtreeStyleDirty(modalNode);
 
-      if (wasScaled) {
-        GuideLayout::getInstance().clearModalScalingState(modalNode);
+      if (wasScaled || styleDirty) {
+        GuideLayout::getInstance().restoreModalSubtreeStyles(modalNode);
+        if (wasScaled) {
+          GuideLayout::getInstance().clearModalScalingState(modalNode);
+        }
+        GuideLayout::getInstance().resetYogaTreeState(&yogaNode_);
+        YGNodeCalculateLayout(&yogaNode_, ownerWidth, ownerHeight, direction);
       }
 
-      GuideLayout::getInstance().resetYogaTreeState(&yogaNode_);
-      YGNodeCalculateLayout(&yogaNode_, ownerWidth, ownerHeight, direction);
-
-      bool needsRescale = GuideLayout::getInstance().checkModalNeedsScaling(
-          &yogaNode_, ownerHeight);
+      bool needsRescale = GuideLayout::getInstance().checkModalNeedsScaling(&yogaNode_, ownerHeight);
 
       if (needsRescale) {
         GuideLayout::getInstance().resetModalSubtreeTags();
@@ -647,7 +649,6 @@ void YogaLayoutableShadowNode::layoutTree(
         YGNodeCalculateLayout(&yogaNode_, ownerWidth, ownerHeight, direction);
       }
     } else {
-      // Clear all state when Modal doesn't exist
       GuideLayout::getInstance().clearAllModalState();
     }
   }
