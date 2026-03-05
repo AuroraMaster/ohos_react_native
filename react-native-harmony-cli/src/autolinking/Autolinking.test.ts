@@ -9,7 +9,7 @@ import { Autolinking, AutolinkingConfig } from './Autolinking';
 import { NestedDirectoryJSON } from 'memfs';
 import { AbsolutePath, DescriptiveError } from '../core/';
 import { MockedLogger, MemFS } from '../io/__fixtures__';
-import pathUtils from "node:path"
+import pathUtils from 'node:path';
 
 function createAutolinking({
   fsStructure,
@@ -98,16 +98,13 @@ it('should generate correct templates with scoped package default configuration'
 
   await runAutolinking();
 
-  expect(
-    memFS.readTextSync(new AbsolutePath('./harmony/oh-package.json5'))
-  ).toBe(
-    `
-{
-  dependencies: {
-    "@rnoh/rnoh--link-scoped": "file:../node_modules/@rnoh/link-scoped/harmony/link_scoped.har",
-  },
-}
-`.trimStart()
+  const ohPackageContent = memFS.readTextSync(
+    new AbsolutePath('./harmony/oh-package.json5')
+  );
+  expect(ohPackageContent).toContain('dependencies');
+  expect(ohPackageContent).toContain('@rnoh/rnoh--link-scoped');
+  expect(ohPackageContent).toContain(
+    'file:../node_modules/@rnoh/link-scoped/harmony/link_scoped.har'
   );
   expect(
     memFS.readTextSync(
@@ -330,14 +327,18 @@ it('should log updated files', async () => {
   const { logs } = await runAutolinking();
 
   const combinedLogs = logs.map((log) => log.msg).join('\n');
-  expect(combinedLogs).toContain(pathUtils.normalize('harmony/entry/src/main/cpp/autolink.cmake'));
-  expect(combinedLogs).toContain(pathUtils.normalize(
-    'harmony/entry/src/main/ets/RNOHPackageFactory.ets')
+  expect(combinedLogs).toContain(
+    pathUtils.normalize('harmony/entry/src/main/cpp/autolink.cmake')
   );
-  expect(combinedLogs).toContain(pathUtils.normalize(
-    'harmony/entry/src/main/cpp/RNOHPackageFactory.h')
+  expect(combinedLogs).toContain(
+    pathUtils.normalize('harmony/entry/src/main/ets/RNOHPackageFactory.ets')
   );
-  expect(combinedLogs).toContain(pathUtils.normalize('harmony/oh-package.json5'));
+  expect(combinedLogs).toContain(
+    pathUtils.normalize('harmony/entry/src/main/cpp/RNOHPackageFactory.h')
+  );
+  expect(combinedLogs).toContain(
+    pathUtils.normalize('harmony/oh-package.json5')
+  );
 });
 
 it('should log linked and skipped packages', async () => {
@@ -523,4 +524,49 @@ it('not delete packages with two hars', async () => {
 
   const ohPackageContent = memFS.readTextSync(output.ohPackagePath);
   expect(ohPackageContent).toContain('@rnoh/multiple-har');
+});
+
+it('should preserve comments in oh-package.json5', async () => {
+  const { runAutolinking, memFS } = createAutolinking({
+    fsStructure: {
+      ...baseFileStructure,
+      node_modules: {
+        'test-package': {
+          harmony: {
+            'test_package.har': '',
+          },
+          'package.json': JSON.stringify({
+            name: 'test-package',
+            harmony: {
+              autolinking: true,
+            },
+          }),
+        },
+      },
+      harmony: {
+        ...baseFileStructure.harmony,
+        'oh-package.json5': `{
+  // This is a top-level comment
+  "modelVersion": "5.0.0",
+  "license": "ISC",
+  /* This is a multi-line
+     comment */
+  "dependencies": {
+    // Existing dependency comment
+    "@rnoh/react-native-openharmony/": "./react_native_openharmony",
+  },
+}`,
+      },
+    },
+  });
+
+  const output = await runAutolinking();
+
+  const ohPackageContent = memFS.readTextSync(output.ohPackagePath);
+  // Verify comments are preserved
+  expect(ohPackageContent).toContain('// This is a top-level comment');
+  expect(ohPackageContent).toContain('/* This is a multi-line');
+  expect(ohPackageContent).toContain('// Existing dependency comment');
+  // Verify new dependency is added
+  expect(ohPackageContent).toContain('@rnoh/test-package');
 });

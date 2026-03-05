@@ -16,6 +16,7 @@ import Mustache from 'mustache';
 import Case from 'case';
 import { Logger } from '../io';
 import pathUtils from 'node:path';
+import { JSON5Writer } from './JSON5Writer';
 
 type Version = string;
 type DependencySpecifier = `file:${string}` | Version;
@@ -306,16 +307,13 @@ export class Autolinking {
       ],
       ohPackagePathAndContent: [
         input.ohPackagePathAndContent[0],
-        JSON5.stringify(
+        JSON5Writer.updateDependenciesWithFallback(
+          input.ohPackagePathAndContent[1],
           {
-            ...ohPackage,
-            dependencies: {
-              ...unmanagedNativeDependencySpecifierByName,
-              ...managedNativeDependencySpecifierByName,
-            },
-          },
-          { space: 2, quote: '"' }
-        ) + '\n',
+            ...unmanagedNativeDependencySpecifierByName,
+            ...managedNativeDependencySpecifierByName,
+          }
+        ),
       ],
     };
   }
