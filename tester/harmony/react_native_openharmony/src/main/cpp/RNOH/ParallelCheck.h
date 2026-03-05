@@ -20,20 +20,21 @@ inline bool GetParallelizationEnabled() {
   return PARALLEL_RUNTIME_SWITCH;
 }
 
+inline bool IsSpecialEquipment() {
+  return IS_SPECIAL_EQUIPMENT;
+}
+
 void SetParallelizationEnabled(bool enabled);
 
 void setDeviceInfo(bool isSpecialEquipment);
 
 inline bool IsParallelizationWorkable() {
-  #ifdef PARALLELIZATION_ON
-    return IsAtLeastApi22() && GetParallelizationEnabled();
-  #else
-    return false;
-  #endif
-}
-
-inline bool IsSpecialEquipment() {
-  return IS_SPECIAL_EQUIPMENT;
+#ifdef PARALLELIZATION_ON
+  return IsAtLeastApi22() && GetParallelizationEnabled() &&
+      !IsSpecialEquipment();
+#else
+  return false;
+#endif
 }
 
 } // namespace rnoh
