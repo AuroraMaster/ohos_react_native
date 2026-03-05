@@ -193,6 +193,25 @@ ImageNode& ImageNode::setCapInsets(facebook::react::EdgeInsets const& capInsets,
   return *this;
 }
 
+ImageNode& ImageNode::setOrientationAuto() {
+  constexpr int32_t autoOrientation = 0; // ImageRotateOrientation.AUTO
+  ArkUI_NumberValue value[] = {{.i32 = autoOrientation}};
+  ArkUI_AttributeItem item = {value, sizeof(value) / sizeof(ArkUI_NumberValue)};
+  try {
+    m_nodeApi->setAttribute(m_nodeHandle, NODE_IMAGE_ORIENTATION, &item);
+  } catch (const std::runtime_error& e) {
+    const std::string errorMessage = e.what();
+    // API < 21 may reject this attribute with runtime status errors.
+    if (errorMessage.find("status: 106102") != std::string::npos ||
+        errorMessage.find("status: 106103") != std::string::npos) {
+      LOG(WARNING) << "NODE_IMAGE_ORIENTATION is not supported on this device";
+    } else {
+      throw;
+    }
+  }
+  return *this;
+}
+
 ImageNode& ImageNode::setFadeDuration(int32_t duration) {
   // TODO: duration should have a range and maybe need to be checked here.
   ArkUI_NumberValue value[] = {{ .f32 = 0.0 }, { .i32 = duration }, { .i32 = ARKUI_CURVE_LINEAR }};
