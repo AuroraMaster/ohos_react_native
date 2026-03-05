@@ -8,6 +8,7 @@
 #ifndef GUIDE_LAYOUT_H
 #define GUIDE_LAYOUT_H
 
+#include <chrono>
 #include <mutex>
 #include <unordered_map>
 #include <unordered_set>
@@ -64,6 +65,24 @@ class GuideLayout {
   // Restore original styles for Modal's subtree (used before relayout
   // to get accurate original maxContentHeight)
   void restoreModalSubtreeStyles(YGNodeRef modalNode);
+
+  // Detect stale scaled styles carried over by ShadowNode cloning.
+  bool isModalSubtreeStyleDirty(YGNodeRef modalNode);
+
+  // Keyboard height (set from ArkTS via postMessageToCpp)
+  void setKeyboardHeight(float height) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    keyboardHeight_ = height;
+    lastKeyboardChangeTime_ = std::chrono::steady_clock::now();
+  }
+  bool isKeyboardVisible() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return keyboardHeight_ > 0;
+  }
+  float getKeyboardHeight() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return keyboardHeight_;
+  }
 
   // Set Modal content scaling feature toggle
   void setModalContentShrinkEnabled(bool enabled) {
@@ -173,6 +192,12 @@ class GuideLayout {
   // Track which Modals have already been scaled (by Modal Tag)
   // Prevents repeated scaling on subsequent layoutTree calls
   std::unordered_set<int32_t> scaledModalTags_;
+
+  // Keyboard height from ArkTS layer (0 = hidden)
+  float keyboardHeight_ = 0.0f;
+
+  // Guards against cross-thread races during keyboard transitions
+  std::chrono::steady_clock::time_point lastKeyboardChangeTime_{};
 
   // Restore original yoga styles from ShadowNode props
   // Used before re-scaling to ensure consistent state

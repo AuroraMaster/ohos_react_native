@@ -114,6 +114,7 @@ struct ContentAdaptiveSurface {
   private logger!: RNOHLogger
   private rootViewNodeContent: NodeContent = new NodeContent();
   private timerId: undefined | number = undefined;
+  private areaChangeTimerId: undefined | number = undefined;
   private isWindowRectDrag: boolean = false;
   private currentMeasuredSize: Size | undefined = undefined;
   /**
@@ -171,6 +172,10 @@ struct ContentAdaptiveSurface {
     if (this.timerId) {
       clearTimeout(this.timerId);
       this.timerId = undefined;
+    }
+    if (this.areaChangeTimerId) {
+      clearTimeout(this.areaChangeTimerId);
+      this.areaChangeTimerId = undefined;
     }
     (async () => {
       const stopTracing = this.logger.clone("aboutToDisappear").startTracing()
@@ -299,9 +304,18 @@ struct ContentAdaptiveSurface {
       }
       this.surfaceOffsetX = newArea.globalPosition.x as number
       this.surfaceOffsetY = newArea.globalPosition.y as number
-      this.surfaceContext!.surfaceOffsetX = this.surfaceOffsetX
-      this.surfaceContext!.surfaceOffsetY = this.surfaceOffsetY
-      this.surfaceHandle.updateConstraints(this.surfaceContext);
+
+      if (this.areaChangeTimerId) {
+        clearTimeout(this.areaChangeTimerId);
+      }
+      this.areaChangeTimerId = setTimeout(() =>{
+        if (!this.surfaceHandle.isDestroyed()) {
+          this.surfaceContext!.surfaceOffsetX = this.surfaceOffsetX
+          this.surfaceContext!.surfaceOffsetY = this.surfaceOffsetY
+          this.surfaceHandle.updateConstraints(this.surfaceContext);
+        }
+        this.areaChangeTimerId = undefined;
+      }, this.delayTime);
     })
     .onTouch((e) => this.handleTouch(e))
   }

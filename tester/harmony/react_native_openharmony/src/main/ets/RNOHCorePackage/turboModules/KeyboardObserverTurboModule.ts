@@ -54,8 +54,10 @@ export class KeyboardObserverTurboModule extends TurboModule {
       } else {
         const windowRect = windowInstance.getWindowProperties().windowRect;
         const keyboardAvoidArea = windowInstance.getWindowAvoidArea(window.AvoidAreaType.TYPE_KEYBOARD).bottomRect;
+        // Emit JS event before clearing C++ state to avoid stale layout
         this.ctx.rnInstance.emitDeviceEvent('keyboardDidHide',
           this.createKeyboardEvent(keyboardAvoidArea.left, windowRect.height-KeyboardObserverTurboModule.keyboardHeight, windowRect.height, windowRect.width, KeyboardObserverTurboModule.keyboardHeight, 0));
+        this.ctx.rnInstance.postMessageToCpp("KEYBOARD_HIDDEN", {});
       }
     }
 
