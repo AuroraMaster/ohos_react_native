@@ -8,6 +8,7 @@
 #pragma once
 #include <react/renderer/components/view/ViewShadowNode.h>
 #include "ComponentInstance.h"
+#include "RNArkTSComponentDelegate.h"
 #include "RNOH/CppComponentInstance.h"
 #include "RNOH/arkui/ArkUINode.h"
 #include "RNOH/arkui/TouchEventDispatcher.h"
@@ -15,6 +16,8 @@
 #include "arkui/StackNode.h"
 
 namespace rnoh {
+
+using ArkTSComponentDelegateGetter = std::function<std::optional<std::shared_ptr<RNArkTSComponentDelegate>>()>;
 /**
  * This ComponentInstance is created when no other ComponentInstance was found.
  * It is used for backward compatibility reasons with ArkTS-based architecture.
@@ -26,6 +29,7 @@ class FallbackComponentInstance
   // NOTE: the order matters. `m_arkUINode` must be deleted before
   // `m_arkUIBuilderNodeDeleter`
   folly::Function<void()> m_arkUIBuilderNodeDeleter;
+  ArkTSComponentDelegateGetter m_arkTSComponentDelegateGetter;
   std::unique_ptr<ArkUINode> m_arkUINode;
   StackNode m_stackNode;
   NodeContentHandle m_contentHandle;
@@ -37,9 +41,11 @@ class FallbackComponentInstance
       Context ctx,
       std::unique_ptr<ArkUINode> arkUINode,
       NodeContentHandle contentHandle,
-      folly::Function<void()> arkUIBuilderNodeDeleter)
+      folly::Function<void()> arkUIBuilderNodeDeleter,
+      ArkTSComponentDelegateGetter arkTSComponentDelegateGetter)
       : CppComponentInstance(ctx),
         m_arkUIBuilderNodeDeleter(std::move(arkUIBuilderNodeDeleter)),
+        m_arkTSComponentDelegateGetter(std::move(arkTSComponentDelegateGetter)),
         m_arkUINode(std::move(arkUINode)),
         m_contentHandle(std::move(contentHandle)),
         ArkTSMessageHub::Observer(m_deps->arkTSMessageHub),
@@ -60,6 +66,19 @@ class FallbackComponentInstance
       facebook::react::LayoutMetrics const& layoutMetrics) override {
     m_stackNode.setLayoutRect(
       layoutMetrics.frame.origin, layoutMetrics.frame.size, layoutMetrics.pointScaleFactor);
+  }
+
+  facebook::react::Point getCurrentOffset() const override {
+    auto delegate = m_arkTSComponentDelegateGetter();
+    if (delegate.has_value()) {
+      auto position = delegate->get()->callSync("getCurrentOffset", {});
+      if (position.isObject()) {
+        auto x = position["x"].asDouble();
+        auto y = position["y"].asDouble();
+        return {x, y};
+      }
+    }
+    return {0, 0};
   }
 
  protected:

@@ -97,6 +97,16 @@ class ArkJS {
 
   bool isPromise(napi_value);
 
+  /**
+   * @brief Checks if the given value is an ArkTS undefined.
+   *
+   * This method checks whether the given value is an ArkTS undefined.
+   *
+   * @param value The value to check.
+   * @return `true` if the value is a undefined, otherwise `false`.
+   */
+  bool isUndefined(napi_value value);
+
   RNOHNapiObjectBuilder getObjectBuilder(napi_value object);
 
   napi_value getUndefined();
