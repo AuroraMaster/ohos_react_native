@@ -45,6 +45,7 @@ class ImageNode : public ArkUINode {
   ImageNode& setResizeMethod(std::string const& resizeMethod);
   ImageNode& setAlt(std::string const& uri, std::string prefix = "");
   ImageNode& setFadeDuration(int32_t duration);
+  ImageNode& setOrientationAuto();
   ImageNode& setAccessibilityMode(
       facebook::react::ImportantForAccessibility importance) override;
 

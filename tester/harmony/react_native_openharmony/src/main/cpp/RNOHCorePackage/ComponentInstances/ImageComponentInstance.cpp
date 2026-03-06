@@ -43,6 +43,7 @@ ImageComponentInstance::ImageComponentInstance(Context context)
   this->getLocalRootArkUINode().setDraggable(false);
   this->getLocalRootArkUINode().setAccessibilityMode(
     facebook::react::ImportantForAccessibility::Auto);
+  this->getLocalRootArkUINode().setOrientationAuto();
 }
 
 bool isValidMimeType(const std::string& mimeType) {
