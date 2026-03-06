@@ -6,6 +6,7 @@
  */
 
 #include "ImageNode.h"
+#include <deviceinfo.h>
 #include <native_drawing/drawing_color_filter.h>
 #include <string_view>
 #include "NativeNodeApi.h"
@@ -194,21 +195,14 @@ ImageNode& ImageNode::setCapInsets(facebook::react::EdgeInsets const& capInsets,
 }
 
 ImageNode& ImageNode::setOrientationAuto() {
+  static const bool supported = OH_GetSdkApiVersion() >= OH_API_VERSION_21;
+  if (!supported) {
+    return *this;
+  }
   constexpr int32_t autoOrientation = 0; // ImageRotateOrientation.AUTO
   ArkUI_NumberValue value[] = {{.i32 = autoOrientation}};
   ArkUI_AttributeItem item = {value, sizeof(value) / sizeof(ArkUI_NumberValue)};
-  try {
-    m_nodeApi->setAttribute(m_nodeHandle, NODE_IMAGE_ORIENTATION, &item);
-  } catch (const std::runtime_error& e) {
-    const std::string errorMessage = e.what();
-    // API < 21 may reject this attribute with runtime status errors.
-    if (errorMessage.find("status: 106102") != std::string::npos ||
-        errorMessage.find("status: 106103") != std::string::npos) {
-      LOG(WARNING) << "NODE_IMAGE_ORIENTATION is not supported on this device";
-    } else {
-      throw;
-    }
-  }
+  m_nodeApi->setAttribute(m_nodeHandle, NODE_IMAGE_ORIENTATION, &item);
   return *this;
 }
 
