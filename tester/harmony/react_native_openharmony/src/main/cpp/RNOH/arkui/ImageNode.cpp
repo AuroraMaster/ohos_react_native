@@ -6,7 +6,7 @@
  */
 
 #include "ImageNode.h"
-#include <deviceinfo.h>
+#include "RNOH/ApiVersionCheck.h"
 #include <native_drawing/drawing_color_filter.h>
 #include <string_view>
 #include "NativeNodeApi.h"
@@ -195,14 +195,18 @@ ImageNode& ImageNode::setCapInsets(facebook::react::EdgeInsets const& capInsets,
 }
 
 ImageNode& ImageNode::setOrientationAuto() {
-  static const bool supported = OH_GetSdkApiVersion() >= OH_API_VERSION_21;
-  if (!supported) {
+  if (!IsAtLeastApi21()) {
     return *this;
   }
+
+  // NODE_IMAGE_ORIENTATION is an enum item (not a preprocessor macro).
+  // Use the documented attribute id to keep compatibility with older headers.
+  constexpr ArkUI_NodeAttributeType imageOrientationAttr =
+      static_cast<ArkUI_NodeAttributeType>(4020);
   constexpr int32_t autoOrientation = 0; // ImageRotateOrientation.AUTO
   ArkUI_NumberValue value[] = {{.i32 = autoOrientation}};
   ArkUI_AttributeItem item = {value, sizeof(value) / sizeof(ArkUI_NumberValue)};
-  m_nodeApi->setAttribute(m_nodeHandle, NODE_IMAGE_ORIENTATION, &item);
+  m_nodeApi->setAttribute(m_nodeHandle, imageOrientationAttr, &item);
   return *this;
 }
 
