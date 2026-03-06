@@ -696,6 +696,12 @@ bool ArkJS::isPromise(napi_value value) {
   return result;
 }
 
+bool ArkJS::isUndefined(napi_value value) {
+  bool result;
+  napi_strict_equals(m_env, value, getUndefined(), &result);
+  return result;
+}
+
 RNOHNapiObjectBuilder ArkJS::getObjectBuilder(napi_value object) {
   return RNOHNapiObjectBuilder(m_env, *this, object);
 }

@@ -24,9 +24,21 @@ export struct ContainerView {
   public static readonly NAME = "ContainerView"
   public ctx!: RNComponentContext
   public tag: number = 0
+  private currentOffset: Position = {
+    x: 0,
+    y: 0
+  }
+  private navigationPosition: Position = {
+    x: 0,
+    y: 0
+  }
 
   @State descriptor: ContainerViewDescriptor = {} as ContainerViewDescriptor
   private cleanUpCallbacks: (() => void)[] = []
+
+  getCurrentOffset(): Position {
+    return this.currentOffset
+  }
 
   aboutToAppear() {
     this.descriptor = this.ctx.descriptorRegistry.getDescriptor<ContainerViewDescriptor>(this.tag)
@@ -35,6 +47,9 @@ export struct ContainerView {
         this.descriptor = (newDescriptor as ContainerViewDescriptor)
       }
     ))
+    this.ctx.setArkTSComponentDelegateForTag(this.tag, {
+      'getCurrentOffset': this.getCurrentOffset.bind(this)
+    });
   }
 
   aboutToDisappear() {
@@ -42,11 +57,23 @@ export struct ContainerView {
   }
 
   build() {
-    Stack() {
-      RNViewBase({ tag: this.tag, ctx: this.ctx }) {
-        ContentSlot(this.ctx.getContentForTag(this.tag))
+    Navigation(){
+      Stack() {
+        RNViewBase({ tag: this.tag, ctx: this.ctx }) {
+          ContentSlot(this.ctx.getContentForTag(this.tag))
+        }
+        Text("Custom Container").alignSelf(ItemAlign.Center)
       }
-      Text("Custom Container").alignSelf(ItemAlign.Center)
+      .onAreaChange((oldValue, newValue) => {
+        const origin = this.navigationPosition;
+        this.currentOffset = {
+          x: (origin.x as number) - (newValue.globalPosition.x as number),
+          y: (origin.y as number) - (newValue.globalPosition.y as number),
+        }
+      })
     }
+    .onAreaChange((oldValue, newValue) => {
+      this.navigationPosition = newValue.globalPosition
+    })
   }
 }

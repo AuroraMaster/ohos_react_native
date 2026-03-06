@@ -10,7 +10,7 @@
  */
 import { BuilderNode, FrameNode, NodeContent, UIContext } from '@kit.ArkUI';
 import { Tag, Descriptor } from "./DescriptorBase"
-import { RNComponentContext, ComponentBuilderContext } from "./EtsRNOHContext"
+import { RNComponentContext, ComponentBuilderContext, RNArkTSComponentDelegate } from "./EtsRNOHContext"
 import type { FrameNodeFactory } from "./RNInstance"
 import { RNOHLogger } from "./RNOHLogger"
 
@@ -18,6 +18,7 @@ interface CustomRNComponentFrameNodeFactoryResult {
   frameNode: FrameNode
   nodeContent: NodeContent
   dispose: () => void
+  getDelegate: () =>  RNArkTSComponentDelegate | undefined
 }
 
 /**
@@ -58,9 +59,15 @@ export class CustomRNComponentFrameNodeFactory implements FrameNodeFactory {
       this.componentContext!.logger.fatal(`Couldn't create frameNode for: ${componentName}`);
     }
     stopTracing();
-    return { frameNode: frameNode!, nodeContent, dispose: () => {
-      this.componentContext?.__deleteContentForTag(tag);
-      builderNode.dispose()
-    } };
+    return {
+      frameNode: frameNode!,
+      nodeContent, dispose: () => {
+        this.componentContext?.__deleteContentForTag(tag);
+        this.componentContext?.__deleteArkTSComponentDelegateForTag(tag);
+        builderNode.dispose()
+      },
+      getDelegate: () => {
+        return this.componentContext?.__getArkTSComponentDelegateForTag(tag);
+      }};
   }
 }
