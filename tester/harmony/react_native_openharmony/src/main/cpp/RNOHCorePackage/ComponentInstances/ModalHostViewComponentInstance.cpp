@@ -100,7 +100,7 @@ void ModalHostViewComponentInstance::updateSlideTransition(
     DisplayMetrics const& displayMetrics) {
   auto screenSize = displayMetrics.windowPhysicalPixels;
   m_rootCustomNode.setTranslateTransition(
-      0, float(screenSize.height / screenSize.scale), ANIMATION_DURATION);
+      0, float((screenSize.height - screenSize.decorHeight) / screenSize.scale), ANIMATION_DURATION);
 }
 
 ModalHostViewComponentInstance::ModalHostViewComponentInstance(Context context)
