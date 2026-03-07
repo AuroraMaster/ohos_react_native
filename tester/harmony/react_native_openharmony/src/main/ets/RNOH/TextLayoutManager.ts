@@ -54,8 +54,6 @@ export type LayoutConstrains = {
   maximumSize: Size;
 };
 
-declare function px2vp(value: number): number;
-
 export type AttachmentLayout = {
   positionRelativeToContainer: {
     x: number;

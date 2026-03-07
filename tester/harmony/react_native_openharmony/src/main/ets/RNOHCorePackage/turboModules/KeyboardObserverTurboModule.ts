@@ -9,8 +9,6 @@ import window from '@ohos.window';
 import type { TurboModuleContext } from "../../RNOH/TurboModule";
 import { TurboModule } from "../../RNOH/TurboModule";
 
-declare function px2vp(px: number): number;
-
 export class KeyboardObserverTurboModule extends TurboModule {
   public static readonly NAME = 'KeyboardObserver';
   private static keyboardHeight:number;
