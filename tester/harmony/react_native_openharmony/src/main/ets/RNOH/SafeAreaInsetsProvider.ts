@@ -17,8 +17,6 @@ export type SafeAreaInsets = {
   bottom: number
 }
 
-declare function px2vp(arg: number): number
-
 export class SafeAreaInsetsProvider {
   private currentInsets: SafeAreaInsets = {
     top: 0,

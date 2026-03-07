@@ -17,8 +17,6 @@ type StatusBarConstants = {
   HEIGHT: number,
 }
 
-declare function px2vp(px: number): number;
-
 type StatusBarEventNameByListenerArgs = {
   SYSTEM_BAR_VISIBILITY_CHANGE: [{ hidden: boolean }]
 }
