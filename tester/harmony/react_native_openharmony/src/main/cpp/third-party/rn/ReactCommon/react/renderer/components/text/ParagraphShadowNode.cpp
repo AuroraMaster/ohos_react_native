@@ -19,8 +19,6 @@
 #include "RNOH/modalshrink/GuideLayout.h"
 
 #include "ParagraphState.h"
-#include <yoga/Yoga.h>
-#include "RNOH/TextMeasurer.h"
 
 namespace facebook::react {
 
@@ -129,7 +127,6 @@ void ParagraphShadowNode::setTextLayoutManager(
   ensureUnsealed();
   getStateData().paragraphLayoutManager.setTextLayoutManager(
       std::move(textLayoutManager));
-  initYogaBaselineFunc();
 }
 
 void ParagraphShadowNode::updateStateIfNeeded(Content const &content) {
@@ -147,81 +144,6 @@ void ParagraphShadowNode::updateStateIfNeeded(Content const &content) {
           content.attributedString,
           content.paragraphAttributes,
           state.paragraphLayoutManager});
-}
-    
-/*
- * Initializes the baseline function for Yoga layout engine.
- *
- * This function sets up the baseline callback for Text components, enabling
- * correct baseline offset calculation when parent containers use
- * alignItems: 'baseline'.
- *
- * Call timing: Called in setTextLayoutManager to ensure TextLayoutManager is set
- */
-void ParagraphShadowNode::initYogaBaselineFunc() {
-  YGNodeSetContext(&yogaNode_, this);
-  YGNodeSetBaselineFunc(&yogaNode_, paragraphBaselineFunc);
-}
-
-/*
- * Baseline callback function for Yoga layout engine.
- *
- * This function is called by the Yoga layout engine to calculate the baseline
- * value for Text components. The baseline value is the distance from the
- * text baseline to the top (ascender), used for baseline alignment.
- *
- * @param node Reference to the Yoga node, used to get ParagraphShadowNode instance via YGNodeGetContext
- * @param width Text width constraint, used for text measurement
- * @param height Text height constraint, used for text measurement
- * @return float Baseline value (ascender), which is the distance from baseline to top
- *
- * Notes:
- * - Uses first line's baseline value, following CSS specification
- * - Returns 0 for empty text to avoid layout errors
- * - Ascender is a positive value representing distance upward from baseline
- */
-float ParagraphShadowNode::paragraphBaselineFunc(YGNodeRef node, float width, float height) {
-  auto shadowNode = reinterpret_cast<ParagraphShadowNode const *>(YGNodeGetContext(node));
-  if (!shadowNode) {
-    return 0.0f;
-  }
-
-  auto const &state = shadowNode->getStateData();
-  auto textLayoutManager = state.paragraphLayoutManager.getTextLayoutManager();
-  if (!textLayoutManager) {
-    return 0.0f;
-  }
-        
-  auto layoutMetrics = shadowNode->getLayoutMetrics();
-  auto layoutConstraints = LayoutConstraints{Size{width, height}, Size{width, height}, layoutMetrics.layoutDirection};
-  auto layoutContext = reinterpret_cast<LayoutContext const *>(YGNodeGetContext(node));
-  auto content = shadowNode->getContentWithMeasuredAttachments(*layoutContext, layoutConstraints);
-  auto const &props = shadowNode->getConcreteProps();
-  auto attributedString = content.attributedString;
-
-  if (attributedString.isEmpty()) {
-    // Note: zero-width space is insufficient in some cases (e.g. when we need
-    // to measure the "height" of the font).
-    // TODO T67606511: We will redefine the measurement of empty strings as part
-    // of T67606511
-    auto string = BaseTextShadowNode::getEmptyPlaceholder();
-    auto textAttributes = TextAttributes::defaultTextAttributes();
-    textAttributes.fontSizeMultiplier = layoutContext->fontSizeMultiplier;
-    textAttributes.apply(props.textAttributes);
-    attributedString.appendFragment({string, textAttributes, {}});
-  }
-
-  auto nativeTextLayoutManager = textLayoutManager->getNativeTextLayoutManager();
-  auto textMeasurer = static_cast<rnoh::TextMeasurer*>(nativeTextLayoutManager);
-  auto lineMetrics = textMeasurer->getLineMetrics(
-      content.attributedString,
-      props.paragraphAttributes,
-      {{width, height}, {width, height}});
-  if (lineMetrics.empty()) {
-    return 0.0f;
-  }
-
-  return lineMetrics[0].ascender;
 }
 
 #pragma mark - LayoutableShadowNode

@@ -97,22 +97,7 @@ class ParagraphShadowNode final : public ConcreteViewShadowNode<
   void updateStateIfNeeded(Content const &content);
 
   /*
-   * Initializes baseline function for Yoga layout engine.
-   */
-  void initYogaBaselineFunc();
-
-  /*
-   * Baseline function callback for Yoga layout engine.
-   *
-   * @param node Reference to the Yoga node, used to get ParagraphShadowNode instance via YGNodeGetContext
-   * @param width Text width constraint, used for text measurement
-   * @param height Text height constraint, used for text measurement
-   * @return float Baseline value (ascender), which is the distance from baseline to top
-   */
-  static float paragraphBaselineFunc(YGNodeRef node, float width, float height);
-
-  /*
-   * Cached content of subtree started from node.
+   * Cached content of the subtree started from the node.
    */
   mutable std::optional<Content> content_{};
 };
