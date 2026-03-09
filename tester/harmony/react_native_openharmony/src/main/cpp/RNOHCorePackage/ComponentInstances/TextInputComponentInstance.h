@@ -40,6 +40,7 @@ class TextInputComponentInstance
   bool m_clearTextOnFocus{false};
 
   std::string m_content;
+  std::string m_extendStr;
 
   int32_t m_selectionLocation = 0;
 
@@ -83,7 +84,7 @@ class TextInputComponentInstance
       std::string const& commandName,
       folly::dynamic const& args) override;
 
-  void onChange(std::string text) override;
+  void onChange(std::string text, std::string extendStr) override;
 
   void onBlur() override;
 
