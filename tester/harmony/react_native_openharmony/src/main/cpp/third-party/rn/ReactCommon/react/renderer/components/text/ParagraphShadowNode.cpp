@@ -175,12 +175,6 @@ void ParagraphShadowNode::initYogaBaselineFunc() {
  * @param height Text height constraint, used for text measurement
  * @return float Baseline value (ascender), which is the distance from baseline to top
  *
- * Implementation details:
- * 1. Retrieves ParagraphShadowNode instance from Yoga node context
- * 2. Gets TextLayoutManager and TextMeasurer
- * 3. Calls TextMeasurer's getLineMetrics to get first line metrics
- * 4. Returns the first line's ascender value as baseline
- *
  * Notes:
  * - Uses first line's baseline value, following CSS specification
  * - Returns 0 for empty text to avoid layout errors
@@ -192,18 +186,35 @@ float ParagraphShadowNode::paragraphBaselineFunc(YGNodeRef node, float width, fl
     return 0.0f;
   }
 
-  auto const &props = shadowNode->getConcreteProps();
   auto const &state = shadowNode->getStateData();
-
   auto textLayoutManager = state.paragraphLayoutManager.getTextLayoutManager();
   if (!textLayoutManager) {
     return 0.0f;
+  }
+        
+  auto layoutMetrics = shadowNode->getLayoutMetrics();
+  auto layoutConstraints = LayoutConstraints{Size{width, height}, Size{width, height}, layoutMetrics.layoutDirection};
+  auto layoutContext = reinterpret_cast<LayoutContext const *>(YGNodeGetContext(node));
+  auto content = shadowNode->getContentWithMeasuredAttachments(*layoutContext, layoutConstraints);
+  auto const &props = shadowNode->getConcreteProps();
+  auto attributedString = content.attributedString;
+
+  if (attributedString.isEmpty()) {
+    // Note: zero-width space is insufficient in some cases (e.g. when we need
+    // to measure the "height" of the font).
+    // TODO T67606511: We will redefine the measurement of empty strings as part
+    // of T67606511
+    auto string = BaseTextShadowNode::getEmptyPlaceholder();
+    auto textAttributes = TextAttributes::defaultTextAttributes();
+    textAttributes.fontSizeMultiplier = layoutContext->fontSizeMultiplier;
+    textAttributes.apply(props.textAttributes);
+    attributedString.appendFragment({string, textAttributes, {}});
   }
 
   auto nativeTextLayoutManager = textLayoutManager->getNativeTextLayoutManager();
   auto textMeasurer = static_cast<rnoh::TextMeasurer*>(nativeTextLayoutManager);
   auto lineMetrics = textMeasurer->getLineMetrics(
-      state.attributedString,
+      content.attributedString,
       props.paragraphAttributes,
       {{width, height}, {width, height}});
   if (lineMetrics.empty()) {
