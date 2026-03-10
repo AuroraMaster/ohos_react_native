@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.72.127
+
+
+- fix: Add Chinese pinyin preview screen function,([5662efd6d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/5662efd6d8330eaaf90bb23831f986c61a8d247c))
+- fix：Known issues added,([227feefee](https://gitcode.com/openharmony-sig/ohos_react_native/commit/227feefeed2308b5ee1aa0b789029c4f6f1c7d1c))
+- fixed: Fix the issue of page jitter caused by loop calls,([0091774e2](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0091774e2c16179813f77a95772b306c2ce617b3))
+- fix: Add Chinese pinyin preview screen function,([5662efd6d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/5662efd6d8330eaaf90bb23831f986c61a8d247c))
+- fix: Obfuscation makes the method name unrecognizable, resulting in a crash from an undefined error(72).,([2bdea79bb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2bdea79bba269008519b944dafb66495915902bd))
+- Fix: adaptation alignItems: baseline, adding baseline calculation logic,([bd4b44551](https://gitcode.com/openharmony-sig/ohos_react_native/commit/bd4b4455157ffb2330d2f851b3db75331decef19))
+- update,([5b6541718](https://gitcode.com/openharmony-sig/ohos_react_native/commit/5b65417180946304f7587776bc9bab6c86ea2d3c))
+- update: 更新文件 ImageNode.cpp,([cf52d5323](https://gitcode.com/openharmony-sig/ohos_react_native/commit/cf52d5323f0cf67ded6cff10ebf02ba181810647))
+- RNOH Image enables Orientation.AUTO by default(72).,([c91b133ed](https://gitcode.com/openharmony-sig/ohos_react_native/commit/c91b133edb6a30e3505b6981cd3fb82be6bdb6ff))
+- fix:Disable parallelization of special equipment,([666784da7](https://gitcode.com/openharmony-sig/ohos_react_native/commit/666784da7a6b5d140bde15017f19535436fad12b))
+- fix: Click Unresponsiveness in Custom ArkTS Components After Keyboard Popup​.,([584c5aba9](https://gitcode.com/openharmony-sig/ohos_react_native/commit/584c5aba940fed43a40e6e559cb7993d4c639298))
+- fix:Fixes stuttering caused by join suspension waiting.,([3a08682b8](https://gitcode.com/openharmony-sig/ohos_react_native/commit/3a08682b870666b68ae474a776c1b24d902b83ef))
+- fix:Modify modal pop-up properties to restore logic,([f4dae41cc](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f4dae41cc706a078e250addef709374674b5eb63))
+- Fix: 调整事件监听释放时机,([fc6f8b503](https://gitcode.com/openharmony-sig/ohos_react_native/commit/fc6f8b5039199ad6fe479364919b7586fe69a2a8))
+- fix:Accessibility mode cannot focus on the text,([67a71413f](https://gitcode.com/openharmony-sig/ohos_react_native/commit/67a71413fc900cc0cd912957cbb4137e8571f605))
+- optimization: collectGarbage on background,([e01647791](https://gitcode.com/openharmony-sig/ohos_react_native/commit/e01647791d6cb37a5d5d90e91c7d8e6bf1a303ee))
+- fix:原有的 unregisterWindowListenerCallback 定义方式存在以下不足：,([12b497ef4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/12b497ef414a24b7fa363c882ca958ef78c8f695))
+- fix:Fixed the logic for handling padding property scaling.,([684146be7](https://gitcode.com/openharmony-sig/ohos_react_native/commit/684146be787d66eb1b2d1592bcddd22b4b97298c))
+
 ## 0.72.118
 
 - [chore]: updated to version 6.1.0.300(0.72.118),([9479901e6](https://gitcode.com/openharmony-sig/ohos_react_native/commit/9479901e6629a9882b4c804ec21cbb3d8949b71b))
