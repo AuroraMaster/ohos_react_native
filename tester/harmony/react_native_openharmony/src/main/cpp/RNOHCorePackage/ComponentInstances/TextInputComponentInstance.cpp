@@ -49,8 +49,9 @@ std::string TextInputComponentInstance::getTextContentFromState(SharedConcreteSt
   return contentStream.str();
 }
 
-void TextInputComponentInstance::onChange(std::string text) {
+void TextInputComponentInstance::onChange(std::string text, std::string extendStr) {
   m_content = text;
+  m_extendStr = extendStr;
   m_nativeEventCount++;
   int32_t contentLength = countUtf16Characters(m_content);
   // Cleaning content, endOffset need update 0.
@@ -580,7 +581,12 @@ void TextInputComponentInstance::onCommandReceived(
     auto textContent = args[1].asString();
     auto selectionStart = args[2].asInt();
     auto selectionEnd = args[3].asInt();
-    setTextContent(textContent);
+    // When adding a timer refresh parameter on the JavaScript side, returning the last parameter causes an exception,
+    // and the current pre-screening needs to be skipped.
+    if (m_extendStr.empty()) {
+      setTextContent(textContent);
+    }
+    m_extendStr = "";
     setTextSelection(selectionStart, selectionEnd);
   }
 }
@@ -591,7 +597,7 @@ void TextInputComponentInstance::onStateChanged(
   if (state->getData().mostRecentEventCount < this->m_nativeEventCount) {
     return;
   }
-
+  m_extendStr = "";
   auto content = getTextContentFromState(state);
   setTextContent(content);
   int32_t contentLength = countUtf16Characters(content);

@@ -107,6 +107,7 @@ export default React.forwardRef<View, ViewProps>(
             setBottomInset(insets.bottom);
             setLeftInset(insets.left);
             setRightInset(insets.right);
+            measureView();
           }
         );
         return () => {
@@ -143,7 +144,6 @@ export default React.forwardRef<View, ViewProps>(
         ]}
         onLayout={(event) => {
           setLayout(event.nativeEvent.layout);
-          measureView();
           otherProps?.onLayout && otherProps.onLayout(event);
         }}
         {...otherProps}
