@@ -20,7 +20,7 @@
     "@react-native/eslint-config": "^0.72.2",
     "@react-native/metro-config": "^0.72.11",
     "@react-native-community/cli": "^13.6.5",
-    "@react-native-oh/react-native-harmony-cli": "0.0.41",
+    "@react-native-oh/react-native-harmony-cli": "0.0.42",
     "@tsconfig/react-native": "^3.0.0",
     "@types/react": "^18.0.24",
     "@types/react-test-renderer": "^18.0.0",
