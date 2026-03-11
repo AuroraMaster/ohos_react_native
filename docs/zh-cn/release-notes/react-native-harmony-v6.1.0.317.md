@@ -5,7 +5,7 @@
 | 名称                                           | 版本号    | 是否发布npm仓 |
 | ---------------------------------------------- | --------- |------------- |
 | react-native-harmony.tgz                       | 0.72.127  |   暂未发布   |
-| react-native-harmony-cli.tgz                   | 0.0.41    |   暂未发布   |
+| react-native-harmony-cli.tgz                   | 0.0.42    |   暂未发布   |
 | react_native_openharmony-6.1.0.317.har         | 0.72.127  |   暂未发布   |
 | react_native_openharmony_release-6.1.0.317.har | 6.1.0.317 |   暂未发布   |
 
