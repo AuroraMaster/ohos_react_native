@@ -1,7 +1,12 @@
 # Changelog
 
-## 0.72.127
 
+ ## 0.72.128
+ 	 
+- fix:Clamp second typography layout width to maxWidth.,([ee6769f3d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ee6769f3dd39885836dc402d9c8632e771ada715))
+- [chore]: updated to version 6.1.0.316(0.72.127),([fcd8734a3](https://gitcode.com/openharmony-sig/ohos_react_native/commit/fcd8734a316795dcde18db7885b71eb3dfca62ff))
+
+## 0.72.127
 
 - fix: Add Chinese pinyin preview screen function,([5662efd6d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/5662efd6d8330eaaf90bb23831f986c61a8d247c))
 - fix：Known issues added,([227feefee](https://gitcode.com/openharmony-sig/ohos_react_native/commit/227feefeed2308b5ee1aa0b789029c4f6f1c7d1c))
