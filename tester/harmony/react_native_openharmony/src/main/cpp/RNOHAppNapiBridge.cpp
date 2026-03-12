@@ -343,9 +343,12 @@ static napi_value onDestroyRNInstance(napi_env env, napi_callback_info info) {
     }
 
     if (instance) {
+      auto taskExecutor = instance->getTaskExecutor();
       instance->markSelfAboutToDestroyed();
-      CLEANUP_RUNNER->runAsyncTask(
-          [instance = std::move(instance)]() mutable {});
+      taskExecutor->runTask(TaskThread::JS, [instance = std::move(instance)] {
+        CLEANUP_RUNNER->runAsyncTask(
+            [instance = std::move(instance)]() mutable {});
+      });
     }
   } catch (...) {
     ArkTSBridge::getInstance()->handleError(std::current_exception());
