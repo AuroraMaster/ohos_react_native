@@ -1,7 +1,12 @@
 # Changelog
 
-## 6.1.0.317
+## 6.1.0.318
 
+- fix:Clamp second typography layout width to maxWidth.,([ee6769f3d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ee6769f3dd39885836dc402d9c8632e771ada715))
+- [chore]: updated to version 6.1.0.316(0.72.127),([67cffb9c4](https://gitcode.com/openharmony-sig/ohos_react_native/commit/67cffb9c4e22dd1e14927f6348f453c33b0b6fbb))
+- [chore]: updated to version 6.1.0.316(0.72.127),([fcd8734a3](https://gitcode.com/openharmony-sig/ohos_react_native/commit/fcd8734a316795dcde18db7885b71eb3dfca62ff))
+
+## 6.1.0.317
 
 - fix: Obfuscation makes the method name unrecognizable, resulting in a crash from an undefined error(72).,([2bdea79bb](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2bdea79bba269008519b944dafb66495915902bd))
 - Fix: adaptation alignItems: baseline, adding baseline calculation logic,([bd4b44551](https://gitcode.com/openharmony-sig/ohos_react_native/commit/bd4b4455157ffb2330d2f851b3db75331decef19))
