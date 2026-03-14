@@ -570,3 +570,122 @@ it('should preserve comments in oh-package.json5', async () => {
   // Verify new dependency is added
   expect(ohPackageContent).toContain('@rnoh/test-package');
 });
+
+it('should support custom mainHarPath for HAR scanning', async () => {
+  const { runAutolinking, memFS } = createAutolinking({
+    fsStructure: {
+      ...baseFileStructure,
+      node_modules: {
+        'custom-path-package': {
+          'custom_harmony': {
+            'custom.har': '',
+            'subdir': {
+              'nested.har': '',
+            },
+          },
+          'package.json': JSON.stringify({
+            name: 'custom-path-package',
+            harmony: {
+              autolinking: {
+                mainHarPath: 'custom_harmony',
+              },
+            },
+          }),
+        },
+      },
+    },
+  });
+
+  const output = await runAutolinking();
+
+  const ohPackageContent = memFS.readTextSync(output.ohPackagePath);
+  // Should find both HAR files in custom_harmony directory (recursive scan)
+  expect(ohPackageContent).toContain('@rnoh/custom-path-package--custom');
+  expect(ohPackageContent).toContain('@rnoh/custom-path-package--nested');
+  expect(ohPackageContent).toContain('custom_harmony/custom.har');
+  expect(ohPackageContent).toContain('custom_harmony/subdir/nested.har');
+});
+
+it('should support multiple HARs with ohPackageName array mapping', async () => {
+  const { runAutolinking, memFS } = createAutolinking({
+    fsStructure: {
+      ...baseFileStructure,
+      node_modules: {
+        'multi-har-package': {
+          harmony: {
+            'core.har': '',
+            'ui.har': '',
+          },
+          'package.json': JSON.stringify({
+            name: 'multi-har-package',
+            harmony: {
+              autolinking: {
+                ohPackageName: [
+                  { harName: 'core.har', packageName: '@rnoh/multi-har--core' },
+                  { harName: 'ui.har', packageName: '@rnoh/multi-har--ui' },
+                ],
+                etsPackageClassName: 'MultiHarPackage',
+                cppPackageClassName: 'MultiHarPackage',
+                cmakeLibraryTargetName: 'rnoh__multi_har',
+              },
+            },
+          }),
+        },
+      },
+    },
+  });
+
+  const output = await runAutolinking();
+
+  const ohPackageContent = memFS.readTextSync(output.ohPackagePath);
+  // Both HARs should be in oh-package.json5 with their custom package names
+  expect(ohPackageContent).toContain('@rnoh/multi-har--core');
+  expect(ohPackageContent).toContain('@rnoh/multi-har--ui');
+  expect(ohPackageContent).toContain('harmony/core.har');
+  expect(ohPackageContent).toContain('harmony/ui.har');
+
+  // ETS template should use shared package class name
+  const etsContent = memFS.readTextSync(output.etsRNOHPackagesFactoryPath);
+  expect(etsContent).toContain('import MultiHarPackage from \'@rnoh/multi-har--core\'');
+  expect(etsContent).toContain('new MultiHarPackage(ctx)');
+
+  // C++ template should use shared package class name
+  const cppContent = memFS.readTextSync(output.cppRNOHPackagesFactoryPath);
+  expect(cppContent).toContain('#include "MultiHarPackage.h"');
+  expect(cppContent).toContain('std::make_shared<rnoh::MultiHarPackage>(ctx)');
+});
+
+it('should use default naming with suffix for unmatched HARs when ohPackageName is array', async () => {
+  const { runAutolinking, memFS } = createAutolinking({
+    fsStructure: {
+      ...baseFileStructure,
+      node_modules: {
+        'partial-mapping-package': {
+          harmony: {
+            'matched.har': '',
+            'unmatched.har': '',
+          },
+          'package.json': JSON.stringify({
+            name: 'partial-mapping-package',
+            harmony: {
+              autolinking: {
+                ohPackageName: [
+                  { harName: 'matched.har', packageName: '@rnoh/partial--matched' },
+                  // unmatched.har is not in the mapping, should use default name with suffix
+                ],
+              },
+            },
+          }),
+        },
+      },
+    },
+  });
+
+  const output = await runAutolinking();
+
+  const ohPackageContent = memFS.readTextSync(output.ohPackagePath);
+  // matched.har should use custom package name
+  expect(ohPackageContent).toContain('@rnoh/partial--matched');
+  // unmatched.har should use default naming with suffix
+  expect(ohPackageContent).toContain('@rnoh/partial-mapping-package--unmatched');
+});

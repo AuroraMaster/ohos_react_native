@@ -24,14 +24,25 @@ export class ProjectDependency {
     return this.readPackageJSON().getCodegenConfigs();
   }
 
-  getHarFilePaths(): AbsolutePath[] {
+  /**
+   * 获取 HAR 文件路径列表
+   * @param mainHarPath 自定义的 HAR 扫描根目录（相对于包根目录），默认为 'harmony'
+   */
+  getHarFilePaths(mainHarPath?: string): AbsolutePath[] {
+    // 如果指定了 mainHarPath，使用自定义路径
+    if (mainHarPath) {
+      const customPath = this.packageRootPath.copyWithNewSegment(mainHarPath);
+      if (this.fs.existsSync(customPath)) {
+        return this.fs.findFilePathsWithExtensions(customPath, ['har']);
+      }
+      return [];
+    }
+
+    // 默认行为：优先查找 harmony/ 目录，否则查找包根目录
     const packageHarmonyPath =
       this.packageRootPath.copyWithNewSegment('harmony');
     if (this.fs.existsSync(packageHarmonyPath)) {
-      return this.fs.findFilePathsWithExtensions(
-        packageHarmonyPath,
-        ['har']
-      );
+      return this.fs.findFilePathsWithExtensions(packageHarmonyPath, ['har']);
     } else {
       return this.fs.findFilePathsWithExtensions(
         this.packageRootPath,

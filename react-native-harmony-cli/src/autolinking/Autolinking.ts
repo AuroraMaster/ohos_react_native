@@ -32,13 +32,43 @@ export type AutolinkingConfig = {
   includedNpmPackageNames: Set<string>;
 };
 
+/**
+ * ohPackageName 数组配置项类型
+ * 用于将 HAR 文件名映射到指定的 ohPackage 名
+ */
+type OhPackageNameMapping = {
+  harName: string;
+  packageName: string;
+};
+
+/**
+ * ohPackageName 支持的类型
+ * - string: 所有 HAR 共用同一个包名（兼容旧格式）
+ * - OhPackageNameMapping[]: 每个 HAR 可以有独立的包名
+ */
+type OhPackageNameConfig = string | OhPackageNameMapping[];
+
+/**
+ * 解析后的 HAR 配置
+ * 每个 HAR 文件对应一个 ResolvedHar
+ */
+type ResolvedHar = {
+  harFilePathRelativeToHarmony: string;
+  ohPackageName: string;
+};
+
+/**
+ * 可链接的库配置
+ * 支持单个或多个 HAR 文件
+ */
 type AutolinkableLibrary = {
   npmPackageName: string;
-  harFilePathRelativeToHarmony: string;
+  // 解析后的 HAR 配置数组（支持多个 HAR）
+  resolvedHars: ResolvedHar[];
+  // 以下配置所有 HAR 共享
   etsRNOHPackageClassName?: string;
   cppRNOHPackageClassName?: string;
   cmakeLibraryTargetName?: string;
-  ohPackageName?: string;
 };
 
 type AutolinkingInput = {
@@ -156,36 +186,52 @@ export class Autolinking {
     const skippedLibraryNpmPackageNames: string[] = [];
     await new ProjectDependenciesManager(this.fs, projectRootPath).forEachAsync(
       (dependency) => {
-        const harFilePaths = dependency.getHarFilePaths();
+        // 读取 package.json 配置
+        const packageJson = dependency.readPackageJSON();
+        const providedAutolinkingConfig = packageJson.harmony?.autolinking;
+
+        // 解析 autolinking 配置
+        const autolinkingConfig =
+          providedAutolinkingConfig === true ? {} : providedAutolinkingConfig;
+
+        // 获取自定义的 HAR 扫描路径
+        const mainHarPath = autolinkingConfig?.mainHarPath;
+
+        // 扫描 HAR 文件
+        const harFilePaths = dependency.getHarFilePaths(mainHarPath);
         if (harFilePaths.length === 0) {
           return;
         }
         nodeModuleHarPaths.push(...harFilePaths);
-        const packageJson = dependency.readPackageJSON();
-        const providedAutolinkingConfig = packageJson.harmony?.autolinking;
+
+        // 检查是否应该跳过该包
         if (
           providedAutolinkingConfig === undefined ||
           providedAutolinkingConfig === null ||
           (config.excludedNpmPackageNames.has(packageJson.name) &&
             config.excludedNpmPackageNames.size > 0) ||
           (!config.includedNpmPackageNames.has(packageJson.name) &&
-            config.includedNpmPackageNames.size > 0) ||
-          harFilePaths.length !== 1
+            config.includedNpmPackageNames.size > 0)
         ) {
           skippedLibraryNpmPackageNames.push(packageJson.name);
           return;
         }
-        const autolinkingConfig =
-          providedAutolinkingConfig === true ? {} : providedAutolinkingConfig;
+
+        // 解析 ohPackageName 配置，生成每个 HAR 对应的包名
+        const ohPackageNameConfig = autolinkingConfig?.ohPackageName as OhPackageNameConfig | undefined;
+        const resolvedHars = this.resolveHarPackageNames(
+          harFilePaths,
+          ohPackageNameConfig,
+          packageJson.name,
+          harmonyProjectPath
+        );
+
         autolinkableLibraries.push({
           npmPackageName: packageJson.name,
+          resolvedHars,
           etsRNOHPackageClassName: autolinkingConfig?.etsPackageClassName,
           cppRNOHPackageClassName: autolinkingConfig?.cppPackageClassName,
           cmakeLibraryTargetName: autolinkingConfig?.cmakeLibraryTargetName,
-          ohPackageName: autolinkingConfig?.ohPackageName,
-          harFilePathRelativeToHarmony: harFilePaths[0]
-            .relativeTo(harmonyProjectPath)
-            .toString(),
         });
       }
     );
@@ -216,8 +262,78 @@ export class Autolinking {
     };
   }
 
+  /**
+   * 解析 HAR 文件的 ohPackage 名称
+   * @param harFilePaths HAR 文件路径列表
+   * @param ohPackageNameConfig ohPackageName 配置（字符串或数组）
+   * @param npmPackageName npm 包名
+   * @param harmonyProjectPath Harmony 项目路径
+   */
+  private resolveHarPackageNames(
+    harFilePaths: AbsolutePath[],
+    ohPackageNameConfig: OhPackageNameConfig | undefined,
+    npmPackageName: string,
+    harmonyProjectPath: AbsolutePath
+  ): ResolvedHar[] {
+    // 默认的 ohPackage 名称
+    const defaultOhPackageName = this.npmPackageNameToOHPackageName(npmPackageName);
+
+    // 构建 HAR 文件名到路径的映射
+    const harPathMap = new Map<string, AbsolutePath>();
+    for (const harPath of harFilePaths) {
+      const harFileName = pathUtils.basename(harPath.toString());
+      harPathMap.set(harFileName, harPath);
+    }
+
+    // 辅助函数：创建 ResolvedHar
+    const createResolvedHar = (harPath: AbsolutePath, ohPkgName: string): ResolvedHar => ({
+      harFilePathRelativeToHarmony: harPath.relativeTo(harmonyProjectPath).toString(),
+      ohPackageName: ohPkgName,
+    });
+
+    const result: ResolvedHar[] = [];
+    const processedHarNames = new Set<string>();
+
+    // 1. 如果是数组配置，按照配置顺序处理
+    if (Array.isArray(ohPackageNameConfig)) {
+      for (const mapping of ohPackageNameConfig) {
+        const harPath = harPathMap.get(mapping.harName);
+        if (harPath) {
+          result.push(createResolvedHar(harPath, mapping.packageName));
+          processedHarNames.add(mapping.harName);
+        }
+      }
+    }
+
+    // 2. 处理未在配置中指定的 HAR（按文件系统扫描顺序）
+    for (const harPath of harFilePaths) {
+      const harFileName = pathUtils.basename(harPath.toString());
+      if (processedHarNames.has(harFileName)) {
+        continue;
+      }
+
+      // 如果是字符串格式，所有 HAR 共用
+      if (typeof ohPackageNameConfig === 'string') {
+        const suffix = harFilePaths.length > 1
+          ? '--' + pathUtils.basename(harFileName, '.har')
+          : '';
+        result.push(createResolvedHar(harPath, ohPackageNameConfig + suffix));
+        continue;
+      }
+
+      // 默认命名规则
+      const suffix = harFilePaths.length > 1
+        ? '--' + pathUtils.basename(harFileName, '.har')
+        : '';
+      result.push(createResolvedHar(harPath, defaultOhPackageName + suffix));
+    }
+
+    return result;
+  }
+
   evaluate(input: AutolinkingInput): AutolinkingOutput {
-    const autolinkableLibraries: Required<AutolinkableLibrary>[] =
+    // 处理库配置，应用默认值
+    const autolinkableLibraries: (Required<Omit<AutolinkableLibrary, 'resolvedHars'>> & { resolvedHars: ResolvedHar[] })[] =
       input.autolinkableLibraries.map((lib) => {
         return {
           ...lib,
@@ -230,9 +346,7 @@ export class Autolinking {
           cmakeLibraryTargetName:
             lib.cmakeLibraryTargetName ??
             this.npmPackageNameToCMakeLibraryTargetName(lib.npmPackageName),
-          ohPackageName:
-            lib.ohPackageName ??
-            this.npmPackageNameToOHPackageName(lib.npmPackageName),
+          resolvedHars: lib.resolvedHars,
         };
       });
     autolinkableLibraries.sort((a, b) => {
@@ -240,10 +354,13 @@ export class Autolinking {
       if (a.npmPackageName > b.npmPackageName) return 1;
       return 0;
     });
-    const ohPackage = JSON5.parse(input.ohPackagePathAndContent[1]);
-    const autolinkableHarFilePathsRelativeToHarmony = autolinkableLibraries.map(
-      (lib) => lib.harFilePathRelativeToHarmony
+
+    // 收集所有可链接的 HAR 文件路径
+    const autolinkableHarFilePathsRelativeToHarmony = autolinkableLibraries.flatMap(
+      (lib) => lib.resolvedHars.map((har) => har.harFilePathRelativeToHarmony)
     );
+
+    const ohPackage = JSON5.parse(input.ohPackagePathAndContent[1]);
     const unmanagedNativeDependencySpecifierByName: Record<
       string,
       DependencySpecifier
@@ -276,11 +393,27 @@ export class Autolinking {
         }
       }
     );
+
+    // 为每个 HAR 生成依赖条目
     const managedNativeDependencySpecifierByName: Record<string, string> = {};
     for (const library of autolinkableLibraries) {
-      managedNativeDependencySpecifierByName[library.ohPackageName] =
-        `file:${library.harFilePathRelativeToHarmony}`.split(pathUtils.sep).join('/');
+      for (const har of library.resolvedHars) {
+        managedNativeDependencySpecifierByName[har.ohPackageName] =
+          `file:${har.harFilePathRelativeToHarmony}`.split(pathUtils.sep).join('/');
+      }
     }
+
+    // 为模板准备数据：每个库需要生成 import 语句
+    // 由于所有 HAR 共享同一个 Package 类名，每个库只需要一个 import
+    const templateLibraries = autolinkableLibraries.map((lib) => {
+      // 使用第一个 HAR 的 ohPackageName 作为 import 来源
+      const primaryOhPackageName = lib.resolvedHars[0]?.ohPackageName ?? '';
+      return {
+        ...lib,
+        ohPackageName: primaryOhPackageName,
+      };
+    });
+
     return {
       skippedLibraryNpmPackageNames: input.skippedLibraryNpmPackageNames,
       linkedLibraryNpmPackageNames: autolinkableLibraries.map(
@@ -290,19 +423,19 @@ export class Autolinking {
       cppRNOHPackagesFactoryPathAndContent: [
         input.cppRNOHPackagesFactoryPath,
         Mustache.render(CPP_RNOH_PACKAGES_FACTORY_TEMPLATE, {
-          libraries: autolinkableLibraries,
+          libraries: templateLibraries,
         }),
       ],
       etsRNOHPackagesFactoryPathAndContent: [
         input.etsRNOHPackagesFactoryPath,
         Mustache.render(ETS_RNOH_PACKAGES_FACTORY_TEMPLATE, {
-          libraries: autolinkableLibraries,
+          libraries: templateLibraries,
         }),
       ],
       cmakeAutolinkingPathAndContent: [
         input.cmakeAutolinkingPath,
         Mustache.render(CMAKE_AUTOLINKING_TEMPLATE, {
-          libraries: autolinkableLibraries,
+          libraries: templateLibraries,
         }),
       ],
       ohPackagePathAndContent: [
