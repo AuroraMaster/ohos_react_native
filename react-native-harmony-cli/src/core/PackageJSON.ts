@@ -9,11 +9,23 @@ import { CodegenConfig, RawCodegenConfig } from './CodegenConfig';
 import { DescriptiveError } from './DescriptiveError';
 import { FS } from './FileSystem';
 
+/**
+ * ohPackageName 数组配置项类型
+ * 用于将 HAR 文件名映射到指定的 ohPackage 名
+ */
+type OhPackageNameMapping = {
+  harName: string;
+  packageName: string;
+};
+
 type RawAutolinkingConfig = {
   etsPackageClassName?: string;
   cppPackageClassName?: string;
   cmakeLibraryTargetName?: string;
-  ohPackageName?: string;
+  // ohPackageName 支持字符串（兼容旧格式）或数组（多 HAR 匹配）
+  ohPackageName?: string | OhPackageNameMapping[];
+  // HAR 扫描根目录（相对于包根目录），默认为 'harmony'
+  mainHarPath?: string;
 };
 
 export class PackageJSON {
