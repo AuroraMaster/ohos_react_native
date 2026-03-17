@@ -54,8 +54,51 @@ npm install <library-with-native-dependencies> --save
 - **cmakeLibraryTargetName**：动态链接库的名字，如果不指定该字段，会默认根据 `package.json` 中的 `name` 字段生成，生成规则为：rnoh__+[组织名]+[包名]，如：`third-party-library-sample` 会转换成 `rnoh__third_party_library_sample`；
 
 - **ohPackageName**：ohos 模块的名字，推荐使用 har 包中 `oh-package.json5` 的 `name` 字段，部分场景中DevEco会严格校验这个名称。如果不指定该字段，会默认根据 `package.json` 中的 `name` 字段生成，生成规则为：@rnoh/+[组织名]+--+[包名]，如：`third-party-library-sample` 会转换成 `@rnoh/third-party-library-sample`；
+   ```json
+  {
+    "harmony": {
+      "autolinking": {
+        "ohPackageName": "@rnoh/third-party-library-sample"
+      }
+    }
+  }
+  ```
 
-如果您的代码中以上4个名称都符合默认规则，可将 `harmony.autolinking` 设置成 `true`。
+  支持多 HAR 包配置（数组格式）：当三方库包含多个 HAR 文件时，可以使用数组格式为每个 HAR 指定不同的 ohPackage 名称：
+
+  ```json
+  {
+    "harmony": {
+      "autolinking": {
+        "ohPackageName": [
+          { "harName": "main.har", "packageName": "@scope/my-library" },
+          { "harName": "sdk.har", "packageName": "@scope/my-library-sdk" }
+        ]
+      }
+    }
+  }
+  ```
+
+  - `harName`：HAR 文件名（仅文件名，不含路径）
+  - `packageName`：对应的 ohPackage 名称
+  - 配置顺序：数组中的第一个 HAR 被视为主 HAR，用于生成 CMake `add_subdirectory` 和 import 语句
+  - 未匹配的 HAR 使用默认命名规则：`@rnoh/{npm-pkg-name}--{har-name}`
+
+- **mainHarPath**：自定义 HAR 扫描路径，默认为 `harmony`。如果 HAR 文件不在默认的 `harmony` 目录下，可以通过此字段指定：
+
+  ```json
+  {
+    "harmony": {
+      "autolinking": {
+        "mainHarPath": "custom/path/to/hars"
+      }
+    }
+  }
+  ```
+
+  - 支持递归扫描指定目录及其子目录下的所有 `.har` 文件
+
+如果您的代码中以上名称都符合默认规则且只有单个 HAR 文件，可将 `harmony.autolinking` 设置成 `true`。
 
 ### har 包的要求
 
@@ -67,7 +110,11 @@ npm install <library-with-native-dependencies> --save
     export { ThirdPartyLibrarySamplePackage as default } from './src/main/ets/ThirdPartyLibrarySamplePackage';
     ```
 
-2. har 包需要放在 `[三方库]/harmony` 目录下
+2. har 包位置要求
+
+    - 默认情况下，har 包需要放在 `[三方库]/harmony` 目录下
+    - 如果配置了 `mainHarPath`，则放在指定的目录下
+    - autolinking 会递归扫描目录及其子目录下的所有 `.har` 文件
 
 ### 注册自定义TurboModule和ArkTS组件
 
