@@ -689,3 +689,121 @@ it('should use default naming with suffix for unmatched HARs when ohPackageName 
   // unmatched.har should use default naming with suffix
   expect(ohPackageContent).toContain('@rnoh/partial-mapping-package--unmatched');
 });
+
+it('should support remote dependency with version field', async () => {
+  const { runAutolinking, memFS } = createAutolinking({
+    fsStructure: {
+      ...baseFileStructure,
+      node_modules: {
+        'remote-lib': {
+          harmony: {
+            'remote.har': '',
+          },
+          'package.json': JSON.stringify({
+            name: 'remote-lib',
+            harmony: {
+              autolinking: {
+                ohPackageName: [
+                  { harName: 'remote.har', packageName: '@ohos/remote-lib', version: '1.0.0' }
+                ],
+                etsPackageClassName: 'RemoteLibPackage',
+                cppPackageClassName: 'RemoteLibPackage',
+              },
+            },
+          }),
+        },
+      },
+    },
+  });
+
+  const output = await runAutolinking();
+
+  const ohPackageContent = memFS.readTextSync(output.ohPackagePath);
+  // Should use version number instead of file: path
+  expect(ohPackageContent).toContain('"@ohos/remote-lib": "1.0.0"');
+  expect(ohPackageContent).not.toContain('file:');
+
+  // ETS and C++ templates should still work correctly
+  const etsContent = memFS.readTextSync(output.etsRNOHPackagesFactoryPath);
+  expect(etsContent).toContain('import RemoteLibPackage from \'@ohos/remote-lib\'');
+
+  const cppContent = memFS.readTextSync(output.cppRNOHPackagesFactoryPath);
+  expect(cppContent).toContain('#include "RemoteLibPackage.h"');
+});
+
+it('should support mixed local and remote dependencies in same package', async () => {
+  const { runAutolinking, memFS } = createAutolinking({
+    fsStructure: {
+      ...baseFileStructure,
+      node_modules: {
+        'mixed-deps-package': {
+          harmony: {
+            'local.har': '',
+            'remote.har': '',
+          },
+          'package.json': JSON.stringify({
+            name: 'mixed-deps-package',
+            harmony: {
+              autolinking: {
+                ohPackageName: [
+                  // Local dependency (no version)
+                  { harName: 'local.har', packageName: '@rnoh/mixed--local' },
+                  // Remote dependency (with version)
+                  { harName: 'remote.har', packageName: '@ohos/mixed--remote', version: '2.0.0' }
+                ],
+                etsPackageClassName: 'MixedDepsPackage',
+                cppPackageClassName: 'MixedDepsPackage',
+              },
+            },
+          }),
+        },
+      },
+    },
+  });
+
+  const output = await runAutolinking();
+
+  const ohPackageContent = memFS.readTextSync(output.ohPackagePath);
+  // Local dependency should use file: path
+  expect(ohPackageContent).toContain('"@rnoh/mixed--local": "file:');
+  expect(ohPackageContent).toContain('harmony/local.har');
+  // Remote dependency should use version number
+  expect(ohPackageContent).toContain('"@ohos/mixed--remote": "2.0.0"');
+});
+
+it('should support multiple remote dependencies', async () => {
+  const { runAutolinking, memFS } = createAutolinking({
+    fsStructure: {
+      ...baseFileStructure,
+      node_modules: {
+        'multi-remote-package': {
+          harmony: {
+            'core.har': '',
+            'ui.har': '',
+          },
+          'package.json': JSON.stringify({
+            name: 'multi-remote-package',
+            harmony: {
+              autolinking: {
+                ohPackageName: [
+                  { harName: 'core.har', packageName: '@ohos/multi--core', version: '^1.0.0' },
+                  { harName: 'ui.har', packageName: '@ohos/multi--ui', version: '^2.0.0' }
+                ],
+                etsPackageClassName: 'MultiRemotePackage',
+                cppPackageClassName: 'MultiRemotePackage',
+              },
+            },
+          }),
+        },
+      },
+    },
+  });
+
+  const output = await runAutolinking();
+
+  const ohPackageContent = memFS.readTextSync(output.ohPackagePath);
+  // Both should use version numbers
+  expect(ohPackageContent).toContain('"@ohos/multi--core": "^1.0.0"');
+  expect(ohPackageContent).toContain('"@ohos/multi--ui": "^2.0.0"');
+  expect(ohPackageContent).not.toContain('file:');
+});
