@@ -27,7 +27,7 @@ module.exports = {
     return require('./Libraries/ReactNative/AppRegistry');
   },
   get AppState() {
-    return require('react-native/Libraries/AppState/AppState');
+    return require('./Libraries/AppState/AppState');
   },
   get BackHandler() {
     return require('./Libraries/Utilities/BackHandler');
