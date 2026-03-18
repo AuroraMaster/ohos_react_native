@@ -84,6 +84,25 @@ npm install <library-with-native-dependencies> --save
   - 配置顺序：数组中的第一个 HAR 被视为主 HAR，用于生成 CMake `add_subdirectory` 和 import 语句
   - 未匹配的 HAR 使用默认命名规则：`@rnoh/{npm-pkg-name}--{har-name}`
 
+  远程依赖支持：数组格式支持通过 `version` 字段配置远程依赖，从 OHPM 仓库获取 HAR 包：
+
+  ```json
+  {
+    "harmony": {
+      "autolinking": {
+        "ohPackageName": [
+          { "harName": "local.har", "packageName": "@scope/local-lib" },
+          { "harName": "remote.har", "packageName": "@ohos/remote-lib", "version": "1.0.0" }
+        ]
+      }
+    }
+  }
+  ```
+
+  - `version`：可选字段，指定版本号
+    - 有 `version` 时：生成版本号依赖（如 `"@ohos/remote-lib": "1.0.0"`），`ohpm install` 会从远程仓库下载
+    - 无 `version` 时：生成 `file:` 路径依赖（如 `"@scope/local-lib": "file:../node_modules/..."`），从本地 node_modules 获取
+
 - **mainHarPath**：自定义 HAR 扫描路径，默认为 `harmony`。如果 HAR 文件不在默认的 `harmony` 目录下，可以通过此字段指定：
 
   ```json

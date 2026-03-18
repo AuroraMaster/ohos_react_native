@@ -39,6 +39,10 @@ export type AutolinkingConfig = {
 type OhPackageNameMapping = {
   harName: string;
   packageName: string;
+  /**
+   * 可选版本号，指定后使用远程依赖（版本号）而非本地依赖（file: 路径）
+   */
+  version?: string;
 };
 
 /**
@@ -55,6 +59,10 @@ type OhPackageNameConfig = string | OhPackageNameMapping[];
 type ResolvedHar = {
   harFilePathRelativeToHarmony: string;
   ohPackageName: string;
+  /**
+   * 可选版本号，有值时使用远程依赖（版本号）而非本地依赖（file: 路径）
+   */
+  version?: string;
 };
 
 /**
@@ -286,9 +294,10 @@ export class Autolinking {
     }
 
     // 辅助函数：创建 ResolvedHar
-    const createResolvedHar = (harPath: AbsolutePath, ohPkgName: string): ResolvedHar => ({
+    const createResolvedHar = (harPath: AbsolutePath, ohPkgName: string, version?: string): ResolvedHar => ({
       harFilePathRelativeToHarmony: harPath.relativeTo(harmonyProjectPath).toString(),
       ohPackageName: ohPkgName,
+      version,
     });
 
     const result: ResolvedHar[] = [];
@@ -299,7 +308,7 @@ export class Autolinking {
       for (const mapping of ohPackageNameConfig) {
         const harPath = harPathMap.get(mapping.harName);
         if (harPath) {
-          result.push(createResolvedHar(harPath, mapping.packageName));
+          result.push(createResolvedHar(harPath, mapping.packageName, mapping.version));
           processedHarNames.add(mapping.harName);
         }
       }
@@ -398,7 +407,9 @@ export class Autolinking {
     const managedNativeDependencySpecifierByName: Record<string, string> = {};
     for (const library of autolinkableLibraries) {
       for (const har of library.resolvedHars) {
+        // 如果有 version 字段，使用版本号（远程依赖）；否则使用 file: 路径（本地依赖）
         managedNativeDependencySpecifierByName[har.ohPackageName] =
+          har.version ??
           `file:${har.harFilePathRelativeToHarmony}`.split(pathUtils.sep).join('/');
       }
     }
