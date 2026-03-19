@@ -73,7 +73,8 @@ export class SyncTask {
     }
     // The codegen and autolinking will switch to the parent directory of node_modules to execute.
     const cwd = pathUtils.resolve(nodeModulesPath, '..');
-    const harmonyProjectPathRelativeToCWD = pathUtils.relative(cwd, './');
+    // 当 node_modules 在 harmony 目录内时，path.relative 返回空字符串，需要转换为 '.'
+    const harmonyProjectPathRelativeToCWD = pathUtils.relative(cwd, './') || '.';
     const projectRootPathRelativeToCWD = pathUtils.relative(
       cwd,
       options.codegen?.projectRootPath || '../'

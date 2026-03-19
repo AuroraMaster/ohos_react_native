@@ -364,16 +364,17 @@ export class Autolinking {
       return 0;
     });
 
-    // 收集所有可链接的 HAR 文件路径
-    const autolinkableHarFilePathsRelativeToHarmony = autolinkableLibraries.flatMap(
-      (lib) => lib.resolvedHars.map((har) => har.harFilePathRelativeToHarmony)
-    );
-
     const ohPackage = JSON5.parse(input.ohPackagePathAndContent[1]);
     const unmanagedNativeDependencySpecifierByName: Record<
       string,
       DependencySpecifier
     > = {};
+
+    // 收集所有配置了 autolinking 的 npm 包名
+    const autolinkedNpmPackageNames = new Set(
+      autolinkableLibraries.map(lib => lib.npmPackageName)
+    );
+
     Object.entries<DependencySpecifier>(ohPackage.dependencies).forEach(
       ([name, dependencySpecifier]) => {
         if (
@@ -382,23 +383,27 @@ export class Autolinking {
             dependencySpecifier.includes('node_modules')
           )
         ) {
+          // 不是 file:node_modules 格式 → 非托管，保留
           unmanagedNativeDependencySpecifierByName[name] = dependencySpecifier;
         } else {
-          const harFilePathRelativeToHarmony = dependencySpecifier.replace(
-            'file:',
-            ''
-          );
-          if (
-            !autolinkableHarFilePathsRelativeToHarmony.includes(
-              pathUtils.normalize(harFilePathRelativeToHarmony)
-            ) &&
-            input.nodeModuleHarFilePathsRelativeToHarmony.includes(
-              pathUtils.normalize(harFilePathRelativeToHarmony)
-            )
-          ) {
-            unmanagedNativeDependencySpecifierByName[name] =
-              dependencySpecifier;
+          // 是 file:node_modules 格式，判断对应的 npm 包是否配置了 autolinking
+          const npmPackageName = this.extractNpmPackageNameFromPath(dependencySpecifier);
+
+          if (!npmPackageName || !autolinkedNpmPackageNames.has(npmPackageName)) {
+            // 没有配置 autolinking → 需要检查 HAR 文件是否实际存在
+            const harPath = dependencySpecifier.replace('file:', '');
+            const normalizedHarPath = pathUtils.normalize(harPath);
+            // 依赖路径是相对于 harmony 项目的，oh-package.json5 所在目录就是 harmony 项目目录
+            const harmonyProjectPath = input.ohPackagePathAndContent[0].getDirectoryPath();
+            const absoluteHarPath = harmonyProjectPath.copyWithNewSegment(normalizedHarPath);
+
+            if (this.fs.existsSync(absoluteHarPath)) {
+              // HAR 文件存在 → 非托管，保留原依赖
+              unmanagedNativeDependencySpecifierByName[name] = dependencySpecifier;
+            }
+            // HAR 文件不存在 → 不保留（清理无效依赖）
           }
+          // 如果配置了 autolinking → 不保留（后面会用新生成的值替换）
         }
       }
     );
@@ -490,6 +495,41 @@ export class Autolinking {
       return '@rnoh/' + Case.kebab(scopeName) + '--' + Case.kebab(packageName);
     }
     return '@rnoh/' + Case.kebab(fullNpmPackageName);
+  }
+
+  /**
+   * 从依赖路径中提取 npm 包名
+   * @param dependencySpecifier 依赖路径，如 "file:../node_modules/@scope/package/harmony/xxx.har"
+   * @returns npm 包名，如 "@scope/package"；如果无法解析则返回 null
+   */
+  private extractNpmPackageNameFromPath(dependencySpecifier: string): string | null {
+    // 移除 file: 前缀
+    const path = dependencySpecifier.replace(/^file:/, '');
+
+    // 查找 node_modules 后面的部分
+    const nodeModulesIndex = path.indexOf('node_modules/');
+    if (nodeModulesIndex === -1) {
+      return null;
+    }
+
+    const afterNodeModules = path.substring(nodeModulesIndex + 'node_modules/'.length);
+
+    // 检查是否是 scoped package (@scope/package)
+    if (afterNodeModules.startsWith('@')) {
+      const parts = afterNodeModules.split('/');
+      if (parts.length >= 2) {
+        return `${parts[0]}/${parts[1]}`;  // @scope/package
+      }
+    } else {
+      // 非 scoped package
+      const firstSlash = afterNodeModules.indexOf('/');
+      if (firstSlash !== -1) {
+        return afterNodeModules.substring(0, firstSlash);
+      }
+      return afterNodeModules || null;
+    }
+
+    return null;
   }
 
   saveAndLogOutput(output: AutolinkingOutput) {
