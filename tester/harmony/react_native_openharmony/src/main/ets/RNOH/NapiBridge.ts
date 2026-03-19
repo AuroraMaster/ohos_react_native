@@ -398,8 +398,8 @@ export class NapiBridge {
       getMetadata: (name: string) => handler.getMetadata(name),
       getSDKApiVersion: () => deviceInfo.sdkApiVersion,
     });
-    const isSpecialEquipment = this.getDeviceInfo();
-    this.libRNOHApp?.setDeviceInfo(isSpecialEquipment);
+    const deviceType = this.getDeviceInfo();
+    this.libRNOHApp?.setDeviceInfo(deviceType);
   }
 
   postMessageToCpp(name: string, payload: any) {
@@ -436,14 +436,14 @@ export class NapiBridge {
     return this.unwrapResult(result);
   }
 
-  getDeviceInfo(): boolean {
-    const deviceType: string = deviceInfo.deviceType; // 'phone' | 'tablet' | 'pc'
-    let isSpecialEquipment = false;
-    if (deviceType === 'tablet' || deviceType === 'pc') {
-      isSpecialEquipment = true;
-    } else if (deviceType === 'phone') {
-      isSpecialEquipment = display.isFoldable();
+  getDeviceInfo(): string {
+    const originalDeviceType: string = deviceInfo.deviceType; // 'phone' | 'tablet' | 'pc'
+    let deviceType = 'phone';
+    if (originalDeviceType === 'phone' && display.isFoldable()) {
+      deviceType = 'isFoldableDevice';
+    } else {
+      deviceType = originalDeviceType;
     }
-    return isSpecialEquipment;
+    return deviceType;
   }
 }

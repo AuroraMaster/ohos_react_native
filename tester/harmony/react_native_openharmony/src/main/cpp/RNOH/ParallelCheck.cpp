@@ -15,7 +15,7 @@ namespace rnoh {
 
 bool PARALLEL_RUNTIME_SWITCH = false;
 
-bool IS_SPECIAL_EQUIPMENT = false;
+std::string DEVICE_TYPE = "phone";
 
 void SetParallelizationEnabled(bool enabled) {
   bool oldValue = PARALLEL_RUNTIME_SWITCH;
@@ -36,8 +36,8 @@ void SetParallelizationEnabled(bool enabled) {
   }
 }
 
-void setDeviceInfo(bool isSpecialEquipment) {
-  IS_SPECIAL_EQUIPMENT = isSpecialEquipment;
+void setDeviceInfo(std::string deviceType) {
+  DEVICE_TYPE = deviceType;
 }
 
 } // namespace rnoh

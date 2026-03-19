@@ -844,8 +844,8 @@ static napi_value setDeviceInfo(napi_env env, napi_callback_info info) {
   return invoke(env, [&] {
     ArkJS arkJS(env);
     auto args = arkJS.getCallbackArgs(info, 1);
-    auto isSpecialEquipment = arkJS.getBoolean(args[0]);
-    rnoh::setDeviceInfo(isSpecialEquipment);
+    auto deviceType = arkJS.getString(args[0]);
+    rnoh::setDeviceInfo(deviceType);
     return arkJS.getUndefined();
   });
 }

@@ -515,7 +515,8 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
                   });
             };
 
-        if (IsParallelizationWorkable()) {
+        if (IsParallelizationWorkable() &&
+            (deviceType() != "isFoldableDevice")) {
           facebook::react::SystraceSection s(
               "#RNOH::SchedulerDelegate::didMount size:",
               transaction->getMutations().size());
@@ -569,8 +570,9 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
           const auto surfaceId = transaction->getSurfaceId();
           const bool inConfigChangeWindow =
               splitMutation && isInConfigChangeWindow();
-          const bool inLoadWindow = IsSpecialEquipment() || (!splitMutation) ||
-              inConfigChangeWindow || isInInitialLoadWindow(surfaceId);
+          const bool inLoadWindow = (deviceType() != "phone") ||
+              (!splitMutation) || inConfigChangeWindow ||
+              isInInitialLoadWindow(surfaceId);
           if (inLoadWindow) {
             auto allOther = std::move(otherMutationList);
             performOnMainThread(
