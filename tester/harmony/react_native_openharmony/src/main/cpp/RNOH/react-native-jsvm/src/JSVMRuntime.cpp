@@ -219,7 +219,7 @@ Instrumentation& JSVMRuntime::instrumentation()
 void JSVMRuntime::JSVMInstrumentation::collectGarbage(std::string cause)
 {
     DFX();
-    if (cause.find("TRIM_MEMORY_BACKGROUND") != std::string::npos||
+    if (cause.find("TRIM_MEMORY_BACKGROUND") != std::string::npos ||
         cause.find("TRIM_MEMORY_RUNNING_CRITICAL") != std::string::npos) {
       DLOG(INFO) << "JSVMInstrumentation::collectGarbage cause=" << cause
                  << ", mappedLevel=CRITICAL";
