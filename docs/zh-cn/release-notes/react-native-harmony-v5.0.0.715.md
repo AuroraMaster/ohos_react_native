@@ -1,9 +1,9 @@
 # React Native 鸿蒙化版本信息
 当前React Native鸿蒙版本基于社区RN 0.72.5进行适配，发布版本信息如下：
-| 名称                          | 版本号                            | 是否发布npm仓 |
-| ----------------------------- | -------------------------------|------------- |
-| react-native-harmony        | 0.72.38 |   已发布     |
-| react-native-harmony-cli    | 0.0.27 |   已发布     |
+| 名称                          | 版本号                            | 是否发布npm仓 | npm地址 |
+| ----------------------------- | -------------------------------|------------- |---------|
+| react-native-harmony        | 0.72.38 |   已发布     |    https://www.npmjs.com/package/@react-native-oh/react-native-harmony/v/0.72.38   |
+| react-native-harmony-cli    | 0.0.27 |   已发布     | https://www.npmjs.com/package/@react-native-oh/react-native-harmony-cli/v/0.0.27    |
 | rnoh                          | 5.0.0.715 |   已发布     |
 | rnoh_release                  | 5.0.0.715 |   已发布     |
 

@@ -465,7 +465,7 @@ You can use the Profiler in DevEco IDE to analyze application performance. For d
 
 ### Latest CAPI Version of a Third-Party Library
 
-During application development, if a third-party library is used, ensure that its latest version is used. This not only facilitates function update, but also improves performance and security. For details about how to obtain the latest **CAPI** version of a third-party library, refer to the [official documentation of third-party libraries](https://gitee.com/react-native-oh-library/usage-docs/tree/master/zh-cn) and related resources.
+During application development, if a third-party library is used, ensure that its latest version is used. This not only facilitates function update, but also improves performance and security. For details about how to obtain the latest **CAPI** version of a third-party library, refer to the [official documentation of third-party libraries](https://gitcode.com/OpenHarmony-RN/usage-docs) and related resources.
 
 ## Application Scenario Optimization
 The purpose of the React rendering mechanism is to efficiently update the DOM to respond to data changes. To achieve this goal, React uses the diff algorithm in the virtual DOM and updates the actual DOM at a proper time.

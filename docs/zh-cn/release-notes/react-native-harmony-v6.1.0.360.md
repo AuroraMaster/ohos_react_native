@@ -4,10 +4,10 @@
 
 | 名称                                           | 版本号    | 是否发布npm仓 | npm地址 |
 | ---------------------------------------------- | --------- |------------- |---------|
-| react-native-harmony.tgz                       | 0.72.128  |   已发布   |   https://www.npmjs.com/package/@react-native-oh/react-native-harmony/v/0.72.128  |
-| react-native-harmony-cli.tgz                   | 0.0.42    |   已发布   |   https://www.npmjs.com/package/@react-native-oh/react-native-harmony-cli/v/0.0.42    |
-| react_native_openharmony-6.1.0.318.har         | 0.72.128  |   已发布   |
-| react_native_openharmony_release-6.1.0.318.har | 6.1.0.318 |   已发布   |
+| react-native-harmony.tgz                       | 0.72.129  |   暂未发布   |  内部转测版本  |
+| react-native-harmony-cli.tgz                   | 0.0.43    |   暂未发布   |  内部转测版本  |
+| react_native_openharmony-6.1.0.360.har         | 0.72.129  |   暂未发布   |
+| react_native_openharmony_release-6.1.0.360.har | 6.1.0.360 |   暂未发布   |
 
 配套IDE、SDK版本和手机ROM:
 
