@@ -529,19 +529,29 @@ void ScrollViewComponentInstance::updateContentClippedSubviews() {
 facebook::react::Float
 ScrollViewComponentInstance::getFrictionFromDecelerationRate(
     facebook::react::Float decelerationRate) {
-  // default deceleration rate and friction values differ between ArkUI and RN
-  // so we adapt the decelerationRate accordingly to resemble iOS behaviour
-  // iOS's UIScrollView supports only two values of decelerationRate
-  // called 'normal' and 'fast' and maps all other to the nearest of those two
-  facebook::react::Float IOS_NORMAL = 0.998;
-  facebook::react::Float IOS_FAST = 0.99;
-  facebook::react::Float ARKUI_FAST = 2;
-  facebook::react::Float ARKUI_NORMAL = 0.75;
-  if (decelerationRate < (IOS_NORMAL + IOS_FAST) / 2) {
-    return ARKUI_FAST;
-  } else {
+  constexpr facebook::react::Float ARKUI_NORMAL = 0.75f;
+  constexpr facebook::react::Float ARKUI_FAST = 2.0f;
+  constexpr facebook::react::Float HARMONY_NORMAL = 0.997f;
+  constexpr facebook::react::Float HARMONY_FAST = 0.992f;
+  constexpr facebook::react::Float kRateEpsilon = 0.00001f;
+  constexpr facebook::react::Float kMinFriction = 0.1f;
+
+  // Guard invalid input.
+  if (!std::isfinite(decelerationRate) || decelerationRate < 0.0f || decelerationRate >= 1.0f) {
     return ARKUI_NORMAL;
   }
+
+  // Fast path for preset rates.
+  if (std::abs(decelerationRate - HARMONY_NORMAL) < kRateEpsilon) {
+    return ARKUI_NORMAL;
+  }
+  if (std::abs(decelerationRate - HARMONY_FAST) < kRateEpsilon) {
+    return ARKUI_FAST;
+  }
+
+  // Apply mapping with lower bound.
+  auto friction = 250.0f * (1.0f - decelerationRate);
+  return friction < kMinFriction ? kMinFriction : friction;
 }
 
 void ScrollViewComponentInstance::scrollToEnd(bool animated) {

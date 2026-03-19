@@ -44,6 +44,7 @@ class ScrollNode : public ArkUINode {
   ScrollNode& setHorizontal(bool horizontal);
   ScrollNode& setEnableScrollInteraction(bool enableScrollInteraction);
   ScrollNode& setFriction(float friction);
+  ScrollNode& setFlingSpeedLimit(float limit);
   ScrollNode& setEdgeEffect(bool bounces, bool alwaysBounces);
   ScrollNode& setScrollBarDisplayMode(
       ArkUI_ScrollBarDisplayMode scrollBarDisplayMode);

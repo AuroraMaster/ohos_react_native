@@ -14,9 +14,9 @@ function processDecelerationRate(
   decelerationRate: number | "normal" | "fast"
 ): number {
   if (decelerationRate === "normal") {
-    return 0.998;
+    return 0.997;
   } else if (decelerationRate === "fast") {
-    return 0.99;
+    return 0.992;
   }
   return decelerationRate;
 }
