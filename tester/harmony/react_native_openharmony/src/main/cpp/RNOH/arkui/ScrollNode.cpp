@@ -25,6 +25,7 @@ ScrollNode::ScrollNode(const ArkUINode::Context::Shared& context)
   for (auto eventType : SCROLL_NODE_EVENT_TYPES) {
     registerNodeEvent(eventType);
   }
+  setFlingSpeedLimit(6000.0f);
 }
 
 ScrollNode::~ScrollNode() {
@@ -160,6 +161,13 @@ ScrollNode& ScrollNode::setFriction(float friction) {
   ArkUI_NumberValue value[] = {{.f32 = friction}};
   ArkUI_AttributeItem item = {value, sizeof(value) / sizeof(ArkUI_NumberValue)};
   m_nodeApi->setAttribute(m_nodeHandle, NODE_SCROLL_FRICTION, &item);
+  return *this;
+}
+
+ScrollNode& ScrollNode::setFlingSpeedLimit(float limit) {
+  ArkUI_NumberValue value[] = {{.f32 = limit}};
+  ArkUI_AttributeItem item = {value, sizeof(value) / sizeof(ArkUI_NumberValue)};
+  m_nodeApi->setAttribute(m_nodeHandle, NODE_SCROLL_FLING_SPEED_LIMIT, &item);
   return *this;
 }
 
