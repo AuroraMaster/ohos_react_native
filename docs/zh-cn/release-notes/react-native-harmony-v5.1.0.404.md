@@ -2,10 +2,10 @@
 
 当前React Native鸿蒙版本基于社区RN 0.72.5进行适配，发布版本信息如下：
 
-| 名称                          | 版本号                            | 是否发布npm仓 |
-| ----------------------------- | -------------------------------|------------- |
-| react-native-harmony.tgz        | 0.72.67 |   已发布     |
-| react-native-harmony-cli.tgz    | 0.0.28 |   已发布     |
+| 名称                          | 版本号                            | 是否发布npm仓 | npm地址 |
+| ----------------------------- | -------------------------------|------------- |---------|
+| react-native-harmony.tgz        | 0.72.67 |   已发布     |    https://www.npmjs.com/package/@react-native-oh/react-native-harmony/v/0.72.67   |
+| react-native-harmony-cli.tgz    | 0.0.28 |   已发布     | https://www.npmjs.com/package/@react-native-oh/react-native-harmony-cli/v/0.0.28    |
 | react_native_openharmony-5.1.0.404.har                          | 0.72.67 |   已发布     |
 | react_native_openharmony_release-5.1.0.404.har                  | 5.1.0.404 |   已发布     |
 

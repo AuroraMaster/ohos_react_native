@@ -11,7 +11,7 @@
 - [功能开发](./功能开发.md)
 - [性能调优](./性能调优.md)
 - [调试调测](./调试调测.md)
-- [三方库接入](https://gitee.com/react-native-oh-library/usage-docs#rnoh-%E4%B8%89%E6%96%B9%E5%BA%93%E6%80%BB%E8%A7%88)
+- [三方库接入](https://gitcode.com/OpenHarmony-RN/usage-docs)
 - [常见开发场景](./常见开发场景.md)
 - [场景化最佳实践](./场景化最佳实践.md)
 - [FAQ](./FAQ.md)
