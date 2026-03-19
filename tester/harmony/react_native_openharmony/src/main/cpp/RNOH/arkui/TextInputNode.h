@@ -16,6 +16,12 @@ namespace rnoh {
 class TextInputNodeDelegate {
  public:
   virtual ~TextInputNodeDelegate() = default;
+  /**
+   * You only need to overwrite one of these onChange methods, it is recommended to use onChange(std::string text,
+   * std::string extendStr), which supports the input method pinyin preview screen function.
+   * @param text
+   */
+  virtual void onChange(std::string text) {};
   virtual void onChange(std::string text, std::string extendStr = "") {};
   virtual void onBlur() {};
   virtual void onFocus() {};
