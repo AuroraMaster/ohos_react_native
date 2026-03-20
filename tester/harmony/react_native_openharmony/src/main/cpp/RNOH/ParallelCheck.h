@@ -14,24 +14,24 @@ namespace rnoh {
 class RNInstanceCAPI;
 
 extern bool PARALLEL_RUNTIME_SWITCH;
-extern bool IS_SPECIAL_EQUIPMENT;
+extern std::string DEVICE_TYPE;
 
 inline bool GetParallelizationEnabled() {
   return PARALLEL_RUNTIME_SWITCH;
 }
 
-inline bool IsSpecialEquipment() {
-  return IS_SPECIAL_EQUIPMENT;
+// 'phone' | 'tablet' | 'pc' | "isFoldableDevice"
+inline std::string deviceType() {
+  return DEVICE_TYPE;
 }
 
 void SetParallelizationEnabled(bool enabled);
 
-void setDeviceInfo(bool isSpecialEquipment);
+void setDeviceInfo(std::string deviceType);
 
 inline bool IsParallelizationWorkable() {
 #ifdef PARALLELIZATION_ON
-  return IsAtLeastApi22() && GetParallelizationEnabled() &&
-      !IsSpecialEquipment();
+  return IsAtLeastApi22() && GetParallelizationEnabled();
 #else
   return false;
 #endif

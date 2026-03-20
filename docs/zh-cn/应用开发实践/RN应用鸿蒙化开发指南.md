@@ -8,7 +8,7 @@ RN原始社区信息：[https://reactnative.dev/home](https://reactnative.dev/ho
 
 鸿蒙RN社区信息：[https://gitcode.com/openharmony-sig/ohos\_react\_native](https://gitcode.com/openharmony-sig/ohos_react_native)
 
-RN三方库鸿蒙化信息：[https://gitee.com/react-native-oh-library/usage-docs](https://gitee.com/react-native-oh-library/usage-docs)
+RN三方库鸿蒙化信息：[https://gitcode.com/OpenHarmony-RN/usage-docs](https://gitcode.com/OpenHarmony-RN/usage-docs)
 
 业界根据bundle的集成模式将开发RN App主要分为集成模式和分离模式，可参考：[React Native ](https://docs.taro.zone/docs/react-native/)[端开发流程 ](https://docs.taro.zone/docs/react-native/)[| Taro ](https://docs.taro.zone/docs/react-native/)[文档](https://docs.taro.zone/docs/react-native/)。
 

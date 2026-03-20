@@ -61,6 +61,15 @@ export class AppStateTurboModule extends AnyThreadTurboModule {
       },
 
       onMemoryLevel: (level: AbilityConstant.MemoryLevel) => {
+        const MEMORY_LEVEL_NAMES = [
+          'MEMORY_LEVEL_MODERATE',
+          'MEMORY_LEVEL_LOW',
+          'MEMORY_LEVEL_CRITICAL',
+        ];
+        this.ctx.rnInstance.emitDeviceEvent("memoryLevelChange", {
+          level,
+          levelName: MEMORY_LEVEL_NAMES[level] ?? 'UNKNOWN',
+        });
         if (level == AbilityConstant.MemoryLevel.MEMORY_LEVEL_CRITICAL) {
           this.ctx.rnInstance.emitDeviceEvent("memoryWarning", null);
         }
