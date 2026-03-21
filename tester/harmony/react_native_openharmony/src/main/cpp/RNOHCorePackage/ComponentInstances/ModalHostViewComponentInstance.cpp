@@ -11,6 +11,7 @@
 #include <react/renderer/components/rncore/Props.h>
 #include "RNOH/ArkTSBridge.h"
 #include "RNOH/Assert.h"
+#include "RNOH/SchedulerDelegate.h"
 #include "RNOH/arkui/NativeNodeApi.h"
 #include "RNOH/arkui/TouchEventDispatcher.h"
 #include "RNOH/arkui/UIInputEventHandler.h"
@@ -138,6 +139,13 @@ ModalHostViewComponentInstance::ModalHostViewComponentInstance(Context context)
   m_rootStackNode.insertChild(m_rootCustomNode, 0);
 }
 
+ModalHostViewComponentInstance::~ModalHostViewComponentInstance() {
+  if (m_modalVisibilityReported) {
+    SchedulerDelegate::notifyModalVisibilityChanged(false);
+    m_modalVisibilityReported = false;
+  }
+}
+
 void ModalHostViewComponentInstance::setLayout(
     facebook::react::LayoutMetrics layoutMetrics) {
   CppComponentInstance::setLayout(layoutMetrics);
@@ -212,6 +220,10 @@ void ModalHostViewComponentInstance::showDialog() {
 }
 
 void ModalHostViewComponentInstance::onShow() {
+  if (!m_modalVisibilityReported) {
+    SchedulerDelegate::notifyModalVisibilityChanged(true);
+    m_modalVisibilityReported = true;
+  }
   if (m_eventEmitter != nullptr) {
     m_eventEmitter->onShow({});
   }

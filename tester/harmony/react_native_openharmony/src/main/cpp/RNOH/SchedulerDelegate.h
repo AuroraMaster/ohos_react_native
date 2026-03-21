@@ -42,6 +42,7 @@ class SchedulerDelegate final : public facebook::react::SchedulerDelegate {
             std::move(weakPreallocationRequestQueue)){};
 
   static void markConfigurationChange();
+  static void notifyModalVisibilityChanged(bool visible);
 
   void schedulerDidRequestPreliminaryViewAllocation(
       SurfaceId /*surfaceId*/,
