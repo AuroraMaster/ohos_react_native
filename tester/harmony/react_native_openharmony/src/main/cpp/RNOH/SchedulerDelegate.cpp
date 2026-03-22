@@ -7,6 +7,7 @@
 
 #include "SchedulerDelegate.h"
 #include <react/renderer/debug/SystraceSection.h>
+#include "ParallelCheck.h"
 #include "ParallelComponent.h"
 #include "RNOH/FFRTConfig.h"
 #include "RNOH/ParallelCheck.h"
@@ -157,6 +158,7 @@ static std::unordered_map<facebook::react::SurfaceId, SurfaceLoadState>
     g_surfaceLoad;
 
 static std::atomic<int64_t> g_lastConfigChangeMs{0};
+static std::atomic<int32_t> g_activeModalCount{0};
 
 static inline int64_t steadyClockMs() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -170,6 +172,10 @@ static inline bool isInConfigChangeWindow() {
     return false;
   }
   return (steadyClockMs() - last) <= CONFIG_CHANGE_SKIP_WINDOW_MS;
+}
+
+static inline bool shouldDisableSchedulerParallelForModalFold() {
+  return g_activeModalCount.load(std::memory_order_acquire) > 0;
 }
 
 static void doPruneSurfaceLoad(
@@ -485,6 +491,27 @@ void SchedulerDelegate::markConfigurationChange() {
   g_lastConfigChangeMs.store(steadyClockMs(), std::memory_order_release);
 }
 
+void SchedulerDelegate::notifyModalVisibilityChanged(bool visible) {
+  if (visible) {
+    auto current =
+        g_activeModalCount.fetch_add(1, std::memory_order_acq_rel) + 1;
+    return;
+  }
+
+  int32_t current = g_activeModalCount.load(std::memory_order_acquire);
+  while (current > 0 &&
+         !g_activeModalCount.compare_exchange_weak(
+             current,
+             current - 1,
+             std::memory_order_acq_rel,
+             std::memory_order_acquire)) {
+    current = g_activeModalCount.load(std::memory_order_acquire);
+  }
+  if (current <= 0) {
+    return;
+  }
+}
+
 void SchedulerDelegate::schedulerDidFinishTransaction(
     MountingCoordinator::Shared mountingCoordinator) {
   facebook::react::SystraceSection s(
@@ -504,7 +531,10 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
         int taskId = random();
         std::string taskTrace =
             "#RNOH::TaskExecutor::runningTask t" + std::to_string(taskId);
-
+        const auto txId = transaction->getNumber();
+        const bool disableParallelForModal =
+            !shouldDisableSchedulerParallelForModalFold() &&
+            (deviceType() != "phone");
         auto performOnMainThreadNextFrame =
             [this](std::function<void(MountingManager::Shared const&)> task) {
               NextFrameDispatcher::Get().post(
@@ -515,8 +545,7 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
                   });
             };
 
-        if (IsParallelizationWorkable() &&
-            (deviceType() != "isFoldableDevice")) {
+        if (IsParallelizationWorkable()) {
           facebook::react::SystraceSection s(
               "#RNOH::SchedulerDelegate::didMount size:",
               transaction->getMutations().size());
@@ -570,9 +599,8 @@ void SchedulerDelegate::schedulerDidFinishTransaction(
           const auto surfaceId = transaction->getSurfaceId();
           const bool inConfigChangeWindow =
               splitMutation && isInConfigChangeWindow();
-          const bool inLoadWindow = (deviceType() != "phone") ||
-              (!splitMutation) || inConfigChangeWindow ||
-              isInInitialLoadWindow(surfaceId);
+          const bool inLoadWindow = disableParallelForModal ||
+              (!splitMutation) || isInInitialLoadWindow(surfaceId);
           if (inLoadWindow) {
             auto allOther = std::move(otherMutationList);
             performOnMainThread(

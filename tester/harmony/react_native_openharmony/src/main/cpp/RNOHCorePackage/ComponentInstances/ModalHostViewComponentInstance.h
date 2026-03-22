@@ -32,6 +32,7 @@ class ModalHostViewComponentInstance
   std::shared_ptr<UIInputEventHandler> m_touchHandler;
   std::shared_ptr<ArkTSMessageHandler> m_displaySizeChangeHandler;
   std::optional<ScreenOrientation> m_screenOrientation;
+  bool m_modalVisibilityReported{false};
 
  private:
   void updateDisplaySize(
@@ -45,7 +46,8 @@ class ModalHostViewComponentInstance
 
  public:
   ModalHostViewComponentInstance(Context context);
-    
+  ~ModalHostViewComponentInstance() override;
+
   void onPropsChanged(SharedConcreteProps const& props) override;
   void onStateChanged(SharedConcreteState const& state) override;
   void setLayout(facebook::react::LayoutMetrics layoutMetrics) override;
