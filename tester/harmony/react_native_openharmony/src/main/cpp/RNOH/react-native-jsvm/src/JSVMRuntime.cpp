@@ -1071,7 +1071,7 @@ inline JSVM_Value JSVMRuntime::CallGlobalFunction(
 }
 
 std::vector<uint8_t> JSVMRuntime::GetCodeCache(const std::string &sourceURL) {
-  return GetCodeCacheL1(sourceURL);
+  return GetCodeCacheL2(sourceURL);
 }
 
 void JSVMRuntime::UpdateCodeCache(const std::string &sourceURL, const std::vector<uint8_t>& buffer) {
@@ -1087,6 +1087,7 @@ std::vector<uint8_t> JSVMRuntime::GetCodeCacheL1(const std::string &sourceURL) {
     std::vector<uint8_t> buffer(size);
     file.read(reinterpret_cast<char*>(buffer.data()), size);
     DLOG(INFO) << "L1 CACHE HIT: " << sourceURL << "; size = " << size;
+    UpdateCodeCacheL2(sourceURL, buffer);
     return buffer;
   } catch (...) {
     DLOG(INFO) << "L1 CACHE MISS: " << sourceURL;
@@ -1135,6 +1136,7 @@ void JSVMRuntime::UpdateCodeCacheL1(
 
       if (!ec_rename) {
         DLOG(INFO) << "Updating L1 CACHE success: " << sourceURL;
+        UpdateCodeCacheL2(sourceURL, buffer);
         return;
       }
       LOG(ERROR) << "Rename failed: " << ec_rename.message();

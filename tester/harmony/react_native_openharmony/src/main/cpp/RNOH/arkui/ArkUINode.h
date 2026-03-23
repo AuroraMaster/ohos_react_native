@@ -59,6 +59,7 @@ class ArkUINode {
     explicit Context(std::shared_ptr<NodeApi> nodeApi) : nodeApi(nodeApi) {}
     using Shared = std::shared_ptr<Context>;
     std::shared_ptr<NodeApi> nodeApi = nullptr;
+    std::shared_ptr<class TaskExecutor> taskExecutor = nullptr;
   };
 
  protected:

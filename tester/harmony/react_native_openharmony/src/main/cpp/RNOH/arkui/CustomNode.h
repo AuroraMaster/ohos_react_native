@@ -8,6 +8,7 @@
 #pragma once
 
 #include "ArkUINode.h"
+#include "RNOH/TaskExecutor/TaskExecutor.h"
 #include <thread>
 #include <atomic>
 #include <mutex>
@@ -40,6 +41,7 @@ class CustomNode : public ArkUINode {
  protected:
   CustomNodeDelegate* m_customNodeDelegate;
   int32_t m_activeScrollChildId = -1;
+  std::weak_ptr<class TaskExecutor> m_taskExecutor;
 
  public:
   explicit CustomNode(const ArkUINode::Context::Shared& context = nullptr);
@@ -59,16 +61,9 @@ class CustomNode : public ArkUINode {
  private:
   UserCallback *userCallback_ = nullptr;
   void (*eventReceiver)(ArkUI_NodeCustomEvent* event);
-  // Debounce timer for insertChild
-  std::thread m_debounceThread;
-  std::atomic<bool> m_timerRunning{false};
-  std::atomic<bool> m_timerCancelled{false};
-  std::mutex m_timerMutex;
-  std::condition_variable m_timerCV;
+  std::optional<TaskExecutor::DelayedTask> m_delayedMeasureTask;
   
-  void startDebounceTimer();
-  void stopDebounceTimer();
-  void debounceTimerFunc();
+  void delayMeasure();
 };
 
 } // namespace rnoh
