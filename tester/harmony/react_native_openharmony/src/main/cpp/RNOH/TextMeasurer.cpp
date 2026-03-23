@@ -108,6 +108,7 @@ void TextMeasurer::dealTextCase(
                 }
             }
             fragment.textAttributes.fontSize *= fontMultiplier;
+            fragment.textAttributes.lineHeight *= fontMultiplier;
         }
     }
 }
