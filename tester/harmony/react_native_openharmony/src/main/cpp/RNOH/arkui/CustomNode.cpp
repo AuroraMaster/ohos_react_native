@@ -63,6 +63,10 @@ CustomNode::CustomNode(const ArkUINode::Context::Shared& context)
       m_nodeHandle, ARKUI_NODE_CUSTOM_EVENT_ON_MEASURE, 89, userCallback_));
   maybeThrow(NativeNodeApi::getInstance()->registerNodeCustomEvent(
       m_nodeHandle, ARKUI_NODE_CUSTOM_EVENT_ON_LAYOUT, 90, userCallback_));
+  if (IsAtLeastApi21()) {
+      maybeThrow(NativeNodeApi::getInstance()->registerNodeEvent(
+        m_nodeHandle, NODE_ON_SIZE_CHANGE, 0, this));
+  }
   /**
    * This is for 2in1 CustomNode focusing problem, focusing would 
    * raise the component and setting ZIndex as 2^31-1, which would
@@ -109,6 +113,20 @@ void CustomNode::onNodeEvent(
     ArkUI_NodeEventType eventType,
     EventArgs& eventArgs) {
   ArkUINode::onNodeEvent(eventType, eventArgs);
+  if (IsAtLeastApi24()) {
+    if (eventType == ArkUI_NodeEventType::NODE_ON_SIZE_CHANGE) {
+      float oldW = eventArgs[0].f32;
+      float oldH = eventArgs[1].f32;
+      float newW = eventArgs[2].f32;
+      float newH = eventArgs[3].f32;
+      // skip the initial render
+      if (oldW > 0 || oldH > 0) {
+          if (std::abs(newW - oldW) > 0.01f || std::abs(newH - oldH) > 0.01f) {
+              delayMeasure();
+          }
+      }
+    }
+  }
   if (eventType == ArkUI_NodeEventType::NODE_ON_CLICK &&
       eventArgs[3].i32 != UI_INPUT_EVENT_SOURCE_TYPE_TOUCH_SCREEN &&
       eventArgs[3].i32 != UI_INPUT_EVENT_SOURCE_TYPE_MOUSE) {
@@ -170,6 +188,10 @@ CustomNode::~CustomNode() {
       m_nodeHandle, ARKUI_NODE_CUSTOM_EVENT_ON_MEASURE);
   NativeNodeApi::getInstance()->unregisterNodeCustomEvent(
       m_nodeHandle, ARKUI_NODE_CUSTOM_EVENT_ON_LAYOUT);
+  if (IsAtLeastApi21()) {
+    NativeNodeApi::getInstance()->unregisterNodeEvent(
+      m_nodeHandle, NODE_ON_SIZE_CHANGE);
+  }
   NativeNodeApi::getInstance()->removeNodeCustomEventReceiver(m_nodeHandle, eventReceiver);
   delete userCallback_;
 }
