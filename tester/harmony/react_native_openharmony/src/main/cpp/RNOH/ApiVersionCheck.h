@@ -13,6 +13,7 @@ namespace rnoh {
 
 constexpr int API_LEVEL_14 = 14;
 constexpr int API_LEVEL_15 = 15;
+constexpr int API_LEVEL_18 = 18;
 constexpr int API_LEVEL_20 = 20;
 constexpr int API_LEVEL_21 = 21;
 constexpr int API_LEVEL_22 = 22;
@@ -50,6 +51,10 @@ inline bool IsAtLeastApi14() {
 
 inline bool IsAtLeastApi15() {
   return IsAtLeastApi<API_LEVEL_15>();
+}
+
+inline bool IsAtLeastApi18() {
+  return IsAtLeastApi<API_LEVEL_18>();
 }
 
 inline bool IsAtLeastApi21() {
