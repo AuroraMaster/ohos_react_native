@@ -15,12 +15,21 @@
 #include "RNOH/ComponentInstance.h"
 #include "RNOH/CppComponentInstance.h"
 #include "RNOH/ApiVersionCheck.h"
+#include "RNOH/TaskExecutor/TaskExecutor.h"
 #include <chrono>
 
 namespace rnoh {
 CustomNode::CustomNode(const ArkUINode::Context::Shared& context)
     : ArkUINode(context, ArkUI_NodeType::ARKUI_NODE_CUSTOM),
       m_customNodeDelegate(nullptr) {
+  // Store TaskExecutor from context if available
+  if (context && context->taskExecutor) {
+    m_taskExecutor = context->taskExecutor;
+    LOG(INFO) << "CustomNode: TaskExecutor initialized successfully";
+  } else {
+    LOG(WARNING) << "CustomNode: TaskExecutor is not set in context - markDirty may crash on background thread";
+  }
+  
   userCallback_ = new UserCallback();
 
   userCallback_->callback = [this](ArkUI_NodeCustomEvent *event) {
@@ -77,7 +86,7 @@ void CustomNode::onLayout() {}
 void CustomNode::insertChild(ArkUINode& child, std::size_t index) {
   m_nodeApi->insertChildAt(
       m_nodeHandle, child.getArkUINodeHandle(), static_cast<int32_t>(index));
-  startDebounceTimer();
+  delayMeasure();
 }
 
 void CustomNode::addChild(ArkUINode& child) {
@@ -147,7 +156,13 @@ void CustomNode::onClick() {
 }
 
 CustomNode::~CustomNode() {
-  stopDebounceTimer();
+  // Cancel delayed measure task before destruction
+  if (m_delayedMeasureTask.has_value()) {
+    if (auto taskExecutor = m_taskExecutor.lock()) {
+      taskExecutor->cancelDelayedTask(m_delayedMeasureTask.value());
+    }
+  }
+  
   unregisterNodeEvent(NODE_ON_CLICK);
   NativeNodeApi::getInstance()->unregisterNodeEvent(
       m_nodeHandle, NODE_ON_HOVER);
@@ -182,47 +197,29 @@ CustomNode& CustomNode::setFocusable(bool focusable) {
   return *this;
 }
 
-void CustomNode::startDebounceTimer() {
-  // Cancel any existing timer
-  m_timerCancelled = true;
-  m_timerCV.notify_all();
-
-  // Detach previous thread
-  if (m_debounceThread.joinable()) {
-    m_debounceThread.detach();
+void CustomNode::delayMeasure() {
+  if (!IsAtLeastApi24()) {
+    return;
   }
 
-  // Start new timer
-  m_timerCancelled = false;
-  m_timerRunning = true;
-  m_debounceThread = std::thread(&CustomNode::debounceTimerFunc, this);
-}
-
-void CustomNode::stopDebounceTimer() {
-  m_timerCancelled = true;
-  m_timerRunning = false;
-  m_timerCV.notify_all();
-  
-  if (m_debounceThread.joinable()) {
-    m_debounceThread.join();
-  }
-}
-
-void CustomNode::debounceTimerFunc() {
-  std::unique_lock<std::mutex> lock(m_timerMutex);
-  
-  // Wait for 100ms or until cancelled
-  if (m_timerCV.wait_for(lock, std::chrono::milliseconds(100), 
-      [this]() { return m_timerCancelled.load(); })) {
-    // Timer was cancelled (new insertChild called or object being destroyed)
+  auto taskExecutor = m_taskExecutor.lock();
+  if (!taskExecutor) {
     return;
   }
   
-  // Timer completed without being cancelled - this is the last insertChild
-  if (m_timerRunning && !m_timerCancelled) {
-     NativeNodeApi::getInstance()->markDirty(getArkUINodeHandle(), ArkUI_NodeDirtyFlag::NODE_NEED_MEASURE);
+  // Cancel any existing delayed task
+  if (m_delayedMeasureTask.has_value()) {
+    taskExecutor->cancelDelayedTask(m_delayedMeasureTask.value());
   }
   
-  m_timerRunning = false;
+  // Schedule new delayed task
+  auto nodeHandle = getArkUINodeHandle();
+  m_delayedMeasureTask = taskExecutor->runDelayedTask(
+    TaskThread::MAIN,
+    [nodeHandle] {
+      NativeNodeApi::getInstance()->markDirty(nodeHandle, ArkUI_NodeDirtyFlag::NODE_NEED_MEASURE);
+      LOG(INFO) << "CustomNode: markDirty executed on main thread";
+    },
+    50);
 }
 } // namespace rnoh

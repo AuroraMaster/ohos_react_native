@@ -761,6 +761,7 @@ static napi_value setUIContext(napi_env env, napi_callback_info info) {
       auto sharedNodeApi = std::make_shared<NodeApi>(newContext);
       auto arkUINodeContext =
           std::make_shared<ArkUINode::Context>(sharedNodeApi);
+      arkUINodeContext->taskExecutor = rnInstanceCAPIRawPtr->getTaskExecutor();
       rnInstanceCAPIRawPtr->setArkUINodeContext(arkUINodeContext);
     }
     return arkJS.getNull();
