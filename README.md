@@ -3,7 +3,7 @@
 欢迎阅读React Native for OpenHarmony文档，参与React Native for OpenHarmony开发者文档开源项目，与我们一起完善开发者文档。
 
 ## RNOH版本演进规划和分支策略
-您可以在[RNOH版本演进规划和分支策略](https://gitcode.com/openharmony-sig/ohos_react_native/wiki/RNOH%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B%E8%A7%84%E5%88%92%E5%92%8C%E5%88%86%E6%94%AF%E7%AD%96%E7%95%A5.md)中了解更多关于我们对React Native的OpenHarmony适配版本的说明。
+您可以在[RNOH版本演进规划和分支策略](https://gitcode.com/openharmony-sig/ohos_react_native/blob/master/docs/zh-cn/roadmap.md)中了解更多关于我们对React Native的OpenHarmony适配版本的说明。
 
 ## 启动
 
