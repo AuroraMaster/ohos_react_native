@@ -106,3 +106,15 @@ export declare function dispatchCommand(
   commandName: string,
   args: any
 );
+
+declare module 'react-native' {
+  interface ScrollViewProps {
+    /**
+     * Limit the maximum fling speed.
+     *
+     * @platform harmony
+     */
+    flingSpeedLimit?: number;
+  }
+}
+
