@@ -34,6 +34,17 @@ endif()
 
 add_compile_options("-Wno-error=unused-command-line-argument")
 
+add_compile_options(
+     "-fstack-protector-strong"
+     "-fPIC"
+)
+
+add_link_options(
+     "-Wl,-z,relro"
+     "-Wl,-z,now"
+     "-Wl,-z,noexecstack"
+)
+
 include_directories(${NATIVERENDER_ROOT_PATH}
                     ${NATIVERENDER_ROOT_PATH}/include)
 

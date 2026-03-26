@@ -1,7 +1,39 @@
 # React Native for OpenHarmony (RNOH)
 
 欢迎阅读React Native for OpenHarmony文档，参与React Native for OpenHarmony开发者文档开源项目，与我们一起完善开发者文档。
+## 📢 代码仓迁移公告
 
+各位开发者、合作伙伴：
+
+大家好！
+
+为更好地聚焦 React Native 于 OpenHarmony 生态的建设与发展，RN Sig（React Native 特别兴趣组） 已正式成立。作为 RN Sig 运作的第一步，我们将对 RNOH（React Native OpenHarmony）源码仓库进行组织架构迁移。
+
+### 一、迁移内容
+- **原仓库地址**：https://gitcode.com/openharmony-sig/ohos_react_native
+- **新仓库地址**：https://gitcode.com/openharmony-RN/ohos_react_native
+
+### 二、迁移原因
+- **明确责任归属**：RN Sig 的成立标志着 RNOH 进入独立、专项化运作阶段，新组织空间更符合 SIG 实体定位，便于后续版本规划与治理。
+- **优化协作路径**：独立组织空间可更清晰地区分 RN 生态相关代码与 OpenHarmony SIG 下的其他孵化项目，降低协作混淆风险。
+- **长期演进需要**：为 RNOH 后续多仓管理、CI/CD 策略差异化、文档与示例统一归口奠定基础。
+
+### 三、影响说明
+- **访问地址变更**：原有基于 openharmony-sig 的仓库地址将不再更新，请各相关方及时更新本地仓库远程地址。
+- **权限与订阅**：新组织下的权限体系将按 RN Sig 成员重新梳理，代码提交、Issue 与 PR 入口将统一迁移至新地址。
+- **兼容性**：本次仅为仓库物理位置迁移，代码内容、版本历史、分支信息均完整保留，不影响现有功能与 API 兼容性。
+
+### 四、后续安排
+迁移执行期间，仓库将短暂处于只读状态，完成后原仓库将标记为"已归档"。
+
+请各依赖方在 【具体时间点】 前完成本地仓库的远程地址切换，避免提交失败。
+
+感谢大家一直以来对 RNOH 的关注与贡献，RN Sig 将持续推动 React Native 在 OpenHarmony 上的能力完善与生态繁荣。如有疑问，欢迎联系 RN Sig 邮箱或在本公告下留言。
+
+                            **RN Sig 工作小组**  
+                            2026年03月26日
+
+---
 ## RNOH版本演进规划和分支策略
 您可以在[RNOH版本演进规划和分支策略](https://gitcode.com/openharmony-sig/ohos_react_native/wiki/RNOH%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B%E8%A7%84%E5%88%92%E5%92%8C%E5%88%86%E6%94%AF%E7%AD%96%E7%95%A5.md)中了解更多关于我们对React Native的OpenHarmony适配版本的说明。
 
