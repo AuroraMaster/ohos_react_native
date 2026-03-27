@@ -1,5 +1,28 @@
 # Changelog
 
+## 6.1.0.370
+
+- Fixed the issue of scrolling ability after switching between horizontal and vertical screens,([0ffbf0e25](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0ffbf0e255e0a0d13e0074fb1aa38b507e020923))
+- [chore]: updated to version 6.1.0.370(0.72.131),([db49b71de](https://gitcode.com/openharmony-sig/ohos_react_native/commit/db49b71deb9ca6b1084a30fdb5498b32c828caf7))
+- [feat]: add RNOH preview entry,([3f82f07ed](https://gitcode.com/openharmony-sig/ohos_react_native/commit/3f82f07ed04072440cfc880cad149eb7f36f6214))
+- fix ScrollNode crash on API level < 18,Wrapped setFlingSpeedLimit calls with IsAtLeastApi18() to prevent crashes on older devices where this attribute is not supported.,([3bc014b89](https://gitcode.com/openharmony-sig/ohos_react_native/commit/3bc014b892907e43a1f14d88b0a1e23219f29294))
+- fix:修复markDirty导致的多线程crash问题,([69998e766](https://gitcode.com/openharmony-sig/ohos_react_native/commit/69998e76638b9af1eab7764f923e9ce14d08dc77))
+- fix:关闭L2缓存,([a33eaff2c](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a33eaff2c38f36ff36609a93a134d8fb4ac8327b))
+- fix:Where lineHeight does not scale with fontSize(0.72).,([4d0aae43f](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4d0aae43f4d00121c8174a0b82e4ae8d7f60d062))
+- fix:Modal split into frames,([b50774049](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b50774049ed3920a72486e1115367af42aa55c19))
+- [chore]: updated to version 6.1.0.360(0.72.129),([0d1d1c471](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0d1d1c4715b9a0f432b56ef70e9a71e6d3087273))
+- feat(scrollview): optimize fling deceleration mapping and set default speed limit to 6000,([b7de2b8bc](https://gitcode.com/openharmony-sig/ohos_react_native/commit/b7de2b8bc9cc39841aeccefc0f31247a146a89ce))
+- fix:Folding screen does not open instruction parallelization,([ecff2fb39](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ecff2fb39dc1c8f42e0aa94013071784497f92ab))
+- update: 更新文件 JSVMRuntime.cpp,([f8aecb73a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/f8aecb73a3cc9a797cfb6cfd72d9f1d733495ea6))
+- feat: support TRIM_MEMORY_RUNNING_CRITICAL in JSVM memory pressure handling,([4eb332984](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4eb33298413c67654ae9c56431a50a62ff16e3fe))
+- fix：Provide the original TextInout component onChange interface,([43bd544c5](https://gitcode.com/openharmony-sig/ohos_react_native/commit/43bd544c5c15a4386dd86f72a8e6fff019896d69))
+- fix: 修复 Autolinking 依赖管理及路径计算问题,([5a9e9549b](https://gitcode.com/openharmony-sig/ohos_react_native/commit/5a9e9549badaca0f843ef030444ce8b711230f56))
+- feat:Add an event to get the Level value on onMemoryLevel(0.72),([2c5cecfa8](https://gitcode.com/openharmony-sig/ohos_react_native/commit/2c5cecfa85929fd116cf25039053a99e809e4678))
+- Autolinking添加远程依赖支持,([0c3aba30f](https://gitcode.com/openharmony-sig/ohos_react_native/commit/0c3aba30fcf6073e6c5f65d4f2647887896551a5))
+- feat: 支持自定义ha包扫描路径和多har包配置,([4505ef9cd](https://gitcode.com/openharmony-sig/ohos_react_native/commit/4505ef9cd70af037628f7fcabb3e7996fc40a1cc))
+- [chore]: updated to version 6.1.0.318(0.72.128),([a4bca3e7e](https://gitcode.com/openharmony-sig/ohos_react_native/commit/a4bca3e7eadf8636d0a61a69cf31e30609e01973))
+- fix:crash when js runtime uaf in JS thread,([fdec3268a](https://gitcode.com/openharmony-sig/ohos_react_native/commit/fdec3268a927d85d3a1e5691620d36573ca26fa2))
+
 ## 6.1.0.318
 
 - fix:Clamp second typography layout width to maxWidth.,([ee6769f3d](https://gitcode.com/openharmony-sig/ohos_react_native/commit/ee6769f3dd39885836dc402d9c8632e771ada715))
