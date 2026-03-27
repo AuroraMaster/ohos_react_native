@@ -44,6 +44,7 @@ class ScrollViewComponentJSIBinder : public ViewComponentJSIBinder {
     object.setProperty(rt, "centerContent", "boolean");
     object.setProperty(rt, "removeClippedSubviews", "boolean");
     object.setProperty(rt, "__keyboardAvoidingViewBottomHeight", true);
+    object.setProperty(rt, "flingSpeedLimit", "number");
     return object;
   }
 

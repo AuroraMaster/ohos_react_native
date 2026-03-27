@@ -227,6 +227,13 @@ void rnoh::ScrollViewComponentInstance::onPropsChanged(
     }
   }
 
+  if (m_rawProps.flingSpeedLimit != rawProps.flingSpeedLimit) {
+    m_rawProps.flingSpeedLimit = rawProps.flingSpeedLimit;
+    if (m_rawProps.flingSpeedLimit.has_value()) {
+      m_scrollNode.setFlingSpeedLimit(m_rawProps.flingSpeedLimit.value());
+    }
+  }
+
   if (!m_props || props->contentOffset != m_props->contentOffset ||
       props->scrollToOverflowEnabled != m_props->scrollToOverflowEnabled) {
     m_scrollNode.scrollTo(
@@ -850,8 +857,11 @@ ScrollViewComponentInstance::ScrollViewRawProps::getFromDynamic(folly::dynamic v
   auto fadingEdgeLength = (value.count("fadingEdgeLength") > 0)
       ? std::optional(value["fadingEdgeLength"].asDouble())
       : std::nullopt;
+  auto flingSpeedLimit = (value.count("flingSpeedLimit") > 0)
+      ? std::optional<float>(value["flingSpeedLimit"].asDouble())
+      : std::nullopt;
   
-  return {overScrollMode, nestedEnabled, endFillColor, fadingEdgeLength};
+  return {overScrollMode, nestedEnabled, endFillColor, fadingEdgeLength, flingSpeedLimit};
 }
 
 facebook::react::Point ScrollViewComponentInstance::getContentViewOffset()
