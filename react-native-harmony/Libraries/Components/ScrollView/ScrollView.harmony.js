@@ -432,6 +432,13 @@ export type Props = $ReadOnly<{|
   ...AndroidProps,
 
   /**
+   * Limit the maximum fling speed.
+   *
+   * @platform harmony
+   */
+  flingSpeedLimit?: ?number,
+
+  /**
    * These styles will be applied to the scroll view content container which
    * wraps all of the child views. Example:
    *

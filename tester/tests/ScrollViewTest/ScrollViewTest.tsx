@@ -22,6 +22,7 @@ import {ScrollToTest} from './ScrollToTest';
 import {CenterContentTest} from './CenterContentTest';
 import RemoveClippedTest from './RemoveClippedTest';
 import {OverScrollTest} from './OverScrollTest';
+import {FlingSpeedLimitTest} from './FlingSpeedLimitTest';
 
 export function ScrollViewTest() {
   return (
@@ -39,6 +40,7 @@ export function ScrollViewTest() {
       <MiscPropsTest />
       <CenterContentTest />
       <OverScrollTest />
+      <FlingSpeedLimitTest />
       <TestCase
         modal
         itShould="maintain scroll position when adding/removing elements">
