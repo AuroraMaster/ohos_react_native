@@ -1,0 +1,59 @@
+name: 工程化改进|Engineering
+description: 如果您对RN社区有疑问，欢迎反馈咨询。
+title: "[Engineering]: 简短描述工程化改进内容"
+labels: ["engineering", "triage"]
+type: "工程化改进"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢提出工程化改进建议，我们将安排人进行改进！
+  - type: textarea
+    id: engineering-description
+    attributes:
+      label: 工程化改进描述
+      description: 请描述下您觉得需要工程化改进的地方。
+      placeholder: |
+        【改进原因】请描述下您觉得当前工程方面存在的问题或痛点（例如：构建速度慢、测试不稳定、CI 流程缺失）？
+    validations:
+      required: true
+  - type: textarea
+    id: engineering-content
+    attributes:
+      label: 工程化改进涉方案与验证
+      description: 请提供涉及的模块与测试计划。
+      placeholder: |
+        【改进方案】描述具体要实施的改动，如升级依赖、增加 CI job、优化 Dockerfile 等。
+        【影响范围】列出受影响的工具链、流程或开发者。
+        【验证方式】说明如何验证改进有效（如 CI 通过时间缩短、测试成功率提升）。
+    validations:
+      required: true      
+  - type: input
+    id: version
+    attributes:
+      label: React Native OpenHarmony 版本。
+      description: 请提供您使用的React Native OpenHarmony版本信息。
+      placeholder: "0.72.48"
+    validations:
+      required: true     
+  - type: textarea
+    id: other-info
+    attributes:
+      label: 其他信息
+      description: 如果您有其他具体的重构建议或者想法，可以在这里描述。
+    validations:
+      required: false          
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 提交前检查清单
+      description: 请在提交 Issue 前确认以下事项
+      options:
+        - label: 搜索现有 Issue，避免重复提交
+          required: true
+        - label: 使用正确的 Issue 模板
+          required: true
+        - label: 提供清晰的描述和必要的细节
+          required: true
+        - label: 检查标题是否清晰且包含类型前缀
+          required: true
