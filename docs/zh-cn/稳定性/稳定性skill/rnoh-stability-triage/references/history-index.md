@@ -57,6 +57,12 @@
 - symbol conflict
 - callback after destroy
 - reload crash
+- sort crash
+- strict weak ordering
+- stable_sort
+- comparator
+- container bounds
+- out of bounds
 
 高频模块：
 
@@ -79,6 +85,7 @@
 - 0.82.17：ArkTS 模块手工声明 px2vp，混淆后方法名无法解析并崩溃。提交 267143411，MR !2339。
 - 0.82.17：API12 环境下 RegisterPageName 和 StatusBar delegate 适配不完整。提交 a23c64db2，MR !2227。
 - 0.77.22：HSP 下 bundle 加载崩溃。提交 ee1fe3485，MR !1630。
+- 0.72：std::sort 比较器不满足严格弱序（使用 `<=`）导致排序崩溃。提交 c822670b0。
 
 优先匹配信号：
 
