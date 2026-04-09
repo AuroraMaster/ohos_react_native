@@ -1,6 +1,6 @@
 ---
 name: rnoh-stability-triage
-description: 用于分析 OpenHarmony React Native / RNOH / React Native Harmony 场景中的稳定性问题。只要用户在排查闪退、卡死、内存异常、资源泄漏、SIGSEGV、SIGABRT、UAF、空指针、死锁、生命周期异常、兼容性崩溃，或者明确想判断“是不是框架问题”“历史版本是否修过”“该升级还是回捞补丁”，就应使用此 skill。
+description: 用于分析 OpenHarmony React Native / RNOH / React Native Harmony 场景中的稳定性问题。只要用户在排查闪退、卡死、内存异常、资源泄漏、SIGSEGV、SIGABRT、UAF、空指针、死锁、生命周期异常、兼容性崩溃、sort 排序崩溃、容器越界访问，或者明确想判断"是不是框架问题""历史版本是否修过""该升级还是回捞补丁"，就应使用此 skill。
 ---
 
 # RNOH 稳定性问题分析
@@ -30,6 +30,18 @@ description: 用于分析 OpenHarmony React Native / RNOH / React Native Harmony
 
 - docs/zh-cn/稳定性/稳定性问题介绍/稳定性概览.md
 - docs/zh-cn/稳定性/稳定性问题介绍/稳定性分析方法.md
+
+如果需要读取 GitCode PR、MR 或文件列表，先检查以下可选配置文件：
+
+- references/gitcode-config.json
+
+当该文件存在且 `gitcode_access_token` 已填写为有效值时，优先使用 GitCode API 读取 PR 详情、变更文件和 patch；未填写、仍为占位值或文件不存在时，退回到公开页面抓取、git fetch 或工作区本地代码分析方式。
+
+注意事项：
+
+- 只将该 token 用于读取 GitCode PR / MR 相关信息，不在输出中回显 token。
+- 如果仓库或 PR 为公开可读，优先走无鉴权方式；只有在需要 API 结构化数据或公开页面信息不足时再使用 token。
+- 如果读取失败，要在结论中说明是“未配置 token / token 无效 / 权限不足”，不要伪造 PR 信息。
 
 ## 何时优先使用
 
@@ -140,6 +152,13 @@ description: 用于分析 OpenHarmony React Native / RNOH / React Native Harmony
 1. 先看 [references/history-index.md](references/history-index.md) 的类别、关键词和高频模块。
 2. 再根据用户版本确定检索边界。
 3. 最后在边界内做全量扫描，而不是只挑典型条目。
+
+如果用户同时提供了 GitCode PR / MR 链接，按下面优先级读取：
+
+1. 先检查 [references/gitcode-config.json](references/gitcode-config.json) 是否存在有效 `gitcode_access_token`。
+2. 如果有有效 token，优先调用 GitCode API 获取 PR 详情、文件列表和 patch。
+3. 如果没有有效 token，则退回到公开 PR 页面抓取、`git fetch` 或本地 diff 分析。
+4. 如果 PR 非公开且缺少有效 token，要明确告诉用户当前无法完整读取 PR 详情，并继续基于已有日志、版本和本地代码做分析。
 
 ### 历史修复检索边界
 
