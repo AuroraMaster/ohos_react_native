@@ -1,0 +1,16 @@
+{
+  "name": "rnoh",
+  "version": "1.1.0",
+  "scripts": {
+    "prepare": "husky install",
+    "commitlint": "commitlint --edit",
+    "release": "standard-version",
+    "release:first": "standard-version --first-release"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "husky": "^9.0.0",
+    "standard-version": "^9.5.0"
+  }
+}

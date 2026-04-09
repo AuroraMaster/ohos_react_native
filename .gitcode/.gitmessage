@@ -1,0 +1,11 @@
+# <type>(<scope>): <subject> (≤72字符)
+# 可选 type: feat|fix|docs|style|refactor|perf|test|chore
+# 示例: feat(Text): add sms two-factor verification
+
+# 主体内容（空一行后开始）
+# - 说明变更动机
+# - 对比变更前后的行为差异
+
+# 页脚（空一行后开始）
+# - 关联 Issue: Closes #123
+# - 破坏性变更: BREAKING CHANGE: 详细说明变更与适配方案
