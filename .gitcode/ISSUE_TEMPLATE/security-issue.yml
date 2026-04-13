@@ -1,7 +1,7 @@
 name: 安全问题|Security Issue
 description: 当您发现安全问题时，使用此模板反馈。
 title: "[Security]: "
-labels: ["SIG_Security", "triage"]
+labels: ["security", "triage"]
 type: "安全问题"
 body:
   - type: markdown

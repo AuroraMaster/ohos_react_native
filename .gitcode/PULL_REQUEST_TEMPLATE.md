@@ -1,5 +1,5 @@
 ## 变更类型
-请在对应类型前打 `√`，**仅可选择一项**：
+请在对应类型（请勿多选）前打 `√`，**仅可选择一项**：
 - [ ] feat（新增功能，对应 Changelog Added）
 - [ ] fix（修复 Bug，对应 Changelog Fixed）
 - [ ] docs（文档变更，对应 Changelog Documentation）
@@ -7,6 +7,9 @@
 - [ ] perf（性能优化，对应 Changelog Performance）
 - [ ] test（测试相关，不进入 Changelog）
 - [ ] chore（构建/工具链/依赖，不进入 Changelog）
+- [ ] deprecated（标记弃用，对应 Changelog Deprecated）
+- [ ] removed（移除功能，对应 Changelog Removed）
+- [ ] security（安全修复，对应 Changelog Security）
 
 ## 变更内容
 - 简要描述本次变更的具体内容、解决的问题；
@@ -26,6 +29,7 @@
 - [ ] 已通过 CI 自动构建与测试
 - [ ] 已补充/更新对应的测试用例
 - [ ] 已在目标环境（如 手机/平板）验证功能
+- [ ] 已在最低兼容API版本验证可用性
 
 ## 合入前自检
 <!--
