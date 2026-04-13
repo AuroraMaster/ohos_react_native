@@ -1,7 +1,7 @@
 name: 文档资料|Document
 description: 如果您对RN社区有疑问，欢迎反馈咨询。
 title: "[Document]: 简短描述文档改进内容"
-labels: ["document", "triage"]
+labels: ["documentation", "triage"]
 type: "文档"
 body:
   - type: markdown

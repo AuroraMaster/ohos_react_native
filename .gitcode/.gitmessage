@@ -1,11 +1,56 @@
-# <type>(<scope>): <subject> (≤72字符)
-# 可选 type: feat|fix|docs|style|refactor|perf|test|chore
-# 示例: feat(Text): add sms two-factor verification
+# <type>(<scope>): <subject> (≤100字符)
+#
+# type 类型（必选）:
+#   feat        - 新增功能
+#   fix         - 修复bug
+#   docs        - 文档更新
+#   style       - 代码格式
+#   refactor    - 代码重构
+#   perf        - 性能优化
+#   test        - 测试相关
+#   chore       - 构建/工具链
+#   deprecated  - 标记弃用功能
+#   removed     - 移除已弃用功能
+#   security    - 安全修复
+#   revert      - 回滚
+#
+# scope 作用域（必选，使用PascalCase）:
+#   基础组件: View, Text, Image, TextInput, ScrollView, FlatList, ListView, WebView, Modal, RefreshControl, ActivityIndicator
+#   布局组件: Flex, Absolute, SafeArea, KeyboardAvoidingView
+#   API模块: Networking, Storage, AsyncStorage, Clipboard, Linking, Alert, Toast, Permissions, DeviceInfo
+#   动画系统: Animated, Reanimated, LayoutAnimation, GestureHandler
+#   导航: Navigation, ReactNavigation, StackNavigator
+#   样式系统: StyleSheet, StyleSheetOptimizer, Theme
+#   桥接层: Bridge, TurboModules, Fabric, LegacyComponents
+#   JS引擎: Hermes, JSC, JSI, JSVM
+#   构建系统: BuildSystem, CMake, HAP, HAR, Symbols
+#   开发工具: DevTools, Debugger, Profiler, Flipper
+#   测试: Tests, E2E, UnitTests
+#   其他: Docs, Examples, Config, CLI, Scripts
+#
+# subject 主题（必选）:
+#   - 使用动词原形、现在时（如 add 而非 added/adds）
+#   - 首字母小写，结尾不加句号
+#   - 聚焦 "做了什么"，而非 "为什么做"
+#
+# 示例:
+#   feat(ScrollView): 添加下拉刷新支持
+#   fix(Hermes): 修复内存泄漏问题
+#   chore(Symbols): 优化Release模式符号处理
 
 # 主体内容（空一行后开始）
-# - 说明变更动机
+# - 说明变更动机（为什么做这个变更）
 # - 对比变更前后的行为差异
+# - 技术实现细节（可选）
+# - 影响范围说明
+#
+# RNOH特别提示:
+# - Symbols变更: 说明符号处理情况（符号分离、剥离、路径等）
+# - Native层变更: 说明符号处理和.so文件影响
+# - 构建系统变更: 说明对Debug/Release模式的影响
+# - 组件变更: 说明兼容性和API变化
 
 # 页脚（空一行后开始）
-# - 关联 Issue: Closes #123
-# - 破坏性变更: BREAKING CHANGE: 详细说明变更与适配方案
+# - 关联 Issue: Closes #123, Fixes #456, Related to #789
+# - 破坏性变更: BREAKING CHANGE: 详细说明变更内容、影响范围、适配方案
+# - 签名: Signed-off-by: Your Name <email@example.com>
