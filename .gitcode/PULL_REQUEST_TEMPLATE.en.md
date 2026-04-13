@@ -1,6 +1,6 @@
 ## Change Type
 
-Please check `√` next to the corresponding type, **only one option can be selected**:
+Please check `√` next to corresponding type, **only one option can be selected**:
 
 - [ ] feat (New feature, corresponds to Changelog Added)
 - [ ] fix (Bug fix, corresponds to Changelog Fixed)
@@ -9,6 +9,9 @@ Please check `√` next to the corresponding type, **only one option can be sele
 - [ ] perf (Performance optimization, corresponds to Changelog Performance)
 - [ ] test (Test related, will not be included in Changelog)
 - [ ] chore (Build/Toolchain/Dependency, will not be included in Changelog)
+- [ ] deprecated (Mark deprecation, corresponds to Changelog Deprecated)
+- [ ] removed (Remove feature, corresponds to Changelog Removed)
+- [ ] security (Security fix, corresponds to Changelog Security)
 
 ## Change Description
 
@@ -32,6 +35,7 @@ How to test this PR. For example:
 - [ ] Passed CI automatic build and testing
 - [ ] Added/updated corresponding test cases
 - [ ] Verified functionality in target environment (e.g., phone/tablet)
+- [ ] Verified availability on the minimum compatible API version
 
 ## Pre-merge Self-Check
 
